@@ -5909,6 +5909,39 @@
         window.visualViewport.addEventListener('scroll', syncOverlays);
         syncOverlays();
     }
+
+    // ─── Swipe للتنقل بين التبويبات ───
+    (function() {
+        const TABS = ['sell', 'purchase', 'inv'];
+        const MIN_SWIPE_X = 55;   // أدنى مسافة أفقية لتُعدّ سحباً
+        const MAX_SWIPE_Y = 70;   // أقصى انحراف رأسي مسموح
+        let startX = 0, startY = 0, tracking = false;
+
+        document.addEventListener('touchstart', function(e) {
+            // تجاهل إذا كانت أي نافذة مفتوحة
+            if (document.querySelector('.modal-overlay.active')) return;
+            // تجاهل إذا بدأ السحب داخل عنصر scrollable أفقياً
+            const target = e.target.closest('.filter-row, .cart-items, [style*="overflow-x"]');
+            if (target) return;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            tracking = true;
+        }, { passive: true });
+
+        document.addEventListener('touchend', function(e) {
+            if (!tracking) return;
+            tracking = false;
+            if (document.querySelector('.modal-overlay.active')) return;
+            const dx = e.changedTouches[0].clientX - startX;
+            const dy = e.changedTouches[0].clientY - startY;
+            if (Math.abs(dy) > MAX_SWIPE_Y) return;   // سحب رأسي → تجاهل
+            if (Math.abs(dx) < MIN_SWIPE_X) return;    // مسافة قصيرة → تجاهل
+            const idx = TABS.indexOf(currentTab);
+            // RTL: سحب يسار → تبويب تالٍ | سحب يمين → تبويب سابق
+            if (dx < 0 && idx < TABS.length - 1) switchTab(TABS[idx + 1]);
+            else if (dx > 0 && idx > 0) switchTab(TABS[idx - 1]);
+        }, { passive: true });
+    })();
 </script>
 
 <script>
