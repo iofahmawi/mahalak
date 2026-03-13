@@ -281,9 +281,9 @@
         .sale-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .sale-item-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 5px 0; border-bottom: 1px dashed var(--border); font-size: 0.8rem;
+            padding: 5px 0; font-size: 0.8rem;
         }
-        .sale-item-row:last-child { border: none; padding-bottom: 0; }
+        .sale-item-row:last-child { padding-bottom: 0; }
         .sale-item-name { font-weight: 700; color: var(--text-dark); }
         .sale-item-detail { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; }
         .sale-item-amount { font-weight: 900; color: var(--text-dark); }
@@ -2663,7 +2663,7 @@
                     </div>
                 </div>
                 <div class="sale-details" style="display:none;margin-top:8px;">
-                    <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed var(--border);">
+                    <div style="display:flex;justify-content:space-between;padding:3px 0;">
                         <span style="font-weight:700;color:var(--text-dark);">${p.itemName} <span style="color:var(--text-muted);font-weight:600;">× ${p.qty}</span></span>
                         <span style="font-weight:800;color:var(--text-muted);">${p.supplier ? p.supplier : 'بدون مورد'}</span>
                     </div>
