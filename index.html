@@ -536,7 +536,7 @@
 <body>
 
 <header>
-    <div id="header-title"><h1 id="page-title"><i class="fa-solid fa-cash-register" style="margin-left:6px;color:#64748b;"></i>مبيعات</h1></div>
+    <div id="header-title"><h1 id="page-title"><i class="fa-solid fa-receipt" style="margin-left:6px;color:#2563eb;"></i>مبيعات</h1></div>
     <div class="search-bar" id="search-bar">
         <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted);font-size:0.8rem;flex-shrink:0;"></i>
         <input type="text" id="search-input" placeholder="بحث"  oninput="onSearch(this.value)" onkeydown="if(event.key==='Enter')this.blur();">
@@ -550,7 +550,7 @@
                 <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openStatsModal()"><i class="fa-solid fa-chart-pie"></i> إحصائيات</button>
                 <div class="menu-has-sub" id="menu-cash-sub">
                     <button onclick="toggleMenuSub('menu-cash-sub', event)">
-                        <i class="fa-solid fa-cash-register"></i> الصندوق
+                        <i class="fa-solid fa-receipt"></i> الصندوق
                     </button>
                     <div class="menu-submenu">
                         <button onclick="closeMenu(); openCashLogModal()"><i class="fa-solid fa-calendar-days"></i> سجل الصندوق</button>
@@ -641,7 +641,7 @@
 </div>
 
 <div class="tabs">
-    <button class="tab active-sell" id="tab-sell" onclick="switchTab('sell')"><i class="fa-solid fa-cash-register" style="margin-left:5px;"></i>بيع</button>
+    <button class="tab active-sell" id="tab-sell" onclick="switchTab('sell')"><i class="fa-solid fa-receipt" style="margin-left:5px;"></i>بيع</button>
     <button class="tab" id="tab-purchase" onclick="switchTab('purchase')"><i class="fa-solid fa-cart-flatbed" style="margin-left:5px;"></i>شراء</button>
     <button class="tab" id="tab-inv" onclick="switchTab('inv')"><i class="fa-solid fa-box" style="margin-left:5px;"></i>المخزون</button>
 </div>
@@ -672,7 +672,7 @@
 </div>
 
 <button class="fab" id="fab-inv" style="display:none;" onclick="openAddItemModal()"><i class="fa-solid fa-plus"></i> إضافة صنف</button>
-<button class="fab" id="fab-sell" style="display:flex;" onclick="openSellSearchModal()"><i class="fa-solid fa-cash-register"></i> ابدأ البيع</button>
+<button class="fab" id="fab-sell" style="display:flex;" onclick="openSellSearchModal()"><i class="fa-solid fa-receipt"></i> ابدأ البيع</button>
 <button class="fab" id="fab-purchase" style="display:none;" onclick="openNewPurchaseModal()"><i class="fa-solid fa-cart-flatbed"></i> ابدأ الشراء</button>
 
 <input type="file" id="file-input" accept=".json" style="display:none" onchange="importData(event)">
@@ -1288,7 +1288,7 @@
 <div class="modal-overlay" id="cash-log-modal" style="align-items:center;padding:0;">
     <div class="modal" style="max-height:82vh;display:flex;flex-direction:column;width:92%;max-width:360px;padding-left:0;padding-right:0;" onclick="event.stopPropagation()">
         <div class="modal-top" style="padding:0 20px;">
-            <div class="modal-ico blue"><i class="fa-solid fa-cash-register"></i></div>
+            <div class="modal-ico blue"><i class="fa-solid fa-receipt"></i></div>
             <div style="flex:1"><p class="modal-title">سجل الصندوق</p><p class="modal-subtitle" id="cash-log-sub"></p></div>
         </div>
         <!-- فورم تسجيل يوم -->
@@ -1631,11 +1631,11 @@
         if(t === 'sell') {
             document.getElementById('tab-sell').classList.add('active-sell');
             document.getElementById('view-sell').style.display = 'block';
-            document.getElementById('page-title').innerHTML = '<i class="fa-solid fa-cash-register" style="margin-left:6px;color:#64748b;"></i>مبيعات';
+            document.getElementById('page-title').innerHTML = '<i class="fa-solid fa-receipt" style="margin-left:6px;color:#2563eb;"></i>مبيعات';
         } else if(t === 'purchase') {
             document.getElementById('tab-purchase').classList.add('active-sell');
             document.getElementById('view-purchase').style.display = 'block';
-            document.getElementById('page-title').innerHTML = '<i class="fa-solid fa-cart-flatbed" style="margin-left:6px;color:#64748b;"></i>مشتريات';
+            document.getElementById('page-title').innerHTML = '<i class="fa-solid fa-cart-flatbed" style="margin-left:6px;color:#2563eb;"></i>مشتريات';
         } else {
             document.getElementById('tab-inv').classList.add('active-inv');
             document.getElementById('view-inv').style.display = 'block';
@@ -4059,7 +4059,7 @@
             content.innerHTML = `
             ${sec('📊 الملخص المالي الكلي')}
             <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-                ${row('إيرادات المبيعات',      'JD '+d.allSalesTotal.toFixed(2),     '#2563eb', 'fa-cash-register')}
+                ${row('إيرادات المبيعات',      'JD '+d.allSalesTotal.toFixed(2),     '#2563eb', 'fa-receipt')}
                 ${row('تكلفة البضاعة المباعة','− JD '+allCOGS.toFixed(2),           '#64748b', 'fa-cart-arrow-down')}
                 ${netRow('الربح الإجمالي', 'JD '+grossProfit.toFixed(2), grossProfit>=0?'#16a34a':'#ef4444')}
             </div>
@@ -5913,14 +5913,12 @@
     // ─── Swipe للتنقل بين التبويبات ───
     (function() {
         const TABS = ['sell', 'purchase', 'inv'];
-        const MIN_SWIPE_X = 55;   // أدنى مسافة أفقية لتُعدّ سحباً
-        const MAX_SWIPE_Y = 70;   // أقصى انحراف رأسي مسموح
+        const MIN_SWIPE_X = 55;
+        const MAX_SWIPE_Y = 70;
         let startX = 0, startY = 0, tracking = false;
 
         document.addEventListener('touchstart', function(e) {
-            // تجاهل إذا كانت أي نافذة مفتوحة
             if (document.querySelector('.modal-overlay.active')) return;
-            // تجاهل إذا بدأ السحب داخل عنصر scrollable أفقياً
             const target = e.target.closest('.filter-row, .cart-items, [style*="overflow-x"]');
             if (target) return;
             startX = e.touches[0].clientX;
@@ -5934,10 +5932,9 @@
             if (document.querySelector('.modal-overlay.active')) return;
             const dx = e.changedTouches[0].clientX - startX;
             const dy = e.changedTouches[0].clientY - startY;
-            if (Math.abs(dy) > MAX_SWIPE_Y) return;   // سحب رأسي → تجاهل
-            if (Math.abs(dx) < MIN_SWIPE_X) return;    // مسافة قصيرة → تجاهل
+            if (Math.abs(dy) > MAX_SWIPE_Y) return;
+            if (Math.abs(dx) < MIN_SWIPE_X) return;
             const idx = TABS.indexOf(currentTab);
-            // RTL: سحب يسار → تبويب تالٍ | سحب يمين → تبويب سابق
             if (dx < 0 && idx < TABS.length - 1) switchTab(TABS[idx + 1]);
             else if (dx > 0 && idx > 0) switchTab(TABS[idx - 1]);
         }, { passive: true });
