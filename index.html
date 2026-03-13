@@ -5800,49 +5800,10 @@
         const vh = window.visualViewport.height;
         const vt = Math.max(window.visualViewport.offsetTop, 0);
         const ratio = vh / window.screen.height;
-        const isPWA = window.matchMedia('(display-mode: standalone)').matches;
         const kbOpen = ratio < 0.75;
 
         simpleOverlays.forEach(ov => {
             if (!ov) return;
-            // stock-modal في PWA: منتصف المساحة فوق لوحة المفاتيح
-            if (isPWA && ov.id === 'stock-modal') {
-                if (kbOpen) {
-                    const modal = ov.querySelector('.modal');
-                    const modalH = modal ? modal.offsetHeight : 300;
-                    const centerY = vt + vh / 2;
-                    const topPos = Math.max(vt + 8, centerY - modalH / 2);
-                    ov.style.position = 'fixed';
-                    ov.style.top = '0';
-                    ov.style.left = '0';
-                    ov.style.width = '100%';
-                    ov.style.height = window.innerHeight + 'px';
-                    ov.style.alignItems = 'flex-start';
-                    ov.style.paddingTop = '0';
-                    if (modal) {
-                        modal.style.position = 'absolute';
-                        modal.style.top = topPos + 'px';
-                        modal.style.left = '50%';
-                        modal.style.transform = 'translateX(-50%)';
-                        modal.style.width = '92%';
-                        modal.style.maxWidth = '400px';
-                    }
-                } else {
-                    ov.style.height = '';
-                    ov.style.alignItems = 'flex-start';
-                    ov.style.paddingTop = '15%';
-                    const modal = ov.querySelector('.modal');
-                    if (modal) {
-                        modal.style.position = '';
-                        modal.style.top = '';
-                        modal.style.left = '';
-                        modal.style.transform = '';
-                        modal.style.width = '';
-                        modal.style.maxWidth = '';
-                    }
-                }
-                return;
-            }
             if (ov.classList.contains('active')) {
                 if (kbOpen) { ov.style.height = vh + 'px'; ov.style.alignItems = 'center'; ov.style.paddingTop = '0'; }
                 else { ov.style.height = ''; ov.style.alignItems = 'flex-start'; ov.style.paddingTop = '25%'; }
