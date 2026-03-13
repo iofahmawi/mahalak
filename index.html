@@ -536,7 +536,7 @@
 <body>
 
 <header>
-    <div id="header-title"><h1 id="page-title">🛒 مبيعات</h1></div>
+    <div id="header-title"><h1 id="page-title"><i class="fa-solid fa-cash-register" style="margin-left:6px;color:#94a3b8;"></i>مبيعات</h1></div>
     <div class="search-bar" id="search-bar">
         <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted);font-size:0.8rem;flex-shrink:0;"></i>
         <input type="text" id="search-input" placeholder="بحث"  oninput="onSearch(this.value)" onkeydown="if(event.key==='Enter')this.blur();">
@@ -1631,7 +1631,7 @@
         if(t === 'sell') {
             document.getElementById('tab-sell').classList.add('active-sell');
             document.getElementById('view-sell').style.display = 'block';
-            document.getElementById('page-title').innerText = '🛒 مبيعات';
+            document.getElementById('page-title').innerHTML = '<i class="fa-solid fa-cash-register" style="margin-left:6px;color:#94a3b8;"></i>مبيعات';
         } else if(t === 'purchase') {
             document.getElementById('tab-purchase').classList.add('active-sell');
             document.getElementById('view-purchase').style.display = 'block';
@@ -1639,7 +1639,7 @@
         } else {
             document.getElementById('tab-inv').classList.add('active-inv');
             document.getElementById('view-inv').style.display = 'block';
-            document.getElementById('page-title').innerText = '📦 المخزون';
+            document.getElementById('page-title').innerHTML = '<i class="fa-solid fa-boxes-stacked" style="margin-left:6px;color:#c4a265;"></i>المخزون';
         }
         render();
     }
