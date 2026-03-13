@@ -5801,45 +5801,90 @@
         const vt = Math.max(window.visualViewport.offsetTop, 0);
         const ratio = vh / window.screen.height;
         const kbOpen = ratio < 0.75;
+        const isPWA = window.matchMedia('(display-mode: standalone)').matches;
 
+        // النوافذ الصغيرة الثابتة — في PWA تتوسط فوق الكيبورد
         simpleOverlays.forEach(ov => {
             if (!ov) return;
-            if (ov.classList.contains('active')) {
-                if (kbOpen) {
-                    ov.style.height  = vh + 'px';
-                    ov.style.bottom  = 'auto';
-                    ov.style.alignItems  = 'center';
-                    ov.style.paddingTop  = '0';
-                } else {
-                    ov.style.height  = '';
-                    ov.style.bottom  = '';
-                    ov.style.alignItems  = 'flex-start';
-                    ov.style.paddingTop  = '25%';
-                }
+            if (kbOpen && isPWA) {
+                ov.style.height     = vh + 'px';
+                ov.style.bottom     = 'auto';
+                ov.style.alignItems = 'center';
+                ov.style.paddingTop = '0';
+            } else if (kbOpen) {
+                ov.style.height     = vh + 'px';
+                ov.style.bottom     = '';
+                ov.style.alignItems = 'center';
+                ov.style.paddingTop = '0';
             } else {
-                ov.style.height = '';
-                ov.style.bottom = '';
+                ov.style.height     = '';
+                ov.style.bottom     = '';
+                ov.style.alignItems = 'flex-start';
+                ov.style.paddingTop = '25%';
             }
         });
+
+        // النوافذ المتوسطة (إحصائيات، سجلات...) — نفس الطريقة
+        centerOverlays.forEach(ov => {
+            if (!ov) return;
+            if (kbOpen && isPWA) {
+                ov.style.height     = vh + 'px';
+                ov.style.bottom     = 'auto';
+                ov.style.alignItems = 'center';
+                ov.style.paddingTop = '0';
+            } else if (kbOpen) {
+                ov.style.height     = vh + 'px';
+                ov.style.paddingTop = '0';
+            } else {
+                ov.style.height     = '';
+                ov.style.bottom     = '';
+                ov.style.paddingTop = '0';
+            }
+        });
+
+        // نافذة إضافة صنف
+        const addItemOv = document.getElementById('add-item-modal');
+        if (addItemOv) {
+            if (kbOpen && isPWA) {
+                addItemOv.style.height     = vh + 'px';
+                addItemOv.style.bottom     = 'auto';
+                addItemOv.style.alignItems = 'center';
+                addItemOv.style.paddingTop = '0';
+            } else if (kbOpen) {
+                addItemOv.style.height     = vh + 'px';
+                addItemOv.style.bottom     = '';
+                addItemOv.style.alignItems = 'center';
+                addItemOv.style.paddingTop = '0';
+            } else {
+                addItemOv.style.height     = '';
+                addItemOv.style.bottom     = '';
+                addItemOv.style.alignItems = 'flex-start';
+                addItemOv.style.paddingTop = '25%';
+            }
+        }
+
+        // النوافذ التي تبدأ من الأعلى (قوائم موردين/عملاء)
         topFixedOverlays.forEach(ov => {
             if (!ov) return;
             if (ov.classList.contains('active')) {
                 if (kbOpen) {
-                    ov.style.top = vt + 'px';
-                    ov.style.height = vh + 'px';
+                    ov.style.top        = vt + 'px';
+                    ov.style.height     = vh + 'px';
                     ov.style.alignItems = 'flex-start';
                     ov.style.paddingTop = '32px';
                 } else {
-                    ov.style.top = '';
-                    ov.style.height = '';
+                    ov.style.top        = '';
+                    ov.style.height     = '';
                     ov.style.alignItems = 'flex-start';
                     ov.style.paddingTop = '20%';
                 }
             } else {
-                ov.style.top = '';
+                ov.style.top    = '';
                 ov.style.height = '';
             }
         });
+
+        // النوافذ الطويلة (سلة، تعديل صنف...)
         tallOverlays.forEach(ov => {
             if (!ov) return;
             if (ov.classList.contains('active')) {
@@ -5847,37 +5892,17 @@
                 else { ov.style.height = ''; ov.style.alignItems = 'flex-start'; ov.style.paddingTop = '12%'; }
             } else { ov.style.height = ''; }
         });
-        centerOverlays.forEach(ov => {
-            if (!ov) return;
-            if (ov.classList.contains('active')) {
-                if (kbOpen) { ov.style.height = vh + 'px'; ov.style.paddingTop = '0'; }
-                else { ov.style.height = ''; ov.style.paddingTop = '0'; }
-            } else { ov.style.height = ''; }
-        });
+
         // نافذة فاتورة الشراء
         const puInvOv = document.getElementById('new-purchase-modal');
         if (puInvOv && puInvOv.classList.contains('active')) {
-            puInvOv.style.top = vt + 'px';
-            puInvOv.style.height = vh + 'px';
+            puInvOv.style.top       = vt + 'px';
+            puInvOv.style.height    = vh + 'px';
             puInvOv.style.alignItems = 'flex-start';
             puInvOv.style.paddingTop = kbOpen ? '0' : '32px';
         } else if (puInvOv) {
-            puInvOv.style.top = '';
+            puInvOv.style.top    = '';
             puInvOv.style.height = '';
-        }
-        const addItemOv = document.getElementById('add-item-modal');
-        if (addItemOv) {
-            if (kbOpen) {
-                addItemOv.style.height      = vh + 'px';
-                addItemOv.style.bottom      = 'auto';
-                addItemOv.style.alignItems  = 'center';
-                addItemOv.style.paddingTop  = '0';
-            } else {
-                addItemOv.style.height      = '';
-                addItemOv.style.bottom      = '';
-                addItemOv.style.alignItems  = 'flex-start';
-                addItemOv.style.paddingTop  = '25%';
-            }
         }
     }
 
