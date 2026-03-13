@@ -5703,6 +5703,7 @@
     // ─── Backup (Fixed Export) ───
     function exportData() {
         const dataToExport = { 
+    storeName,
     items, sales, categories,
     purchases, suppliers, customers, paymentLogs, expenses,
     cashLog, withdrawals, supplierDetails, customerDetails,
@@ -5724,6 +5725,7 @@
         reader.onload = function(evt) {
             try {
                 const data = JSON.parse(evt.target.result);
+                if(data.storeName) { storeName = data.storeName; localStorage.setItem('mahalak_store_name', storeName); }
                 if(data.items) items = data.items;
                 if(data.sales) sales = data.sales;
                 if(data.categories) categories = data.categories;
