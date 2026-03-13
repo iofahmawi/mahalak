@@ -5867,9 +5867,17 @@
         }
         const addItemOv = document.getElementById('add-item-modal');
         if (addItemOv) {
-            addItemOv.style.height = kbOpen ? vh + 'px' : '';
-            addItemOv.style.alignItems = 'flex-start';
-            addItemOv.style.paddingTop = kbOpen ? Math.round(vh * 0.05) + 'px' : '25%';
+            if (kbOpen) {
+                addItemOv.style.height      = vh + 'px';
+                addItemOv.style.bottom      = 'auto';
+                addItemOv.style.alignItems  = 'center';
+                addItemOv.style.paddingTop  = '0';
+            } else {
+                addItemOv.style.height      = '';
+                addItemOv.style.bottom      = '';
+                addItemOv.style.alignItems  = 'flex-start';
+                addItemOv.style.paddingTop  = '25%';
+            }
         }
     }
 
