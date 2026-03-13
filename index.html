@@ -643,7 +643,7 @@
 <div class="tabs">
     <button class="tab active-sell" id="tab-sell" onclick="switchTab('sell')"><i class="fa-solid fa-cash-register" style="margin-left:5px;"></i>بيع</button>
     <button class="tab" id="tab-purchase" onclick="switchTab('purchase')"><i class="fa-solid fa-cart-flatbed" style="margin-left:5px;"></i>شراء</button>
-    <button class="tab" id="tab-inv" onclick="switchTab('inv')"><i class="fa-solid fa-boxes-stacked" style="margin-left:5px;"></i>المخزون</button>
+    <button class="tab" id="tab-inv" onclick="switchTab('inv')"><i class="fa-solid fa-box" style="margin-left:5px;"></i>المخزون</button>
 </div>
 
 <div class="filter-row" id="filter-row"></div>
@@ -1635,11 +1635,11 @@
         } else if(t === 'purchase') {
             document.getElementById('tab-purchase').classList.add('active-sell');
             document.getElementById('view-purchase').style.display = 'block';
-            document.getElementById('page-title').innerHTML = '<i class="fa-solid fa-cart-flatbed" style="margin-left:6px;color:var(--primary);"></i>مشتريات';
+            document.getElementById('page-title').innerHTML = '<i class="fa-solid fa-cart-flatbed" style="margin-left:6px;color:#94a3b8;"></i>مشتريات';
         } else {
             document.getElementById('tab-inv').classList.add('active-inv');
             document.getElementById('view-inv').style.display = 'block';
-            document.getElementById('page-title').innerHTML = '<i class="fa-solid fa-boxes-stacked" style="margin-left:6px;color:#c4a265;"></i>المخزون';
+            document.getElementById('page-title').innerHTML = '<i class="fa-solid fa-box" style="margin-left:6px;color:#c4a265;"></i>المخزون';
         }
         render();
     }
