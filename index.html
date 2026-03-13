@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="المحل">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-1440.png">
+    <link rel="apple-touch-icon" href="icon-1024.png">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -193,7 +193,7 @@
             justify-content: center; font-size: 1rem; font-weight: 900;
             color: var(--primary); margin-bottom: 2px;
         }
-        .tile-name  { font-size: 0.80rem; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
+        .tile-name  { font-size: 0.79rem; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
         .tile-qty   { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); }
         .tile-price { font-size: 0.82rem; font-weight: 900; color: var(--primary); margin-top: auto; }
         .tile-out-badge {
@@ -5798,11 +5798,30 @@
 
     function syncOverlays() {
         const vh = window.visualViewport.height;
+        const vt = Math.max(window.visualViewport.offsetTop, 0);
         const ratio = vh / window.screen.height;
+        const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+        const kbOpen = ratio < 0.75;
+
         simpleOverlays.forEach(ov => {
             if (!ov) return;
+            // stock-modal في PWA: منتصف المساحة فوق لوحة المفاتيح
+            if (isPWA && ov.id === 'stock-modal') {
+                if (kbOpen) {
+                    ov.style.top    = vt + 'px';
+                    ov.style.height = vh + 'px';
+                    ov.style.alignItems = 'center';
+                    ov.style.paddingTop = '0';
+                } else {
+                    ov.style.top    = '';
+                    ov.style.height = '';
+                    ov.style.alignItems = 'flex-start';
+                    ov.style.paddingTop = '15%';
+                }
+                return;
+            }
             if (ov.classList.contains('active')) {
-                if (ratio < 0.75) { ov.style.height = vh + 'px'; ov.style.alignItems = 'center'; ov.style.paddingTop = '0'; }
+                if (kbOpen) { ov.style.height = vh + 'px'; ov.style.alignItems = 'center'; ov.style.paddingTop = '0'; }
                 else { ov.style.height = ''; ov.style.alignItems = 'flex-start'; ov.style.paddingTop = '25%'; }
             } else {
                 ov.style.height = '';
@@ -5811,9 +5830,8 @@
         topFixedOverlays.forEach(ov => {
             if (!ov) return;
             if (ov.classList.contains('active')) {
-                if (ratio < 0.75) {
-                    const offsetTop = Math.max(window.visualViewport.offsetTop, 0);
-                    ov.style.top = offsetTop + 'px';
+                if (kbOpen) {
+                    ov.style.top = vt + 'px';
                     ov.style.height = vh + 'px';
                     ov.style.alignItems = 'flex-start';
                     ov.style.paddingTop = '32px';
@@ -5831,34 +5849,33 @@
         tallOverlays.forEach(ov => {
             if (!ov) return;
             if (ov.classList.contains('active')) {
-                if (ratio < 0.75) { ov.style.height = vh + 'px'; ov.style.alignItems = 'flex-start'; ov.style.paddingTop = Math.max(window.visualViewport.offsetTop + 20, 20) + 'px'; }
+                if (kbOpen) { ov.style.height = vh + 'px'; ov.style.alignItems = 'flex-start'; ov.style.paddingTop = Math.max(vt + 20, 20) + 'px'; }
                 else { ov.style.height = ''; ov.style.alignItems = 'flex-start'; ov.style.paddingTop = '12%'; }
             } else { ov.style.height = ''; }
         });
         centerOverlays.forEach(ov => {
             if (!ov) return;
             if (ov.classList.contains('active')) {
-                if (ratio < 0.75) { ov.style.height = vh + 'px'; ov.style.paddingTop = '0'; }
+                if (kbOpen) { ov.style.height = vh + 'px'; ov.style.paddingTop = '0'; }
                 else { ov.style.height = ''; ov.style.paddingTop = '0'; }
             } else { ov.style.height = ''; }
         });
         // نافذة فاتورة الشراء
         const puInvOv = document.getElementById('new-purchase-modal');
         if (puInvOv && puInvOv.classList.contains('active')) {
-            const offsetTop = Math.max(window.visualViewport.offsetTop, 0);
-            puInvOv.style.top = offsetTop + 'px';
+            puInvOv.style.top = vt + 'px';
             puInvOv.style.height = vh + 'px';
             puInvOv.style.alignItems = 'flex-start';
-            puInvOv.style.paddingTop = ratio < 0.75 ? '0' : '32px';
+            puInvOv.style.paddingTop = kbOpen ? '0' : '32px';
         } else if (puInvOv) {
             puInvOv.style.top = '';
             puInvOv.style.height = '';
         }
         const addItemOv = document.getElementById('add-item-modal');
         if (addItemOv) {
-            addItemOv.style.height = ratio < 0.75 ? vh + 'px' : '';
+            addItemOv.style.height = kbOpen ? vh + 'px' : '';
             addItemOv.style.alignItems = 'flex-start';
-            addItemOv.style.paddingTop = ratio < 0.75 ? Math.round(vh * 0.05) + 'px' : '25%';
+            addItemOv.style.paddingTop = kbOpen ? Math.round(vh * 0.05) + 'px' : '25%';
         }
     }
 
