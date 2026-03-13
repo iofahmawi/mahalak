@@ -5675,23 +5675,19 @@
             return;
         }
         list.innerHTML = sorted.map(w => `
-            <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-                <div onclick="toggleWdCard(this)" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;gap:8px;">
-                    <span style="font-size:0.72rem;font-weight:800;background:#fff;border:1px solid var(--border);padding:2px 8px;border-radius:6px;color:var(--text-dark);flex-shrink:0;">${formatDate(w.date)}</span>
-                    <span style="font-size:0.82rem;font-weight:700;color:var(--text-dark);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w.reason || '—'}</span>
-                    <span style="font-size:0.92rem;font-weight:900;color:#d97706;flex-shrink:0;">JD ${w.amount.toFixed(2)}</span>
+            <div class="sale-card" style="padding:0;">
+                <div class="sale-header" onclick="toggleWdCard(this)" style="cursor:pointer;padding:12px 16px;margin-bottom:0;">
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+                        <span style="font-size:0.82rem;font-weight:900;color:var(--text-dark);flex-shrink:0;">${w.reason || '—'}</span>
+                        <span style="font-size:0.72rem;font-weight:700;color:var(--text-muted);flex-shrink:0;">${formatDate(w.date)}</span>
+                    </div>
+                    <span style="font-size:0.88rem;font-weight:900;color:#d97706;flex-shrink:0;">JD ${w.amount.toFixed(2)}</span>
                 </div>
-                <div class="wd-details" style="display:none;border-top:1px solid var(--border);padding:10px 14px;background:#fff;display:none;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div style="display:flex;flex-direction:column;gap:4px;">
-                            ${w.time ? `<span style="font-size:0.75rem;font-weight:700;color:var(--text-muted);">${w.time}</span>` : ''}
-                            ${w.reason ? `<span style="font-size:0.82rem;font-weight:700;color:var(--text-dark);">${w.reason}</span>` : ''}
-                            <span style="font-size:0.82rem;font-weight:900;color:#d97706;">JD ${w.amount.toFixed(2)}</span>
-                        </div>
-                        <div style="display:flex;gap:6px;">
-                            <button onclick="editWithdrawal(${w.id})" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;color:#2563eb;cursor:pointer;padding:6px 10px;font-size:0.8rem;"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteWithdrawal(${w.id})" style="background:#fff0f0;border:1px solid #fecaca;border-radius:8px;color:var(--danger);cursor:pointer;padding:6px 10px;font-size:0.8rem;"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
+                <div class="sale-details" style="display:none;padding:0 16px 12px;">
+                    <div style="display:flex;justify-content:space-between;margin-top:4px;padding-top:8px;border-top:1px solid var(--border);">
+                        <button onclick="event.stopPropagation();showTimeInfo(this,'${formatDate(w.date)}','${w.time||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
+                        <button onclick="event.stopPropagation();deleteWithdrawal(${w.id})" style="background:none;border:none;color:var(--danger);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-trash-can" style="margin-left:4px;"></i>حذف</button>
+                        <button onclick="event.stopPropagation();editWithdrawal(${w.id})" style="background:none;border:none;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-pen-to-square" style="margin-left:4px;"></i>تعديل</button>
                     </div>
                 </div>
             </div>
