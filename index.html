@@ -120,6 +120,7 @@
         .menu-has-sub.open .menu-submenu { display: block; }
         .menu-submenu button { border-top: none !important; }
         .menu-submenu button + button { border-top: 1px solid var(--border) !important; }
+        .menu-submenu button i { width: 16px; text-align: center; }
         .menu-import-export { display: flex; border-top: 1px solid var(--border); }
         .menu-import-export button { flex: 1; justify-content: center; border-top: none !important; }
         .menu-import-export button + button { border-right: 1px solid var(--border) !important; border-top: none !important; }
@@ -550,7 +551,7 @@
                 <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openStatsModal()"><i class="fa-solid fa-chart-pie"></i> إحصائيات</button>
                 <div class="menu-has-sub" id="menu-cash-sub">
                     <button onclick="toggleMenuSub('menu-cash-sub', event)">
-                        <i class="fa-solid fa-receipt"></i> الصندوق
+                        <i class="fa-solid fa-vault"></i> الصندوق
                     </button>
                     <div class="menu-submenu">
                         <button onclick="closeMenu(); openCashLogModal()"><i class="fa-solid fa-calendar-days"></i> سجل الصندوق</button>
@@ -2074,7 +2075,7 @@
                     <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
                         <span style="font-size:0.82rem;font-weight:900;color:var(--text-dark);flex-shrink:0;">${supName}</span>
                         <span style="font-size:0.72rem;font-weight:700;color:var(--text-muted);flex-shrink:0;">${dateDisplay}</span>
-                        <span style="font-size:0.7rem;font-weight:800;padding:2px 7px;border-radius:20px;background:${isCash?'#f0fdf4':'#fff0f0'};color:${isCash?'#16a34a':'var(--danger)'};flex-shrink:0;">${isCash?'نقدي':'آجل'}</span>
+                        <span style="font-size:0.7rem;font-weight:800;padding:2px 7px;border-radius:20px;background:${ref.payType==='card'?'#f5f3ff':isCash?'#f0fdf4':'#fff0f0'};color:${ref.payType==='card'?'#7c3aed':isCash?'#16a34a':'var(--danger)'};flex-shrink:0;">${ref.payType==='card'?'بطاقة':isCash?'نقدي':'آجل'}</span>
                     </div>
                     <span style="font-size:0.88rem;font-weight:900;color:var(--primary);">JD ${total.toFixed(2)}</span>
                 </div>
@@ -2267,7 +2268,7 @@
     }
 
     function togglePuInvPayType() {
-        setPuInvPayType(puInvPayType === 'cash' ? 'credit' : 'cash');
+        setPuInvPayType(puInvPayType === 'cash' ? 'card' : puInvPayType === 'card' ? 'credit' : 'cash');
     }
 
     function openPuInvNumInput() {
@@ -2289,8 +2290,8 @@
         puInvPayType = t;
         const toggle = document.getElementById('pu-inv-pay-toggle');
         if(toggle) {
-            toggle.innerText = t === 'cash' ? 'نقدي' : 'آجل';
-            toggle.style.color = t === 'cash' ? 'var(--primary)' : 'var(--danger)';
+            toggle.innerText = t === 'cash' ? 'نقدي' : t === 'card' ? 'بطاقة' : 'آجل';
+            toggle.style.color = t === 'cash' ? 'var(--primary)' : t === 'card' ? '#7c3aed' : 'var(--danger)';
         }
     }
 
@@ -2580,12 +2581,12 @@
     let delPuFilter = 'all';
 
     function cycleDelPuFilter() {
-        delPuFilter = delPuFilter === 'all' ? 'cash' : delPuFilter === 'cash' ? 'credit' : 'all';
+        delPuFilter = delPuFilter === 'all' ? 'cash' : delPuFilter === 'cash' ? 'card' : delPuFilter === 'card' ? 'credit' : 'all';
         const btn = document.getElementById('del-pu-filter-btn');
-        const labels  = { all: '💳 الكل', cash: '💵 نقدي', credit: '🕐 آجل' };
-        const colors  = { all: 'var(--text-muted)', cash: '#16a34a', credit: 'var(--danger)' };
-        const bgs     = { all: '#f8fafc', cash: '#f0fdf4', credit: '#fff0f0' };
-        const borders = { all: 'var(--border)', cash: '#bbf7d0', credit: '#fecaca' };
+        const labels  = { all: '💳 الكل', cash: '💵 نقدي', card: '💳 بطاقة', credit: '🕐 آجل' };
+        const colors  = { all: 'var(--text-muted)', cash: '#16a34a', card: '#7c3aed', credit: 'var(--danger)' };
+        const bgs     = { all: '#f8fafc', cash: '#f0fdf4', card: '#f5f3ff', credit: '#fff0f0' };
+        const borders = { all: 'var(--border)', cash: '#bbf7d0', card: '#ddd6fe', credit: '#fecaca' };
         btn.textContent = labels[delPuFilter];
         btn.style.color = colors[delPuFilter];
         btn.style.background = bgs[delPuFilter];
@@ -2635,6 +2636,7 @@
         const q = (document.getElementById('del-pu-search')?.value || '').trim().toLowerCase();
         if(q) filtered = filtered.filter(p => p.itemName.toLowerCase().includes(q) || (p.supplier && p.supplier.toLowerCase().includes(q)));
         if(delPuFilter === 'cash')   filtered = filtered.filter(p => p.payType === 'cash');
+        if(delPuFilter === 'card')   filtered = filtered.filter(p => p.payType === 'card');
         if(delPuFilter === 'credit') filtered = filtered.filter(p => p.payType === 'credit');
 
         document.getElementById('del-pu-sub').innerText = filtered.length === 0 ? 'لا توجد فواتير' : `${filtered.length} فاتورة`;
@@ -2913,7 +2915,7 @@
     }
 
     function toggleSellPayType() {
-        setSellPayType(sellPayType === 'cash' ? 'credit' : 'cash');
+        setSellPayType(sellPayType === 'cash' ? 'card' : sellPayType === 'card' ? 'credit' : 'cash');
     }
 
     function setSellPayType(t) {
@@ -2921,8 +2923,8 @@
         const toggle = document.getElementById('sell-pay-toggle');
         const custWrap = document.getElementById('sell-customer-wrap');
         if(toggle) {
-            toggle.innerText = t === 'cash' ? 'نقدي' : 'آجل';
-            toggle.style.color = t === 'cash' ? 'var(--primary)' : 'var(--danger)';
+            toggle.innerText = t === 'cash' ? 'نقدي' : t === 'card' ? 'بطاقة' : 'آجل';
+            toggle.style.color = t === 'cash' ? 'var(--primary)' : t === 'card' ? '#7c3aed' : 'var(--danger)';
         }
         if(custWrap) custWrap.style.display = 'block';
     }
@@ -3336,15 +3338,15 @@
     }
 
     function togglePayType() {
-        setPayType(currentPayType === 'cash' ? 'credit' : 'cash');
+        setPayType(currentPayType === 'cash' ? 'card' : currentPayType === 'card' ? 'credit' : 'cash');
     }
 
     function setPayType(t) {
         currentPayType = t;
         const toggle = document.getElementById('pay-toggle');
         if(toggle) {
-            toggle.innerText = t === 'cash' ? 'نقدي' : 'آجل';
-            toggle.style.color = t === 'cash' ? 'var(--primary)' : 'var(--danger)';
+            toggle.innerText = t === 'cash' ? 'نقدي' : t === 'card' ? 'بطاقة' : 'آجل';
+            toggle.style.color = t === 'cash' ? 'var(--primary)' : t === 'card' ? '#7c3aed' : 'var(--danger)';
         }
     }
 
@@ -3669,12 +3671,12 @@
     }
 
     function cyclePuFilter() {
-        puFilter = puFilter === 'all' ? 'cash' : puFilter === 'cash' ? 'credit' : 'all';
+        puFilter = puFilter === 'all' ? 'cash' : puFilter === 'cash' ? 'card' : puFilter === 'card' ? 'credit' : 'all';
         const btn = document.getElementById('pu-filter-btn');
-        const labels = { all: '💳 الكل', cash: '💵 نقدي', credit: '🕐 آجل' };
-        const colors = { all: 'var(--text-muted)', cash: '#16a34a', credit: 'var(--danger)' };
-        const bgs    = { all: '#f8fafc', cash: '#f0fdf4', credit: '#fff0f0' };
-        const borders= { all: 'var(--border)', cash: '#bbf7d0', credit: '#fecaca' };
+        const labels = { all: '💳 الكل', cash: '💵 نقدي', card: '💳 بطاقة', credit: '🕐 آجل' };
+        const colors = { all: 'var(--text-muted)', cash: '#16a34a', card: '#7c3aed', credit: 'var(--danger)' };
+        const bgs    = { all: '#f8fafc', cash: '#f0fdf4', card: '#f5f3ff', credit: '#fff0f0' };
+        const borders= { all: 'var(--border)', cash: '#bbf7d0', card: '#ddd6fe', credit: '#fecaca' };
         btn.textContent = labels[puFilter];
         btn.style.color = colors[puFilter];
         btn.style.background = bgs[puFilter];
@@ -3712,6 +3714,7 @@
             filtered = purchases.filter(p => p.date === dateStr).reverse();
         }
         if(puFilter === 'cash')   filtered = filtered.filter(p => p.payType === 'cash');
+        if(puFilter === 'card')   filtered = filtered.filter(p => p.payType === 'card');
         if(puFilter === 'credit') filtered = filtered.filter(p => p.payType === 'credit');
 
         const q = (document.getElementById('pu-search')?.value || '').trim().toLowerCase();
@@ -3806,12 +3809,12 @@
     let shFilter = 'all';
 
     function cycleShFilter() {
-        shFilter = shFilter === 'all' ? 'cash' : shFilter === 'cash' ? 'credit' : 'all';
+        shFilter = shFilter === 'all' ? 'cash' : shFilter === 'cash' ? 'card' : shFilter === 'card' ? 'credit' : 'all';
         const btn = document.getElementById('sh-filter-btn');
-        const labels  = { all: '💳 الكل', cash: '💵 نقدي', credit: '🕐 آجل' };
-        const colors  = { all: 'var(--text-muted)', cash: '#16a34a', credit: 'var(--danger)' };
-        const bgs     = { all: '#f8fafc', cash: '#f0fdf4', credit: '#fff0f0' };
-        const borders = { all: 'var(--border)', cash: '#bbf7d0', credit: '#fecaca' };
+        const labels  = { all: '💳 الكل', cash: '💵 نقدي', card: '💳 بطاقة', credit: '🕐 آجل' };
+        const colors  = { all: 'var(--text-muted)', cash: '#16a34a', card: '#7c3aed', credit: 'var(--danger)' };
+        const bgs     = { all: '#f8fafc', cash: '#f0fdf4', card: '#f5f3ff', credit: '#fff0f0' };
+        const borders = { all: 'var(--border)', cash: '#bbf7d0', card: '#ddd6fe', credit: '#fecaca' };
         btn.textContent = labels[shFilter];
         btn.style.color = colors[shFilter];
         btn.style.background = bgs[shFilter];
@@ -3867,6 +3870,7 @@
         }
 
         if(shFilter === 'cash')   filtered = filtered.filter(s => !s.payType || s.payType === 'cash' || (s.payType === 'credit' && Math.round((s.total - (s.paid||0))*100)/100 <= 0));
+        if(shFilter === 'card')   filtered = filtered.filter(s => s.payType === 'card');
         if(shFilter === 'credit') filtered = filtered.filter(s => s.payType === 'credit' && Math.round((s.total - (s.paid||0))*100)/100 > 0);
 
         const q = (document.getElementById('sh-search')?.value || '').trim().toLowerCase();
@@ -4165,7 +4169,7 @@
         if(s.discount > 0) lines.push(`خصم: - JD ${s.discount.toFixed(2)}`);
         lines.push(`الإجمالي: JD ${s.total.toFixed(2)}`);
         if(s.payType === 'credit' && s.customerName) lines.push(`الزبون: ${s.customerName}`);
-        lines.push(s.payType === 'credit' ? '💳 ذمة' : '💵 نقدي');
+        lines.push(s.payType === 'credit' ? '🕐 ذمة' : s.payType === 'card' ? '💳 بطاقة' : '💵 نقدي');
 
         const text = lines.join('\n');
         if(navigator.share) {
@@ -4580,7 +4584,7 @@
         } else {
             const lastSale = sales[sales.length - 1];
             document.getElementById('post-sale-info').innerText =
-                `فاتورة #${lastSale.invoiceNumber} — JD ${lastSale.total.toFixed(2)} — ${lastSale.payType === 'cash' ? 'نقدي' : 'آجل'}`;
+                `فاتورة #${lastSale.invoiceNumber} — JD ${lastSale.total.toFixed(2)} — ${lastSale.payType === 'cash' ? 'نقدي' : lastSale.payType === 'card' ? 'بطاقة' : 'آجل'}`;
             openModal('post-sale-modal');
         }
     }
@@ -4724,7 +4728,7 @@
         <div class="store-name">${storeName}</div>
         <div class="store-sub">فاتورة مشتريات</div>
       </div>
-      <div><div class="badge">${isCash ? 'نقداً' : 'آجل'}</div></div>
+      <div><div class="badge">${payType === 'card' ? 'بطاقة ائتمانية' : isCash ? 'نقداً' : 'آجل'}</div></div>
       <div>
         ${invNum ? `<div class="inv-num">#${invNum}</div>` : ''}
         <div class="inv-meta">${dateLocal}${supplier ? `<br><span style="font-weight:800;">${supplier}</span>` : ''}</div>
@@ -5409,8 +5413,8 @@
     function calcDayExpected(dateStr, opening) {
         const [y,m,d] = dateStr.split('-').map(Number);
         const localDate = new Date(y, m-1, d).toLocaleDateString();
-        const cashSales = sales.filter(s => s.date === localDate && s.payType === 'cash').reduce((sum,s) => sum + s.total, 0);
-        const cashPurchases = purchases.filter(p => p.date === localDate && p.payType === 'cash').reduce((sum,p) => sum + p.total, 0);
+        const cashSales = sales.filter(s => s.date === localDate && (s.payType === 'cash' || !s.payType)).reduce((sum,s) => sum + s.total, 0);
+        const cashPurchases = purchases.filter(p => p.date === localDate && (p.payType === 'cash' || !p.payType)).reduce((sum,p) => sum + p.total, 0);
         const dayExpenses = expenses.filter(e => e.date === localDate).reduce((sum,e) => sum + e.amount, 0);
         const dayWithdrawals = withdrawals.filter(w => w.date === dateStr).reduce((sum,w) => sum + w.amount, 0);
         return { cashSales, cashPurchases, dayExpenses, dayWithdrawals, expected: opening + cashSales - cashPurchases - dayExpenses - dayWithdrawals };
