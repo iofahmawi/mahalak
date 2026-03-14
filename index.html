@@ -1578,20 +1578,58 @@
 </div>
 
 <script>
+    // ─── IndexedDB Setup ───
+    const DB_NAME = 'mahalakDB';
+    const DB_VERSION = 1;
+    const DB_STORE = 'kvStore';
+    let _db = null;
+
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            if (_db) return resolve(_db);
+            const req = indexedDB.open(DB_NAME, DB_VERSION);
+            req.onupgradeneeded = e => { e.target.result.createObjectStore(DB_STORE); };
+            req.onsuccess = e => { _db = e.target.result; resolve(_db); };
+            req.onerror   = e => reject(e.target.error);
+        });
+    }
+    function dbSetAll(pairs) {
+        return openDB().then(db => new Promise((resolve, reject) => {
+            const tx = db.transaction(DB_STORE, 'readwrite');
+            const os = tx.objectStore(DB_STORE);
+            pairs.forEach(([k, v]) => os.put(v, k));
+            tx.oncomplete = () => resolve();
+            tx.onerror    = e => reject(e.target.error);
+        }));
+    }
+    function dbGetAll(keys) {
+        return openDB().then(db => new Promise((resolve, reject) => {
+            const tx = db.transaction(DB_STORE, 'readonly');
+            const os = tx.objectStore(DB_STORE);
+            const out = {}; let n = keys.length;
+            if (!n) return resolve(out);
+            keys.forEach(k => {
+                const r = os.get(k);
+                r.onsuccess = () => { out[k] = (r.result !== undefined ? r.result : null); if (!--n) resolve(out); };
+                r.onerror   = e => reject(e.target.error);
+            });
+        }));
+    }
+
     // ─── Data State ───
-    let storeName = localStorage.getItem('mahalak_store_name') || 'المخزون';
-    let items = JSON.parse(localStorage.getItem('mahalak_items')) || [];
-    let sales = JSON.parse(localStorage.getItem('mahalak_sales')) || [];
-    let categories = JSON.parse(localStorage.getItem('mahalak_cats')) || [];
-    let purchases = JSON.parse(localStorage.getItem('mahalak_purchases')) || [];
-    let suppliers = JSON.parse(localStorage.getItem('mahalak_suppliers')) || [];
-    let customers = JSON.parse(localStorage.getItem('mahalak_customers')) || [];
-    let supplierDetails = JSON.parse(localStorage.getItem('mahalak_supplier_details')) || {};
-    let customerDetails = JSON.parse(localStorage.getItem('mahalak_customer_details')) || {};
-    let paymentLogs = JSON.parse(localStorage.getItem('mahalak_payment_logs')) || [];
-    let expenses = JSON.parse(localStorage.getItem('mahalak_expenses')) || [];
-    let cashLog = JSON.parse(localStorage.getItem('mahalak_cash_log')) || [];
-    let withdrawals = JSON.parse(localStorage.getItem('mahalak_withdrawals')) || [];
+    let storeName = 'المخزون';
+    let items = [];
+    let sales = [];
+    let categories = [];
+    let purchases = [];
+    let suppliers = [];
+    let customers = [];
+    let supplierDetails = {};
+    let customerDetails = {};
+    let paymentLogs = [];
+    let expenses = [];
+    let cashLog = [];
+    let withdrawals = [];
     let cart = [];
     let currentTab = 'sell';
     let currentFilter = 'all';
@@ -1604,18 +1642,21 @@
 
     // ─── Data Handling ───
     function saveData() {
-        localStorage.setItem('mahalak_items', JSON.stringify(items));
-        localStorage.setItem('mahalak_sales', JSON.stringify(sales));
-        localStorage.setItem('mahalak_cats', JSON.stringify(categories));
-        localStorage.setItem('mahalak_purchases', JSON.stringify(purchases));
-        localStorage.setItem('mahalak_suppliers', JSON.stringify(suppliers));
-        localStorage.setItem('mahalak_customers', JSON.stringify(customers));
-        localStorage.setItem('mahalak_supplier_details', JSON.stringify(supplierDetails));
-        localStorage.setItem('mahalak_customer_details', JSON.stringify(customerDetails));
-        localStorage.setItem('mahalak_payment_logs', JSON.stringify(paymentLogs));
-        localStorage.setItem('mahalak_expenses', JSON.stringify(expenses));
-        localStorage.setItem('mahalak_cash_log', JSON.stringify(cashLog));
-        localStorage.setItem('mahalak_withdrawals', JSON.stringify(withdrawals));
+        dbSetAll([
+            ['mahalak_store_name',       storeName],
+            ['mahalak_items',            items],
+            ['mahalak_sales',            sales],
+            ['mahalak_cats',             categories],
+            ['mahalak_purchases',        purchases],
+            ['mahalak_suppliers',        suppliers],
+            ['mahalak_customers',        customers],
+            ['mahalak_supplier_details', supplierDetails],
+            ['mahalak_customer_details', customerDetails],
+            ['mahalak_payment_logs',     paymentLogs],
+            ['mahalak_expenses',         expenses],
+            ['mahalak_cash_log',         cashLog],
+            ['mahalak_withdrawals',      withdrawals],
+        ]);
         render();
     }
 
@@ -4753,7 +4794,6 @@
         const isCash = payType === 'cash';
         const total = group.reduce((s,x) => s + x.buyPrice * x.qty, 0);
         const supplier = ref.supplier || ref.supplierName || '';
-        const storeName = localStorage.getItem('mahalak_store_name') || 'محلك';
         const html = buildPurchasePrintHtml({ group, invNum, dateLocal, isCash, total, supplier, storeName });
         const w = window.open('', '_blank');
         w.document.write(html);
@@ -4838,7 +4878,6 @@
         const isCash = puInvPayType === 'cash';
         if(!puInvItems.length) return showAlert('لا توجد أصناف للطباعة');
         const total = puInvItems.reduce((s,x) => s + x.qty * x.buyPrice, 0);
-        const storeName = localStorage.getItem('mahalak_store_name') || 'محلك';
         const group = puInvItems.map(x => ({ itemName: x.itemName, qty: x.qty, buyPrice: x.buyPrice }));
         const html = buildPurchasePrintHtml({ group, invNum, dateLocal, isCash, total, supplier, storeName });
         const win = window.open('', '_blank');
@@ -5801,41 +5840,27 @@
         reader.onload = function(evt) {
             try {
                 const data = JSON.parse(evt.target.result);
-                if(data.storeName) { storeName = data.storeName; localStorage.setItem('mahalak_store_name', storeName); }
-                if(data.items) items = data.items;
-                if(data.sales) sales = data.sales;
-                if(data.categories) categories = data.categories;
-                if(data.purchases) purchases = data.purchases;
-                if(data.suppliers) suppliers = data.suppliers;
-                if(data.customers) customers = data.customers;
-                if(data.paymentLogs) paymentLogs = data.paymentLogs;
-                if(data.expenses) expenses = data.expenses;
-                if(data.cashLog) cashLog = data.cashLog;
-                if(data.withdrawals) withdrawals = data.withdrawals;
+                if(data.storeName)       storeName       = data.storeName;
+                if(data.items)           items           = data.items;
+                if(data.sales)           sales           = data.sales;
+                if(data.categories)      categories      = data.categories;
+                if(data.purchases)       purchases       = data.purchases;
+                if(data.suppliers)       suppliers       = data.suppliers;
+                if(data.customers)       customers       = data.customers;
+                if(data.paymentLogs)     paymentLogs     = data.paymentLogs;
+                if(data.expenses)        expenses        = data.expenses;
+                if(data.cashLog)         cashLog         = data.cashLog;
+                if(data.withdrawals)     withdrawals     = data.withdrawals;
                 if(data.supplierDetails) supplierDetails = data.supplierDetails;
                 if(data.customerDetails) customerDetails = data.customerDetails;
                 saveData();
+                updateStoreName();
                 showToast('تم الاستيراد بنجاح ✓');
                 e.target.value = '';
             } catch(err) { showAlert('خطأ في ملف الاستيراد', 'error'); }
         };
         reader.readAsText(file);
     }
-
-    // ─── Migration: ترقيم الفواتير القديمة ───
-    let needsSave = false;
-    const sortedSales = [...sales].sort((a, b) => a.id - b.id);
-    let nextInv = 1;
-    sortedSales.forEach(s => {
-        const orig = sales.find(x => x.id === s.id);
-        if(!orig.invoiceNumber) { orig.invoiceNumber = nextInv; needsSave = true; }
-        else { nextInv = Math.max(nextInv, orig.invoiceNumber); }
-        nextInv++;
-    });
-    if(needsSave) saveData();
-
-    // ─── Initialization ───
-    render();
 
     // إعداد اسم المحل
     function openStoreNameEdit() {
@@ -5848,7 +5873,7 @@
         const val = document.getElementById('setup-store-name').value.trim();
         if(!val) return;
         storeName = val;
-        localStorage.setItem('mahalak_store_name', storeName);
+        dbSetAll([['mahalak_store_name', storeName]]);
         document.getElementById('setup-modal').classList.remove('active');
         updateStoreName();
     }
@@ -5857,12 +5882,53 @@
         document.querySelectorAll('.dynamic-store-name').forEach(el => el.textContent = storeName);
     }
 
-    if(!localStorage.getItem('mahalak_store_name')) {
-        document.getElementById('setup-modal').classList.add('active');
-        setTimeout(() => document.getElementById('setup-store-name').focus(), 100);
-    } else {
-        updateStoreName();
-    }
+    // ─── Async Init: تحميل البيانات من IndexedDB ───
+    (async function initApp() {
+        try {
+            const d = await dbGetAll([
+                'mahalak_store_name','mahalak_items','mahalak_sales','mahalak_cats',
+                'mahalak_purchases','mahalak_suppliers','mahalak_customers',
+                'mahalak_supplier_details','mahalak_customer_details',
+                'mahalak_payment_logs','mahalak_expenses','mahalak_cash_log','mahalak_withdrawals'
+            ]);
+            storeName       = d['mahalak_store_name']       || 'المخزون';
+            items           = d['mahalak_items']            || [];
+            sales           = d['mahalak_sales']            || [];
+            categories      = d['mahalak_cats']             || [];
+            purchases       = d['mahalak_purchases']        || [];
+            suppliers       = d['mahalak_suppliers']        || [];
+            customers       = d['mahalak_customers']        || [];
+            supplierDetails = d['mahalak_supplier_details'] || {};
+            customerDetails = d['mahalak_customer_details'] || {};
+            paymentLogs     = d['mahalak_payment_logs']     || [];
+            expenses        = d['mahalak_expenses']         || [];
+            cashLog         = d['mahalak_cash_log']         || [];
+            withdrawals     = d['mahalak_withdrawals']      || [];
+            } catch(e) {
+            console.error('IndexedDB load error:', e);
+        }
+
+        // ─── Migration: ترقيم الفواتير القديمة ───
+        let needsSave = false;
+        const sortedSales = [...sales].sort((a, b) => a.id - b.id);
+        let nextInv = 1;
+        sortedSales.forEach(s => {
+            const orig = sales.find(x => x.id === s.id);
+            if(!orig.invoiceNumber) { orig.invoiceNumber = nextInv; needsSave = true; }
+            else { nextInv = Math.max(nextInv, orig.invoiceNumber); }
+            nextInv++;
+        });
+        if(needsSave) saveData();
+
+        render();
+
+        if(!storeName || storeName === 'المخزون') {
+            document.getElementById('setup-modal').classList.add('active');
+            setTimeout(() => document.getElementById('setup-store-name').focus(), 100);
+        } else {
+            updateStoreName();
+        }
+    })();
 
     // Mobile Visual Viewport Handling
     const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal'].map(id=>document.getElementById(id));
