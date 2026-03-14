@@ -1,4 +1,4 @@
-const CACHE = 'mahalak-v22';
+const CACHE = 'mahalak-v23';
 const ASSETS = [
   './index.html'
 ];
