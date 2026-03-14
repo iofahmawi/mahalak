@@ -50,7 +50,7 @@
 * `index.html`: الملف الأساسي الذي يحتوي على الواجهة والمنطق البرمجي.
 * `manifest.json`: ملف تعريف التطبيق للتثبيت على الأجهزة.
 * `sw.js`: ملف Service Worker للتشغيل أوفلاين.
-* `icon-1024.png`: أيقونة التطبيق.
+* `icon-1440.png`: أيقونة التطبيق.
 
 <p align="center">
   <b>طوّر بواسطة</b>: <a href="https://github.com/iofahmawi">iofahmawi</a>
