@@ -1397,7 +1397,7 @@
 </div>
 
 <!-- نافذة فاتورة الشراء الجديدة -->
-<div class="modal-overlay" id="new-purchase-modal" style="align-items:flex-start;padding-top:15%">
+<div class="modal-overlay" id="new-purchase-modal" style="align-items:flex-start;padding-top:12%">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top" style="align-items:flex-start;">
             <div class="modal-ico blue"><i class="fa-solid fa-file-invoice"></i></div>
@@ -5971,7 +5971,7 @@
         const puInvOv = document.getElementById('new-purchase-modal');
         if (puInvOv && puInvOv.classList.contains('active')) {
             if (kbOpen) { puInvOv.style.height = vh + 'px'; puInvOv.style.alignItems = 'flex-start'; puInvOv.style.paddingTop = Math.max(vt + 20, 20) + 'px'; }
-            else { puInvOv.style.height = ''; puInvOv.style.alignItems = 'flex-start'; puInvOv.style.paddingTop = '12%'; }
+            else { puInvOv.style.height = ''; puInvOv.style.alignItems = 'flex-start'; puInvOv.style.paddingTop = ''; }
         } else if (puInvOv) {
             puInvOv.style.height = '';
             puInvOv.style.paddingTop = '';
