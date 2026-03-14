@@ -2512,46 +2512,86 @@
         const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         if(editingPurchaseGroupId) {
-            // ── وضع التعديل ──
+            // ── وضع التعديل: نطبّق الفرق (delta) فقط على المخزون ──
             const oldGroup = purchases.filter(x => x.invoiceGroupId === editingPurchaseGroupId);
             const oldRef = oldGroup[0];
-
-            // اطرح الكميات القديمة من المخزون (عكس الإضافة الأصلية)
-            oldGroup.forEach(old => {
-                const it = items.find(i => i.id === old.itemId);
-                if(!it) return;
-                // نبحث بالسعر أولاً، ولو وُجد أكثر من batch بنفس السعر نأخذ الأقرب للتاريخ
-                const candidates = it.batches.filter(b =>
-                    Math.abs(b.buyPrice - old.buyPrice) < 0.001 &&
-                    Math.abs(b.sellPrice - old.sellPrice) < 0.001
-                );
-                const sameBatch = candidates.length === 1 ? candidates[0] :
-                    candidates.find(b => b.date === old.dateISO) || candidates[0];
-                if(sameBatch) sameBatch.qty -= old.qty;
-                it.batches = it.batches.filter(b => b.qty > 0);
-            });
-
-            // احذف السجلات القديمة
-            purchases = purchases.filter(x => x.invoiceGroupId !== editingPurchaseGroupId);
-
-            // احسب الإجمالي الجديد
-            const subtotalNew = puInvItems.reduce((s,x) => s + x.qty * x.buyPrice, 0);
-            const discountNew = getPuInvDiscount(subtotalNew);
-            const invoiceTotal = Math.round((subtotalNew - discountNew) * 100) / 100;
             const groupId = editingPurchaseGroupId;
             const keepTime = oldRef ? oldRef.time : time;
 
-            // أضف الكميات الجديدة للمخزون وسجّل الفاتورة
-            puInvItems.forEach((x, idx) => {
-                const it = items.find(i => i.id === x.itemId);
+            // ابنِ خريطة الكميات القديمة: itemId → {qty, buyPrice, sellPrice}
+            const oldMap = {};
+            oldGroup.forEach(o => {
+                const key = o.itemId + '_' + o.buyPrice;
+                oldMap[key] = { itemId: o.itemId, qty: o.qty, buyPrice: o.buyPrice, sellPrice: o.sellPrice };
+            });
+
+            // ابنِ خريطة الكميات الجديدة
+            const newMap = {};
+            puInvItems.forEach(x => {
+                const key = x.itemId + '_' + x.buyPrice;
+                newMap[key] = x;
+            });
+
+            // طبّق الفرق على المخزون لكل صنف قديم
+            Object.values(oldMap).forEach(old => {
+                const it = items.find(i => i.id === old.itemId);
                 if(!it) return;
-                const sameBatch = it.batches.find(b => Math.abs(b.buyPrice - x.buyPrice) < 0.001 && Math.abs(b.sellPrice - x.sellPrice) < 0.001);
-                if(sameBatch) sameBatch.qty += x.qty;
-                else it.batches.push({ qty: x.qty, buyPrice: x.buyPrice, sellPrice: x.sellPrice, date: dateISO });
+                const newEntry = newMap[old.itemId + '_' + old.buyPrice];
+                const newQty = newEntry ? newEntry.qty : 0;
+                const delta = newQty - old.qty; // موجب = زيادة، سالب = نقص
+                if(delta === 0) return;
+                const batch = it.batches.find(b =>
+                    Math.abs(b.buyPrice - old.buyPrice) < 0.001 &&
+                    Math.abs(b.sellPrice - old.sellPrice) < 0.001
+                );
+                if(batch) {
+                    batch.qty += delta;
+                    if(batch.qty <= 0) it.batches = it.batches.filter(b => b !== batch);
+                }
+            });
+
+            // أصناف جديدة لم تكن في الفاتورة القديمة
+            puInvItems.forEach(x => {
+                const key = x.itemId + '_' + x.buyPrice;
+                if(!oldMap[key]) {
+                    const it = items.find(i => i.id === x.itemId);
+                    if(!it) return;
+                    const batch = it.batches.find(b =>
+                        Math.abs(b.buyPrice - x.buyPrice) < 0.001 &&
+                        Math.abs(b.sellPrice - x.sellPrice) < 0.001
+                    );
+                    if(batch) batch.qty += x.qty;
+                    else it.batches.push({ qty: x.qty, buyPrice: x.buyPrice, sellPrice: x.sellPrice, date: dateISO });
+                }
+            });
+
+            // أصناف حُذفت من الفاتورة
+            Object.values(oldMap).forEach(old => {
+                if(!newMap[old.itemId + '_' + old.buyPrice]) {
+                    const it = items.find(i => i.id === old.itemId);
+                    if(!it) return;
+                    const batch = it.batches.find(b =>
+                        Math.abs(b.buyPrice - old.buyPrice) < 0.001 &&
+                        Math.abs(b.sellPrice - old.sellPrice) < 0.001
+                    );
+                    if(batch) {
+                        batch.qty -= old.qty;
+                        if(batch.qty <= 0) it.batches = it.batches.filter(b => b !== batch);
+                    }
+                }
+            });
+
+            // احذف السجلات القديمة وأضف الجديدة
+            purchases = purchases.filter(x => x.invoiceGroupId !== editingPurchaseGroupId);
+            const subtotalNew = puInvItems.reduce((s,x) => s + x.qty * x.buyPrice, 0);
+            const discountNew = getPuInvDiscount(subtotalNew);
+            const invoiceTotal = Math.round((subtotalNew - discountNew) * 100) / 100;
+
+            puInvItems.forEach((x, idx) => {
                 purchases.push({
                     id: Date.now() + idx + 1,
                     date: dateLocal, dateISO, time: keepTime,
-                    itemId: it.id, itemName: it.name,
+                    itemId: x.itemId, itemName: x.itemName,
                     qty: x.qty, buyPrice: x.buyPrice, sellPrice: x.sellPrice,
                     total: x.qty * x.buyPrice,
                     supplier: supplier || null, supplierInvNum: invNum || null,
@@ -2561,7 +2601,6 @@
                 });
             });
 
-            const wasGroupId = editingPurchaseGroupId;
             editingPurchaseGroupId = null;
             puInvItems = [];
             saveData();
@@ -6036,14 +6075,27 @@
             } else { ov.style.height = ''; }
         });
 
-        // نافذة فاتورة الشراء
+        // نافذة فاتورة الشراء — نفس منطق tallOverlays تماماً
         const puInvOv = document.getElementById('new-purchase-modal');
-        if (puInvOv && puInvOv.classList.contains('active')) {
-            if (kbOpen) { puInvOv.style.height = vh + 'px'; puInvOv.style.alignItems = 'flex-start'; puInvOv.style.paddingTop = Math.max(vt + 20, 20) + 'px'; }
-            else { puInvOv.style.height = ''; puInvOv.style.alignItems = 'flex-start'; puInvOv.style.paddingTop = ''; }
-        } else if (puInvOv) {
-            puInvOv.style.height = '';
-            puInvOv.style.paddingTop = '';
+        if (puInvOv) {
+            if (puInvOv.classList.contains('active')) {
+                if (kbOpen) {
+                    puInvOv.style.height = vh + 'px';
+                    puInvOv.style.alignItems = 'flex-start';
+                    puInvOv.style.paddingTop = Math.max(vt + 20, 20) + 'px';
+                } else if (isPWA) {
+                    puInvOv.style.height = '';
+                    puInvOv.style.alignItems = 'flex-start';
+                    puInvOv.style.paddingTop = '6%';
+                } else {
+                    puInvOv.style.height = '';
+                    puInvOv.style.alignItems = 'flex-start';
+                    puInvOv.style.paddingTop = '12%';
+                }
+            } else {
+                puInvOv.style.height = '';
+                puInvOv.style.paddingTop = '';
+            }
         }
     }
 
