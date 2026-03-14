@@ -5970,13 +5970,11 @@
         // نافذة فاتورة الشراء
         const puInvOv = document.getElementById('new-purchase-modal');
         if (puInvOv && puInvOv.classList.contains('active')) {
-            puInvOv.style.top       = vt + 'px';
-            puInvOv.style.height    = vh + 'px';
-            puInvOv.style.alignItems = 'flex-start';
-            puInvOv.style.paddingTop = kbOpen ? '0' : '32px';
+            if (kbOpen) { puInvOv.style.height = vh + 'px'; puInvOv.style.alignItems = 'flex-start'; puInvOv.style.paddingTop = Math.max(vt + 20, 20) + 'px'; }
+            else { puInvOv.style.height = ''; puInvOv.style.alignItems = 'flex-start'; puInvOv.style.paddingTop = '15%'; }
         } else if (puInvOv) {
-            puInvOv.style.top    = '';
             puInvOv.style.height = '';
+            puInvOv.style.paddingTop = '';
         }
     }
 
