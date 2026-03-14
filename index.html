@@ -2185,7 +2185,7 @@
         setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 2500);
     }
 
-    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function openModal(id) { document.getElementById(id).classList.add('active'); if(typeof syncOverlays === 'function') syncOverlays(); }
     function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active')); closeAllSupPickers(); }
 
     function showConfirm(msg, onConfirm, title = 'تأكيد الحذف', btnLabel = 'حذف', btnColor = 'var(--danger)') {
@@ -2520,10 +2520,13 @@
             oldGroup.forEach(old => {
                 const it = items.find(i => i.id === old.itemId);
                 if(!it) return;
-                const sameBatch = it.batches.find(b =>
+                // نبحث بالسعر أولاً، ولو وُجد أكثر من batch بنفس السعر نأخذ الأقرب للتاريخ
+                const candidates = it.batches.filter(b =>
                     Math.abs(b.buyPrice - old.buyPrice) < 0.001 &&
                     Math.abs(b.sellPrice - old.sellPrice) < 0.001
                 );
+                const sameBatch = candidates.length === 1 ? candidates[0] :
+                    candidates.find(b => b.date === old.dateISO) || candidates[0];
                 if(sameBatch) sameBatch.qty -= old.qty;
                 it.batches = it.batches.filter(b => b.qty > 0);
             });
@@ -2547,7 +2550,7 @@
                 else it.batches.push({ qty: x.qty, buyPrice: x.buyPrice, sellPrice: x.sellPrice, date: dateISO });
                 purchases.push({
                     id: Date.now() + idx + 1,
-                    date: dateLocal, time: keepTime,
+                    date: dateLocal, dateISO, time: keepTime,
                     itemId: it.id, itemName: it.name,
                     qty: x.qty, buyPrice: x.buyPrice, sellPrice: x.sellPrice,
                     total: x.qty * x.buyPrice,
@@ -2584,7 +2587,7 @@
             else it.batches.push({ qty: x.qty, buyPrice: x.buyPrice, sellPrice: x.sellPrice, date: dateISO });
             purchases.push({
                 id: invoiceGroupId + idx + 1,
-                date: dateLocal, time,
+                date: dateLocal, dateISO, time,
                 itemId: it.id, itemName: it.name,
                 qty: x.qty, buyPrice: x.buyPrice, sellPrice: x.sellPrice,
                 total: x.qty * x.buyPrice,
@@ -5936,7 +5939,7 @@
     const tallOverlays = ['cart-modal','edit-item-modal','sell-search-modal','pu-inv-search-modal'].map(id=>document.getElementById(id));
     const centerOverlays = ['stats-modal','sales-history-modal','purchases-modal','del-purchases-modal','debt-modal','cust-debt-modal','payment-logs-modal','expenses-modal','cash-log-modal','withdrawals-modal'].map(id=>document.getElementById(id));
 
-    function syncOverlays() {
+    window.syncOverlays = function syncOverlays() {
         const vh = window.visualViewport.height;
         const vt = Math.max(window.visualViewport.offsetTop, 0);
         const ratio = vh / window.screen.height;
