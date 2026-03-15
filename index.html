@@ -1855,6 +1855,7 @@
         localStorage.setItem('mahalak_current_user', JSON.stringify(currentUser));
         document.getElementById('login-overlay').style.display = 'none';
         updateUserBar();
+        
     }
 
     function openSetupAdminModal() {
@@ -1875,6 +1876,7 @@
         localStorage.setItem('mahalak_current_user', JSON.stringify(currentUser));
         document.getElementById('setup-admin-modal').classList.remove('active');
         updateStoreName();
+        
     }
 
     function doLogout() {
@@ -1889,11 +1891,7 @@
     }
 
     function updateUserBar() {
-        if(!currentUser) return;
-        const bar = document.getElementById('current-user-bar');
-        bar.style.display = 'flex';
-        document.getElementById('current-user-avatar').innerHTML = '<i class="fa-solid fa-circle-user"></i>';
-        document.getElementById('current-user-name-display').textContent = currentUser.name;
+        // العنصر محذوف من الهيدر — لا حاجة لشيء
     }
 
     function openUsersModal() {
@@ -1997,7 +1995,7 @@
         if(!name) return showToast('أدخل اسم المستخدم', 'error');
         if(!pass) return showToast('أدخل كلمة المرور', 'error');
         if(appUsers.find(u => u.name === name)) return showToast('هذا الاسم موجود مسبقاً', 'error');
-        appUsers.push({ name, password: pass, perms: {} });
+        appUsers.push({ name, password: pass, perms: { sales: true } });
         saveUsers();
         closeModals();
         setTimeout(() => { openModal('users-modal'); renderUsersList(); }, 50);
@@ -5717,6 +5715,7 @@
     let expMode = 'day';
 
     function openAddExpenseModal() {
+        if(!requirePerm('cashier')) return;
         document.getElementById('exp-name').value = '';
         document.getElementById('exp-amount').value = '';
         document.getElementById('exp-inv-num').value = '';
