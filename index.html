@@ -1744,9 +1744,12 @@
     }
 
     function showLoginOverlay() {
+        // أعد تحميل المستخدمين من localStorage لضمان أحدث نسخة
+        appUsers = JSON.parse(localStorage.getItem('mahalak_users') || 'null') || [];
         const overlay = document.getElementById('login-overlay');
         overlay.style.display = 'flex';
         document.getElementById('login-pin-section').style.display = 'none';
+        document.getElementById('login-user-list').style.display = 'flex';
         document.getElementById('login-store-title').textContent = storeName || 'محلك';
         const list = document.getElementById('login-user-list');
         list.innerHTML = appUsers.map((u,i) => `
