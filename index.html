@@ -5250,7 +5250,7 @@
   .item-detail { font-size:0.75rem; font-weight:600; color:#1e293b; margin-top:3px; }
   .totals { border:1.5px solid #1e293b; border-radius:8px; padding:14px 20px; margin-top:16px; }
   .tot-row { display:flex; justify-content:space-between;  font-weight:700; color:#1e293b; margin-bottom:5px; }
-  .tot-final { display:flex; justify-content:space-between; font-size:1rem; font-weight:900; color:#1e293b; }
+  .tot-final { display:flex; justify-content:space-between; align-items:center; font-size:1rem; font-weight:900; color:#1e293b; }
   .tot-debt { display:flex; justify-content:space-between; font-size:0.82rem; font-weight:900; color:#1e293b; margin-top:6px; }
   .footer { text-align:center; margin-top:24px; font-size:0.7rem; color:#1e293b; font-weight:600; }
   @media print { .page { margin:0 auto; padding:15px; max-width:600px; } @page { margin:10mm; } }
@@ -5294,9 +5294,7 @@
 <script>window.onload = () => window.print();<\/script>
 </body>
 </html>`;
-        const win = window.open('', '_blank');
-        win.document.write(html);
-        win.document.close();
+        openPrintWindow(html);
     }
 
     function printPurchaseInvoiceById(gid) {
@@ -5313,11 +5311,7 @@
         const supplier = ref.supplier || ref.supplierName || '';
         // storeName متاح من النطاق العام
         const html = buildPurchasePrintHtml({ group, invNum, dateLocal, isCash, total, supplier, storeName });
-        const w = window.open('', '_blank');
-        w.document.write(html);
-        w.document.close();
-        w.focus();
-        setTimeout(() => { w.print(); }, 400);
+        openPrintWindow(html);
     }
 
     function buildPurchasePrintHtml({ group, invNum, dateLocal, isCash, total, supplier, storeName }) {
@@ -5345,7 +5339,7 @@
   .items-table td { padding:8px 20px; font-size:0.68rem; font-weight:700; border-bottom:1px dashed #e2e8f0; }
   .items-table tr:last-child td { border-bottom:none; }
   .totals { border:1.5px solid #1e293b; border-radius:8px; padding:7px 20px; margin-top:16px; }
-  .tot-final { display:flex; justify-content:space-between; font-size:1rem; font-weight:900; }
+  .tot-final { display:flex; justify-content:space-between; align-items:center; font-size:1rem; font-weight:900; }
   .footer { text-align:center; margin-top:24px; font-size:0.7rem; color:#1e293b; font-weight:600; }
   @media print { .page { margin:0 auto; padding:15px; } @page { margin:10mm; } }
 </style>
@@ -5358,7 +5352,7 @@
         <div class="store-name">${storeName}</div>
         <div class="store-sub">فاتورة مشتريات</div>
       </div>
-      <div><div class="badge">${payType === 'card' ? 'بطاقة ائتمانية' : isCash ? 'نقداً' : 'آجل'}</div></div>
+      <div><div class="badge">${isCash ? 'نقداً' : 'آجل'}</div></div>
       <div>
         ${invNum ? `<div class="inv-num">#${invNum}</div>` : ''}
         <div class="inv-meta">${dateLocal}${supplier ? `<br><span style="font-weight:800;">${supplier}</span>` : ''}</div>
@@ -5387,21 +5381,39 @@
         return html;
     }
 
-    function printPurchaseInvoiceGroup() {
-        const supplier = document.getElementById('pu-inv-supplier').value;
-        const invNum = document.getElementById('pu-inv-num').value.trim();
-        const dateVal = document.getElementById('pu-inv-date').value;
-        const [y,m,d] = dateVal.split('-').map(Number);
-        const dateLocal = new Date(y, m-1, d).toLocaleDateString();
-        const isCash = puInvPayType === 'cash';
-        if(!puInvItems.length) return showAlert('لا توجد أصناف للطباعة');
-        const total = puInvItems.reduce((s,x) => s + x.qty * x.buyPrice, 0);
-        // storeName متاح من النطاق العام
-        const group = puInvItems.map(x => ({ itemName: x.itemName, qty: x.qty, buyPrice: x.buyPrice }));
-        const html = buildPurchasePrintHtml({ group, invNum, dateLocal, isCash, total, supplier, storeName });
+    function openPrintWindow(html) {
         const win = window.open('', '_blank');
-        win.document.write(html);
-        win.document.close();
+        if(win) {
+            win.document.write(html);
+            win.document.close();
+            win.focus();
+        } else {
+            // popup blocked — استخدم iframe مؤقت
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+    }
+
+    function printPurchaseInvoiceGroup() {
+        if(!puInvItems.length) return showToast('لا توجد أصناف للطباعة', 'error');
+        // اقرأ كل القيم قبل إغلاق النافذة
+        const supplier  = document.getElementById('pu-inv-supplier').value;
+        const invNum    = document.getElementById('pu-inv-num').value.trim();
+        const dateVal   = document.getElementById('pu-inv-date').value;
+        const [y,m,d]   = dateVal.split('-').map(Number);
+        const dateLocal = new Date(y, m-1, d).toLocaleDateString();
+        const isCash    = puInvPayType === 'cash';
+        const total     = puInvItems.reduce((s,x) => s + x.qty * x.buyPrice, 0);
+        const group     = puInvItems.map(x => ({ itemName: x.itemName, qty: x.qty, buyPrice: x.buyPrice }));
+        // ابنِ HTML قبل الإغلاق
+        const html = buildPurchasePrintHtml({ group, invNum, dateLocal, isCash, total, supplier, storeName });
+        // افتح نافذة الطباعة مباشرة بدون closeModals
+        openPrintWindow(html);
     }
 
     function printExpenseInvoice(e) {
@@ -5425,7 +5437,7 @@
   .item-name { font-size:0.95rem; font-weight:900; color:#1e293b; }
   .item-detail { font-size:0.72rem; font-weight:600; color:#1e293b; margin-top:3px; }
   .totals { border:1.5px solid #1e293b; border-radius:8px; padding:14px 20px; margin-top:16px; }
-  .tot-final { display:flex; justify-content:space-between; font-size:1rem; font-weight:900; color:#1e293b; }
+  .tot-final { display:flex; justify-content:space-between; align-items:center; font-size:1rem; font-weight:900; color:#1e293b; }
   .footer { text-align:center; margin-top:24px; font-size:0.7rem; color:#1e293b; font-weight:600; }
   @media print { .page { margin:0 auto; padding:15px; max-width:600px; } @page { margin:10mm; } }
 </style>
@@ -5456,9 +5468,7 @@
 <script>window.onload = () => window.print();<\/script>
 </body>
 </html>`;
-        const win = window.open('', '_blank');
-        win.document.write(html);
-        win.document.close();
+        openPrintWindow(html);
     }
 
     function loadScript(src) {
@@ -5610,7 +5620,7 @@
 
   .totals { border:1.5px solid #1e293b; border-radius:8px; padding:7px 20px; margin-top:16px; }
   .tot-row { display:flex; justify-content:space-between;  font-weight:700; color:#1e293b; margin-bottom:5px; }
-  .tot-final { display:flex; justify-content:space-between; font-size:1rem; font-weight:900; color:#1e293b; }
+  .tot-final { display:flex; justify-content:space-between; align-items:center; font-size:1rem; font-weight:900; color:#1e293b; }
   .tot-debt { display:flex; justify-content:space-between; font-size:0.82rem; font-weight:900; color:#1e293b; margin-top:6px; }
 
   .footer { text-align:center; margin-top:24px; font-size:0.7rem; color:#1e293b; font-weight:600; letter-spacing:0.5px; }
@@ -5666,9 +5676,7 @@
 </body>
 </html>`;
 
-        const win = window.open('', '_blank');
-        win.document.write(html);
-        win.document.close();
+        openPrintWindow(html);
     }
     function permanentDeleteSale(id) {
         const s = sales.find(x => x.id === id);
