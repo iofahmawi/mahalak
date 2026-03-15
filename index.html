@@ -2513,9 +2513,8 @@
             groups[key].push(p);
         });
         let groupIds = Object.keys(groups).sort((a,b) => {
-            const da = groups[a][0].date || '';
-            const db = groups[b][0].date || '';
-            return db.localeCompare(da);
+            // ترتيب من الأحدث للأقدم بـ invoiceGroupId (timestamp)
+            return Number(b) - Number(a);
         });
         if(searchQuery) {
             const q = searchQuery.toLowerCase();
@@ -4300,7 +4299,7 @@
             );
         }
 
-        // تجميع الفواتير متعددة الأصناف
+        // تجميع الفواتير متعددة الأصناف — من الأحدث للأقدم
         const seen = new Set();
         const displayList = [];
         filtered.forEach(p => {
@@ -4308,12 +4307,13 @@
                 if(!seen.has(p.invoiceGroupId)) {
                     seen.add(p.invoiceGroupId);
                     const group = purchases.filter(x => x.invoiceGroupId === p.invoiceGroupId);
-                    displayList.push({ type: 'group', group, ref: p });
+                    displayList.push({ type: 'group', group, ref: p, sortKey: Number(p.invoiceGroupId) });
                 }
             } else {
-                displayList.push({ type: 'single', p });
+                displayList.push({ type: 'single', p, sortKey: Number(p.id) });
             }
         });
+        displayList.sort((a,b) => b.sortKey - a.sortKey);
 
         document.getElementById('pu-sub').innerText = displayList.length === 0 ? 'لا توجد مشتريات' : `${displayList.length} فاتورة`;
         const totalDay = filtered.reduce((s, p) => s + p.total, 0);
