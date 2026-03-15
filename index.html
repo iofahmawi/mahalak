@@ -4924,6 +4924,7 @@
             let remaining = si.qty;
             let itemProfit = 0;
             let totalCost = 0;
+            const takenBatches = []; // الـ batches المأخوذة بالضبط
 
             // FIFO — الأقدم أولاً
             it.batches.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -4932,6 +4933,7 @@
                 const take = Math.min(it.batches[i].qty, remaining);
                 itemProfit += take * (si.sellPrice - it.batches[i].buyPrice);
                 totalCost += take * it.batches[i].buyPrice;
+                takenBatches.push({ qty: take, buyPrice: it.batches[i].buyPrice, sellPrice: it.batches[i].sellPrice, date: it.batches[i].date });
                 it.batches[i].qty -= take;
                 remaining -= take;
             }
@@ -4945,7 +4947,8 @@
                 name: si.name,
                 qty: si.qty,
                 sellPrice: si.sellPrice,
-                avgBuyPrice: si.qty > 0 ? totalCost / si.qty : 0
+                avgBuyPrice: si.qty > 0 ? totalCost / si.qty : 0,
+                takenBatches // نحفظها للإرجاع الدقيق عند الإلغاء
             });
         });
 
@@ -5516,9 +5519,22 @@
             s.cancelled = true;
             s.items.forEach(si => {
                 const it = items.find(x => x.id === si.itemId);
-                if(it) {
+                if(!it) return;
+                if(si.takenBatches && si.takenBatches.length) {
+                    // أرجع كل batch بسعره الأصلي بالضبط
+                    si.takenBatches.forEach(tb => {
+                        const existing = it.batches.find(b =>
+                            Math.abs(b.buyPrice - tb.buyPrice) < 0.001 &&
+                            Math.abs(b.sellPrice - tb.sellPrice) < 0.001 &&
+                            b.date === tb.date
+                        );
+                        if(existing) existing.qty += tb.qty;
+                        else it.batches.unshift({ qty: tb.qty, buyPrice: tb.buyPrice, sellPrice: tb.sellPrice, date: tb.date });
+                    });
+                } else {
+                    // فواتير قديمة بدون takenBatches — نستخدم avgBuyPrice
                     const buyPrice = si.avgBuyPrice !== undefined ? si.avgBuyPrice : (si.buyPrice || 0);
-                    const sameBatch = it.batches.find(b => Math.abs(b.buyPrice - buyPrice) < 0.001 && Math.abs(b.sellPrice - si.sellPrice) < 0.001);
+                    const sameBatch = it.batches.find(b => Math.abs(b.buyPrice - buyPrice) < 0.001);
                     if(sameBatch) sameBatch.qty += si.qty;
                     else it.batches.unshift({ qty: si.qty, buyPrice, sellPrice: si.sellPrice, date: new Date().toISOString().split('T')[0] });
                 }
