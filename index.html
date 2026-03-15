@@ -1813,6 +1813,8 @@
         appUsers = JSON.parse(localStorage.getItem('mahalak_users') || 'null') || [];
         const overlay = document.getElementById('login-overlay');
         overlay.style.display = 'flex';
+        overlay.style.height = '';
+        overlay.style.alignItems = 'center';
         document.getElementById('login-pin-section').style.display = 'none';
         document.getElementById('login-user-list').style.display = 'flex';
         document.getElementById('login-store-title').textContent = storeName || 'محلك';
