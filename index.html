@@ -3069,7 +3069,7 @@
             saveData();
             render();
             closeModals();
-            showAlert('تم تعديل الفاتورة بنجاح', 'success');
+            showToast('تم تعديل الفاتورة بنجاح');
             if(_purchaseEditSource === 'modal') setTimeout(() => openPurchasesModal(), 50);
             _purchaseEditSource = null;
             return;
@@ -3104,7 +3104,7 @@
         saveData();
         render();
         closeModals();
-        showAlert('تم حفظ الفاتورة — ' + puInvItems.length + ' صنف — JD ' + invoiceTotal.toFixed(2), 'success');
+        showToast('تم حفظ الفاتورة — ' + puInvItems.length + ' صنف — JD ' + invoiceTotal.toFixed(2));
         puInvItems = [];
     }
 
@@ -3181,7 +3181,7 @@
         saveData();
         render();
         renderDelPurchasesList();
-        showAlert('تم حذف فاتورة الشراء', 'success');
+        showToast('تم حذف فاتورة الشراء');
     }
 
     let delPuMode = 'day';
@@ -3422,7 +3422,7 @@
         _forceDelItemId = null;
         saveData();
         closeModals();
-        showAlert('تم حذف الصنف مع جميع فواتيره', 'success');
+        showToast('تم حذف الصنف مع جميع فواتيره');
     }
 
     function openDelModal(id) {
@@ -4784,7 +4784,7 @@
             navigator.share({ text });
         } else {
             navigator.clipboard.writeText(text).then(() => {
-                showAlert('تم نسخ الفاتورة ✓', 'success');
+                showToast('تم نسخ الفاتورة ✓');
             });
         }
     }
