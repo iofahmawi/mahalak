@@ -352,7 +352,7 @@
             padding: 5px 0; font-size: 0.8rem;
         }
         .sale-item-row:last-child { padding-bottom: 0; }
-        .sale-item-name { font-weight: 700; color: var(--text-dark); }
+        .sale-item-name { font-weight: 700; color: var(--text-dark); direction: rtl; unicode-bidi: plaintext; }
         .sale-item-detail { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; }
         .sale-item-amount { font-weight: 900; color: var(--text-dark); }
         .del-sale-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.8rem; padding: 2px 6px; }
@@ -2346,7 +2346,7 @@
                     <div class="sale-details" style="display:none;padding:0 16px 12px;">
                         ${(s.items||[]).map(si => `
                         <div class="sale-item-row">
-                            <div><span class="sale-item-name">${si.name}</span><span class="sale-item-detail"> × ${si.qty}</span></div>
+                            <div dir="rtl"><span class="sale-item-name">${si.name}</span><span class="sale-item-detail"> × ${si.qty}</span></div>
                             <span class="sale-item-amount">JD ${(si.qty*si.sellPrice).toFixed(2)}</span>
                         </div>`).join('')}
                         <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
@@ -2480,7 +2480,7 @@
                 ${s.items.map(si => `
                     <div class="sale-item-row">
                         <div>
-                            <span class="sale-item-name">${si.name}</span>
+                            <span class="sale-item-name" style="unicode-bidi:plaintext;">${si.name}</span>
                             <span class="sale-item-detail"> × ${si.qty}</span>
                         </div>
                         <span class="sale-item-amount">JD ${(si.qty * si.sellPrice).toFixed(2)}</span>
@@ -2555,7 +2555,7 @@
                     ${grp.map(p => `
                     <div class="sale-item-row">
                         <div>
-                            <span class="sale-item-name">${p.itemName}</span>
+                            <span class="sale-item-name" style="unicode-bidi:plaintext;">${p.itemName}</span>
                             <span class="sale-item-detail"> × ${p.qty}</span>
                         </div>
                         <span class="sale-item-amount">JD ${(p.buyPrice * p.qty).toFixed(2)}</span>
@@ -4351,7 +4351,7 @@
                 <div class="sale-details" style="display:none;padding:0 16px 12px;">
                     ${grp.map(x => `
                     <div class="sale-item-row">
-                        <div><span class="sale-item-name">${x.itemName}</span><span class="sale-item-detail"> × ${x.qty}</span></div>
+                        <div dir="rtl"><span class="sale-item-name">${x.itemName}</span><span class="sale-item-detail"> × ${x.qty}</span></div>
                         <span class="sale-item-amount">JD ${x.total.toFixed(2)}</span>
                     </div>`).join('')}
                     <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
@@ -4505,7 +4505,7 @@
                 <div class="sale-details" style="display:none;padding:0 16px 12px;">
                     ${s.items.map(si => `
                     <div class="sale-item-row">
-                        <div><span class="sale-item-name">${si.name}</span><span class="sale-item-detail"> × ${si.qty}</span></div>
+                        <div dir="rtl"><span class="sale-item-name">${si.name}</span><span class="sale-item-detail"> × ${si.qty}</span></div>
                         <span class="sale-item-amount">JD ${(si.qty * si.sellPrice).toFixed(2)}</span>
                     </div>`).join('')}
                     ${s.discount > 0 ? `
