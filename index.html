@@ -6313,13 +6313,14 @@
 
     // ─── Backup (Fixed Export) ───
     function exportData() {
-        const dataToExport = { 
-    storeName,
-    items, sales, categories,
-    purchases, suppliers, customers, paymentLogs, expenses,
-    cashLog, withdrawals, supplierDetails, customerDetails,
-    version: '1.0' 
-};
+        const dataToExport = {
+            storeName,
+            items, sales, categories,
+            purchases, suppliers, customers, paymentLogs, expenses,
+            cashLog, withdrawals, supplierDetails, customerDetails,
+            appUsers,
+            version: '2.0'
+        };
         const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -6336,20 +6337,26 @@
         reader.onload = function(evt) {
             try {
                 const data = JSON.parse(evt.target.result);
-                if(data.storeName) { storeName = data.storeName; localStorage.setItem('mahalak_store_name', storeName); }
-                if(data.items) items = data.items;
-                if(data.sales) sales = data.sales;
-                if(data.categories) categories = data.categories;
-                if(data.purchases) purchases = data.purchases;
-                if(data.suppliers) suppliers = data.suppliers;
-                if(data.customers) customers = data.customers;
-                if(data.paymentLogs) paymentLogs = data.paymentLogs;
-                if(data.expenses) expenses = data.expenses;
-                if(data.cashLog) cashLog = data.cashLog;
-                if(data.withdrawals) withdrawals = data.withdrawals;
+                if(data.storeName)       { storeName = data.storeName; localStorage.setItem('mahalak_store_name', storeName); }
+                if(data.items)           items           = data.items;
+                if(data.sales)           sales           = data.sales;
+                if(data.categories)      categories      = data.categories;
+                if(data.purchases)       purchases       = data.purchases;
+                if(data.suppliers)       suppliers       = data.suppliers;
+                if(data.customers)       customers       = data.customers;
+                if(data.paymentLogs)     paymentLogs     = data.paymentLogs;
+                if(data.expenses)        expenses        = data.expenses;
+                if(data.cashLog)         cashLog         = data.cashLog;
+                if(data.withdrawals)     withdrawals     = data.withdrawals;
                 if(data.supplierDetails) supplierDetails = data.supplierDetails;
                 if(data.customerDetails) customerDetails = data.customerDetails;
+                // استيراد المستخدمين فقط إذا كان المدير هو من يستورد
+                if(data.appUsers && isAdmin()) {
+                    appUsers = data.appUsers;
+                    saveUsers();
+                }
                 saveData();
+                updateStoreName();
                 showToast('تم الاستيراد بنجاح ✓');
                 e.target.value = '';
             } catch(err) { showAlert('خطأ في ملف الاستيراد', 'error'); }
