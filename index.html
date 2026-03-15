@@ -6440,17 +6440,21 @@
         const ratio = vh / window.screen.height;
         const kbOpen = ratio < 0.75;
 
-        // النوافذ الصغيرة — توسيط دائماً، عند الكيبورد تتكيف مع الارتفاع
+        // النوافذ الصغيرة — توسيط في المنطقة المرئية دائماً
         [...simpleOverlays, ...centerOverlays].forEach(ov => {
             if (!ov) return;
             if (kbOpen) {
-                ov.style.height     = vh + 'px';
+                // عند الكيبورد: حرّك الـ overlay ليغطي المنطقة الفارغة فقط
+                ov.style.position   = 'fixed';
                 ov.style.top        = vt + 'px';
+                ov.style.height     = vh + 'px';
                 ov.style.alignItems = 'center';
                 ov.style.paddingTop = '0';
             } else {
-                ov.style.height     = '';
+                // بدون كيبورد: توسيط كامل الشاشة
+                ov.style.position   = '';
                 ov.style.top        = '';
+                ov.style.height     = '';
                 ov.style.alignItems = 'center';
                 ov.style.paddingTop = '0';
             }
