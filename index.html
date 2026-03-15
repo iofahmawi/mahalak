@@ -87,6 +87,26 @@
             font-size: 0.85rem; flex-shrink: 0;
         }
         .current-user-name { font-size: 0.78rem; font-weight: 800; color: var(--text-dark); }
+        .perm-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 10px; background: #f8fafc; border-radius: 10px;
+            border: 1.5px solid var(--border);
+        }
+        .perm-row-info { display: flex; flex-direction: column; gap: 1px; }
+        .perm-row-label { font-size: 0.82rem; font-weight: 800; color: var(--text-dark); }
+        .perm-row-desc  { font-size: 0.68rem; font-weight: 600; color: var(--text-muted); }
+        .perm-toggle {
+            width: 40px; height: 22px; border-radius: 11px;
+            background: var(--border); border: none; cursor: pointer;
+            position: relative; transition: background 0.2s; flex-shrink: 0;
+        }
+        .perm-toggle.on { background: var(--primary); }
+        .perm-toggle::after {
+            content: ''; position: absolute; top: 3px; right: 3px;
+            width: 16px; height: 16px; border-radius: 50%; background: white;
+            transition: transform 0.2s;
+        }
+        .perm-toggle.on::after { transform: translateX(-18px); }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-4px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -627,7 +647,7 @@
 </div>
 
 <!-- ══ نافذة إدارة المستخدمين ══ -->
-<div class="modal-overlay" id="users-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="users-modal" style="align-items:center;">
     <div class="modal modal-full" onclick="event.stopPropagation()" style="overflow-y:auto;max-height:80vh;">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-users-gear"></i></div>
@@ -644,7 +664,7 @@
 </div>
 
 <!-- ══ نافذة إضافة مستخدم ══ -->
-<div class="modal-overlay" id="add-user-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="add-user-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-user-plus"></i></div>
@@ -654,10 +674,11 @@
             <i class="fa-solid fa-user"></i>
             <input type="text" id="new-user-name" placeholder="الاسم" style="text-align:right;" onkeydown="if(event.key==='Enter')document.getElementById('new-user-pass').focus()">
         </div>
-        <div class="input-wrap">
+        <div class="input-wrap" style="margin-bottom:14px;">
             <i class="fa-solid fa-lock"></i>
             <input type="password" id="new-user-pass" placeholder="كلمة المرور" style="text-align:right;" onkeydown="if(event.key==='Enter')saveNewUser()">
         </div>
+
         <div class="modal-btns">
             <button class="mbtn mbtn-cancel" onclick="closeModals();setTimeout(()=>openModal('users-modal'),50)">إلغاء</button>
             <button class="mbtn mbtn-ok" onclick="saveNewUser()">حفظ</button>
@@ -665,8 +686,23 @@
     </div>
 </div>
 
+<!-- ══ نافذة تعديل الصلاحيات ══ -->
+<div class="modal-overlay" id="edit-perms-modal" style="align-items:center;">
+    <div class="modal" onclick="event.stopPropagation()" style="max-height:75vh;overflow-y:auto;">
+        <div class="modal-top">
+            <div class="modal-ico blue"><i class="fa-solid fa-shield-halved"></i></div>
+            <div><p class="modal-title">تعديل الصلاحيات</p><p class="modal-subtitle" id="edit-perms-username"></p></div>
+        </div>
+        <div id="edit-user-perms" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;"></div>
+        <div class="modal-btns">
+            <button class="mbtn mbtn-cancel" onclick="closeModals();setTimeout(()=>openModal('users-modal'),50)">إلغاء</button>
+            <button class="mbtn mbtn-ok" onclick="saveEditPerms()">حفظ</button>
+        </div>
+    </div>
+</div>
+
 <!-- ══ نافذة تغيير كلمة المرور ══ -->
-<div class="modal-overlay" id="change-pass-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="change-pass-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-key"></i></div>
@@ -696,14 +732,14 @@
         <div class="menu-wrap">
             <button class="btn-icon" onclick="toggleMenu(event)"><i class="fa-solid fa-bars"></i></button>
             <div class="menu-dropdown" id="main-menu">
-                <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openStatsModal()"><i class="fa-solid fa-chart-pie"></i> إحصائيات</button>
+                <button onmouseenter="closeAllSubMenus()" onclick="if(requirePerm('stats')){closeMenu();openStatsModal()}"><i class="fa-solid fa-chart-pie"></i> إحصائيات</button>
                 <div class="menu-has-sub" id="menu-cash-sub">
                     <button onclick="toggleMenuSub('menu-cash-sub', event)">
                         <i class="fa-solid fa-vault"></i> الصندوق
                     </button>
                     <div class="menu-submenu">
-                        <button onclick="closeMenu(); openCashLogModal()"><i class="fa-solid fa-calendar-days"></i> سجل الصندوق</button>
-                        <button onclick="closeMenu(); openWithdrawalsModal()"><i class="fa-solid fa-hand-holding-dollar"></i> مسحوبات شخصية</button>
+                        <button onclick="if(requirePerm('cashier')){closeMenu();openCashLogModal()}"><i class="fa-solid fa-calendar-days"></i> سجل الصندوق</button>
+                        <button onclick="if(requirePerm('cashier')){closeMenu();openWithdrawalsModal()}"><i class="fa-solid fa-hand-holding-dollar"></i> مسحوبات شخصية</button>
                     </div>
                 </div>
                 <div class="menu-has-sub" id="menu-sales-sub">
@@ -712,7 +748,7 @@
                     </button>
                     <div class="menu-submenu">
                         <button onclick="closeMenu(); openSalesHistoryModal()"><i class="fa-solid fa-list"></i> عرض المبيعات</button>
-                        <button onclick="closeMenu(); openSellSearchModal()"><i class="fa-solid fa-file-invoice"></i> فاتورة جديدة</button>
+                        <button onclick="if(requirePerm('sales')){closeMenu();openSellSearchModal()}"><i class="fa-solid fa-file-invoice"></i> فاتورة جديدة</button>
                     </div>
                 </div>
                 <div class="menu-has-sub" id="menu-purchases-sub">
@@ -721,7 +757,7 @@
                     </button>
                     <div class="menu-submenu">
                         <button onclick="closeMenu(); openPurchasesModal()"><i class="fa-solid fa-list"></i> عرض المشتريات</button>
-                        <button onclick="closeMenu(); openNewPurchaseModal()"><i class="fa-solid fa-file-invoice"></i> فاتورة جديدة</button>
+                        <button onclick="if(requirePerm('purchases')){closeMenu();openNewPurchaseModal()}"><i class="fa-solid fa-file-invoice"></i> فاتورة جديدة</button>
                         <button onclick="closeMenu(); openDeletePurchasesModal()"><i class="fa-solid fa-trash-can"></i> حذف فاتورة</button>
                     </div>
                 </div>
@@ -730,7 +766,7 @@
                         <i class="fa-solid fa-truck"></i> الموردين
                     </button>
                     <div class="menu-submenu">
-                        <button onclick="closeMenu(); openSuppliersModal()"><i class="fa-solid fa-truck"></i> إضافة مورد</button>
+                        <button onclick="if(requirePerm('contacts')){closeMenu();openSuppliersModal()}"><i class="fa-solid fa-truck"></i> إضافة مورد</button>
                         <button onclick="closeMenu(); openDebtModal()"><i class="fa-solid fa-file-invoice-dollar"></i> ذمم الموردين</button>
                     </div>
                 </div>
@@ -748,7 +784,7 @@
                         <i class="fa-solid fa-money-bill-trend-up"></i> المصاريف
                     </button>
                     <div class="menu-submenu">
-                        <button onclick="closeMenu(); openExpensesModal()"><i class="fa-solid fa-list"></i> عرض المصاريف</button>
+                        <button onclick="if(requirePerm('cashier')){closeMenu();openExpensesModal()}"><i class="fa-solid fa-list"></i> عرض المصاريف</button>
                         <button onclick="closeMenu(); openAddExpenseModal()"><i class="fa-solid fa-plus"></i> تسجيل مصروف</button>
                     </div>
                 </div>
@@ -757,7 +793,7 @@
                         <i class="fa-solid fa-users"></i> الزبائن
                     </button>
                     <div class="menu-submenu">
-                        <button onclick="closeMenu(); openCustomersModal()"><i class="fa-solid fa-users"></i> إضافة زبون</button>
+                        <button onclick="if(requirePerm('contacts')){closeMenu();openCustomersModal()}"><i class="fa-solid fa-users"></i> إضافة زبون</button>
                         <button onclick="closeMenu(); openCustDebtModal()"><i class="fa-solid fa-user-clock"></i> ذمم الزبائن</button>
                     </div>
                 </div>
@@ -821,9 +857,9 @@
     <button class="cart-btn" onclick="openCartModal()"><i class="fa-solid fa-basket-shopping"></i> السلة</button>
 </div>
 
-<button class="fab" id="fab-inv" style="display:none;" onclick="openAddItemModal()"><i class="fa-solid fa-plus"></i> إضافة صنف</button>
-<button class="fab" id="fab-sell" style="display:flex;" onclick="openSellSearchModal()"><i class="fa-solid fa-receipt"></i> ابدأ البيع</button>
-<button class="fab" id="fab-purchase" style="display:none;" onclick="openNewPurchaseModal()"><i class="fa-solid fa-cart-flatbed"></i> ابدأ الشراء</button>
+<button class="fab" id="fab-inv" style="display:none;" onclick="if(requirePerm('inventory'))openAddItemModal()"><i class="fa-solid fa-plus"></i> إضافة صنف</button>
+<button class="fab" id="fab-sell" style="display:flex;" onclick="if(requirePerm('sales'))openSellSearchModal()"><i class="fa-solid fa-receipt"></i> ابدأ البيع</button>
+<button class="fab" id="fab-purchase" style="display:none;" onclick="if(requirePerm('purchases'))openNewPurchaseModal()"><i class="fa-solid fa-cart-flatbed"></i> ابدأ الشراء</button>
 
 <input type="file" id="file-input" accept=".json" style="display:none" onchange="importData(event)">
 
@@ -845,7 +881,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="batch-modal" style="padding-top:20%;">
+<div class="modal-overlay" id="batch-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-layer-group"></i></div>
@@ -881,7 +917,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="pu-inv-qty-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="pu-inv-qty-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-box"></i></div>
@@ -953,7 +989,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="add-item-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="add-item-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-plus"></i></div>
@@ -995,7 +1031,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="stock-modal" style="padding-top:15%;">
+<div class="modal-overlay" id="stock-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-boxes-stacked"></i></div>
@@ -1024,7 +1060,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="del-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="del-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico red"><i class="fa-solid fa-trash-can"></i></div>
@@ -1037,7 +1073,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="contact-details-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="contact-details-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue" id="contact-details-ico"><i class="fa-solid fa-truck"></i></div>
@@ -1053,7 +1089,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="batches-breakdown-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="batches-breakdown-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-layer-group"></i></div>
@@ -1066,7 +1102,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="del-blocked-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="del-blocked-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico red"><i class="fa-solid fa-lock"></i></div>
@@ -1081,7 +1117,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="cat-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="cat-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-tags"></i></div>
@@ -1236,7 +1272,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="suppliers-modal" style="padding-top:20%;">
+<div class="modal-overlay" id="suppliers-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-truck"></i></div>
@@ -1271,7 +1307,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="pay-debt-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="pay-debt-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-money-bill-wave"></i></div>
@@ -1315,7 +1351,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="pay-cust-debt-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="pay-cust-debt-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-money-bill-wave"></i></div>
@@ -1353,7 +1389,7 @@
 </div>
 
 <!-- نافذة تسجيل مصروف -->
-<div class="modal-overlay" id="add-expense-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="add-expense-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top" style="padding:0 20px;">
             <div class="modal-ico red"><i class="fa-solid fa-money-bill-trend-up"></i></div>
@@ -1371,7 +1407,7 @@
 </div>
 
 <!-- نافذة تعديل مصروف -->
-<div class="modal-overlay" id="edit-expense-modal" style="padding-top:25%;">
+<div class="modal-overlay" id="edit-expense-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top" style="padding:0 20px;">
             <div class="modal-ico red"><i class="fa-solid fa-money-bill-trend-up"></i></div>
@@ -1520,7 +1556,7 @@
 </div>
 
 <!-- نافذة التنبيه الأنيقة -->
-<div class="modal-overlay" id="alert-modal" style="padding-top:25%;z-index:5000;">
+<div class="modal-overlay" id="alert-modal" style="align-items:center;z-index:5000;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico" id="alert-ico" style="background:#fff3cd;"><i id="alert-icon" class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i></div>
@@ -1533,7 +1569,7 @@
 </div>
 
 <!-- نافذة التأكيد -->
-<div class="modal-overlay" id="confirm-modal" style="padding-top:25%;z-index:5000;">
+<div class="modal-overlay" id="confirm-modal" style="align-items:center;z-index:5000;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico" style="background:#fff0f0;"><i class="fa-solid fa-trash-can" style="color:var(--danger);"></i></div>
@@ -1709,7 +1745,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="customers-modal" style="padding-top:20%;">
+<div class="modal-overlay" id="customers-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-users"></i></div>
@@ -1733,6 +1769,35 @@
     let appUsers = JSON.parse(localStorage.getItem('mahalak_users') || 'null') || [];
     let currentUser = JSON.parse(localStorage.getItem('mahalak_current_user') || 'null');
     let _loginTargetUser = null;
+
+    // ── Permissions System ──
+    const PERMS = {
+        sales:      { label: 'فواتير المبيعات',              desc: 'إنشاء / تعديل / إلغاء' },
+        purchases:  { label: 'فواتير المشتريات',             desc: 'إنشاء / تعديل / حذف' },
+        inventory:  { label: 'إدارة المخزون',                desc: 'إضافة / تعديل / حذف أصناف' },
+        stats:      { label: 'الإحصائيات والتقارير',         desc: 'عرض التقارير والإحصائيات' },
+        cashier:    { label: 'الصندوق والمصروفات',           desc: 'الصندوق / المصروفات / المسحوبات' },
+        contacts:   { label: 'الموردين والزبائن',            desc: 'إضافة / تعديل / حذف' },
+    };
+
+    function isAdmin() {
+        if(!currentUser) return false;
+        return currentUser.idx === 0;
+    }
+
+    function hasPerm(perm) {
+        if(isAdmin()) return true;
+        if(!currentUser) return false;
+        const user = appUsers[currentUser.idx];
+        if(!user) return false;
+        return !!(user.perms && user.perms[perm]);
+    }
+
+    function requirePerm(perm) {
+        if(hasPerm(perm)) return true;
+        showToast('ليس لديك صلاحية لهذه العملية', 'error');
+        return false;
+    }
 
     function saveUsers() {
         localStorage.setItem('mahalak_users', JSON.stringify(appUsers));
@@ -1842,14 +1907,17 @@
             list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.82rem;font-weight:700;">لا يوجد مستخدمون</div>';
             return;
         }
+        const amAdmin = isAdmin();
         list.innerHTML = appUsers.map((u,i) => `
             <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8fafc;border-radius:12px;border:1px solid var(--border);">
                 <div class="user-avatar" style="width:32px;height:32px;font-size:1rem;"><i class="fa-solid fa-circle-user"></i></div>
                 <div style="flex:1;">
                     <div style="font-size:0.85rem;font-weight:800;color:var(--text-dark);">${u.name}</div>
+                    <div style="font-size:0.68rem;font-weight:600;color:var(--text-muted);">${i===0 ? 'مدير — كل الصلاحيات' : getPermsLabel(u.perms)}</div>
                 </div>
-                <button onclick="openChangePass(${i})" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.85rem;padding:4px;"><i class="fa-solid fa-key"></i></button>
-                ${appUsers.length > 1 ? `<button onclick="deleteUser(${i})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.85rem;padding:4px;"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                ${(amAdmin && i > 0) ? `<button onclick="openEditPerms(${i})" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.85rem;padding:4px;"><i class="fa-solid fa-shield-halved"></i></button>` : ''}
+                ${(amAdmin || currentUser?.idx === i) ? `<button onclick="openChangePass(${i})" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.85rem;padding:4px;"><i class="fa-solid fa-key"></i></button>` : ''}
+                ${(amAdmin && appUsers.length > 1 && i > 0) ? `<button onclick="deleteUser(${i})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.85rem;padding:4px;"><i class="fa-solid fa-trash-can"></i></button>` : ''}
             </div>
         `).join('');
     }
@@ -1859,7 +1927,61 @@
         document.getElementById('change-pass-form').style.display = 'none';
     }
 
+    function getPermsLabel(perms) {
+        if(!perms) return 'لا توجد صلاحيات';
+        const active = Object.entries(PERMS).filter(([k]) => perms[k]).map(([,p]) => p.label);
+        return active.length ? active.join(' · ') : 'لا توجد صلاحيات';
+    }
+
+    function openEditPerms(idx) {
+        if(!isAdmin()) return showToast('ليس لديك صلاحية', 'error');
+        document.getElementById('edit-perms-username').textContent = appUsers[idx].name;
+        document.getElementById('edit-perms-modal').dataset.userIdx = idx;
+        renderPermsUI('edit-user-perms', appUsers[idx].perms || {});
+        closeModals();
+        setTimeout(() => openModal('edit-perms-modal'), 50);
+    }
+
+    function saveEditPerms() {
+        const idx = parseInt(document.getElementById('edit-perms-modal').dataset.userIdx);
+        appUsers[idx].perms = getPermsFromUI('edit-user-perms');
+        saveUsers();
+        closeModals();
+        setTimeout(() => { openModal('users-modal'); renderUsersList(); }, 50);
+        showToast('تم تحديث الصلاحيات ✓');
+    }
+
+    function renderPermsUI(containerId, permsObj) {
+        const container = document.getElementById(containerId);
+        if(!container) return;
+        container.innerHTML = Object.entries(PERMS).map(([key, p]) => `
+            <div class="perm-row">
+                <div class="perm-row-info">
+                    <div class="perm-row-label">${p.label}</div>
+                    <div class="perm-row-desc">${p.desc}</div>
+                </div>
+                <button class="perm-toggle ${permsObj[key] ? 'on' : ''}" 
+                    id="perm-${containerId}-${key}"
+                    onclick="togglePerm('${containerId}','${key}',this)"></button>
+            </div>
+        `).join('');
+    }
+
+    function togglePerm(containerId, key, btn) {
+        btn.classList.toggle('on');
+    }
+
+    function getPermsFromUI(containerId) {
+        const perms = {};
+        Object.keys(PERMS).forEach(key => {
+            const btn = document.getElementById(`perm-${containerId}-${key}`);
+            perms[key] = btn ? btn.classList.contains('on') : false;
+        });
+        return perms;
+    }
+
     function openAddUserForm() {
+        if(!isAdmin()) return showToast('ليس لديك صلاحية', 'error');
         document.getElementById('new-user-name').value = '';
         document.getElementById('new-user-pass').value = '';
         closeModals();
@@ -1875,13 +1997,15 @@
         if(!name) return showToast('أدخل اسم المستخدم', 'error');
         if(!pass) return showToast('أدخل كلمة المرور', 'error');
         if(appUsers.find(u => u.name === name)) return showToast('هذا الاسم موجود مسبقاً', 'error');
-        appUsers.push({ name, password: pass });
+        appUsers.push({ name, password: pass, perms: {} });
         saveUsers();
         closeModals();
         setTimeout(() => { openModal('users-modal'); renderUsersList(); }, 50);
     }
 
     function deleteUser(idx) {
+        if(!isAdmin()) return showToast('ليس لديك صلاحية', 'error');
+        if(idx === 0) return showToast('لا يمكن حذف المدير', 'error');
         if(appUsers.length <= 1) return showAlert('يجب أن يبقى مستخدم واحد على الأقل');
         const u = appUsers[idx];
         showConfirm('حذف مستخدم "' + u.name + '"؟', () => {
@@ -1893,6 +2017,7 @@
     }
 
     function openChangePass(idx) {
+        if(!isAdmin() && currentUser?.idx !== idx) return showToast('ليس لديك صلاحية', 'error');
         document.getElementById('change-pass-username').textContent = appUsers[idx].name;
         document.getElementById('change-pass-new').value = '';
         document.getElementById('change-pass-modal').dataset.userIdx = idx;
@@ -2510,6 +2635,7 @@
     });
 
     function openAddItemModal() {
+        if(!requirePerm('inventory')) return;
         document.getElementById('add-cat').value = '';
         document.getElementById('add-cat-label').textContent = '— بدون تصنيف —';
         openModal('add-item-modal');
@@ -2546,6 +2672,7 @@
     }
 
     function openEditPurchaseInvoice(groupId, source) {
+        if(!requirePerm('purchases')) return;
         const group = purchases.filter(x => x.invoiceGroupId == groupId || x.groupId == groupId);
         if(!group.length) return;
         const ref = group[0];
@@ -2946,6 +3073,7 @@
 
 
     function openEditItemModal(id) {
+        if(!requirePerm('inventory')) return;
         const it = items.find(x => x.id === id);
         document.getElementById('edit-name').value = it.name;
         document.getElementById('edit-item-sub').innerText = it.name;
@@ -4625,6 +4753,7 @@
 
     // ─── Sales Logic ───
     function openBatchModal(id) {
+        if(!requirePerm('inventory')) return;
         pendingBatchItemId = id;
         const it = items.find(x => x.id === id);
         const totalQty = it.batches.reduce((s, b) => s + b.qty, 0);
@@ -4817,6 +4946,7 @@
     let editingSaleId = null;
 
     function openEditSale(id) {
+        if(!requirePerm('sales')) return;
         const s = sales.find(x => x.id === id);
         if(!s) return;
 
@@ -5513,6 +5643,7 @@
     }
 
     function cancelSale(id) {
+        if(!requirePerm('sales')) return;
         showConfirm('إلغاء الفاتورة وإرجاع البضاعة للمخزون؟', () => {
             const s = sales.find(x => x.id === id);
             if(!s || s.cancelled) return;
@@ -6291,7 +6422,7 @@
     }, 0);
 
     // Mobile Visual Viewport Handling
-    const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal','add-user-modal','change-pass-modal','users-modal','setup-admin-modal'].map(id=>document.getElementById(id));
+    const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal','add-user-modal','change-pass-modal','users-modal','setup-admin-modal','edit-perms-modal'].map(id=>document.getElementById(id));
     const topFixedOverlays = ['suppliers-modal','customers-modal','sup-sheet-overlay','cust-sheet-overlay','cat-sheet-overlay'].map(id=>document.getElementById(id));
     const tallOverlays = ['cart-modal','edit-item-modal','sell-search-modal','pu-inv-search-modal','new-purchase-modal'].map(id=>document.getElementById(id));
     const centerOverlays = ['stats-modal','sales-history-modal','purchases-modal','del-purchases-modal','debt-modal','cust-debt-modal','payment-logs-modal','expenses-modal','cash-log-modal','withdrawals-modal'].map(id=>document.getElementById(id));
@@ -6301,67 +6432,22 @@
         const vt = Math.max(window.visualViewport.offsetTop, 0);
         const ratio = vh / window.screen.height;
         const kbOpen = ratio < 0.75;
-        const isPWA = window.matchMedia('(display-mode: standalone)').matches;
 
-        // النوافذ الصغيرة الثابتة — في PWA تتوسط فوق الكيبورد
-        simpleOverlays.forEach(ov => {
+        // النوافذ الصغيرة — توسيط دائماً، عند الكيبورد تتكيف مع الارتفاع
+        [...simpleOverlays, ...centerOverlays].forEach(ov => {
             if (!ov) return;
-            if (kbOpen && isPWA) {
+            if (kbOpen) {
                 ov.style.height     = vh + 'px';
-                ov.style.bottom     = 'auto';
-                ov.style.alignItems = 'center';
-                ov.style.paddingTop = '0';
-            } else if (kbOpen) {
-                ov.style.height     = vh + 'px';
-                ov.style.bottom     = '';
+                ov.style.top        = vt + 'px';
                 ov.style.alignItems = 'center';
                 ov.style.paddingTop = '0';
             } else {
                 ov.style.height     = '';
-                ov.style.bottom     = '';
-                ov.style.alignItems = 'flex-start';
-                ov.style.paddingTop = '25%';
-            }
-        });
-
-        // النوافذ المتوسطة (إحصائيات، سجلات...) — نفس الطريقة
-        centerOverlays.forEach(ov => {
-            if (!ov) return;
-            if (kbOpen && isPWA) {
-                ov.style.height     = vh + 'px';
-                ov.style.bottom     = 'auto';
+                ov.style.top        = '';
                 ov.style.alignItems = 'center';
                 ov.style.paddingTop = '0';
-            } else if (kbOpen) {
-                ov.style.height     = vh + 'px';
-                ov.style.paddingTop = '0';
-            } else {
-                ov.style.height     = '';
-                ov.style.bottom     = '';
-                ov.style.paddingTop = '0';
             }
         });
-
-        // نافذة إضافة صنف
-        const addItemOv = document.getElementById('add-item-modal');
-        if (addItemOv) {
-            if (kbOpen && isPWA) {
-                addItemOv.style.height     = vh + 'px';
-                addItemOv.style.bottom     = 'auto';
-                addItemOv.style.alignItems = 'center';
-                addItemOv.style.paddingTop = '0';
-            } else if (kbOpen) {
-                addItemOv.style.height     = vh + 'px';
-                addItemOv.style.bottom     = '';
-                addItemOv.style.alignItems = 'center';
-                addItemOv.style.paddingTop = '0';
-            } else {
-                addItemOv.style.height     = '';
-                addItemOv.style.bottom     = '';
-                addItemOv.style.alignItems = 'flex-start';
-                addItemOv.style.paddingTop = '25%';
-            }
-        }
 
         // النوافذ التي تبدأ من الأعلى (قوائم موردين/عملاء)
         topFixedOverlays.forEach(ov => {
@@ -6384,16 +6470,14 @@
             }
         });
 
-        // النوافذ الطويلة (سلة، تعديل صنف...)
+        // النوافذ الطويلة (سلة، فاتورة مشتريات...)
         tallOverlays.forEach(ov => {
             if (!ov) return;
             if (ov.classList.contains('active')) {
-                if (kbOpen) { ov.style.height = vh + 'px'; ov.style.alignItems = 'flex-start'; ov.style.paddingTop = Math.max(vt + 20, 20) + 'px'; }
-                else { ov.style.height = ''; ov.style.alignItems = 'flex-start'; ov.style.paddingTop = '12%'; }
-            } else { ov.style.height = ''; }
+                if (kbOpen) { ov.style.height = vh + 'px'; ov.style.top = vt + 'px'; ov.style.alignItems = 'flex-start'; ov.style.paddingTop = '20px'; }
+                else { ov.style.height = ''; ov.style.top = ''; ov.style.alignItems = 'flex-start'; ov.style.paddingTop = '12%'; }
+            } else { ov.style.height = ''; ov.style.top = ''; }
         });
-
-
     }
 
     if (window.visualViewport) {
