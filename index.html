@@ -6484,10 +6484,15 @@
             } else { ov.style.height = ''; ov.style.top = ''; }
         });
 
-        // شاشة تسجيل الدخول وإعداد المحل (display:flex دائماً)
-        ['login-overlay', 'setup-modal', 'setup-admin-modal'].forEach(id => {
+        // شاشة تسجيل الدخول — تعتمد على CSS فقط (position:fixed + align-items:center)
+        const loginOv = document.getElementById('login-overlay');
+        if(loginOv && loginOv.style.display !== 'none') {
+            loginOv.style.height = kbOpen ? vh + 'px' : '';
+        }
+        // شاشة إعداد المحل
+        ['setup-modal', 'setup-admin-modal'].forEach(id => {
             const ov = document.getElementById(id);
-            if(!ov || ov.style.display === 'none') return;
+            if(!ov) return;
             if(kbOpen) {
                 ov.style.height     = vh + 'px';
                 ov.style.alignItems = 'center';
