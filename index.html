@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#f0f4f8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="محلك">
+    <meta name="apple-mobile-web-app-title" content="محل">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-1440.png">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -44,7 +44,8 @@
         /* ─── Login & Users ─── */
         .login-overlay {
             position: fixed; inset: 0; z-index: 9999;
-            background: var(--bg);
+            background: rgba(15,23,42,0.55);
+            backdrop-filter: blur(4px);
             display: flex; align-items: center; justify-content: center;
         }
         .login-box {
@@ -760,8 +761,8 @@
                         <button onclick="closeMenu(); openCustDebtModal()"><i class="fa-solid fa-user-clock"></i> ذمم الزبائن</button>
                     </div>
                 </div>
-                <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openStoreNameEdit()"><i class="fa-solid fa-store"></i> تعديل اسم المحل</button>
                 <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openUsersModal()"><i class="fa-solid fa-users-gear"></i> إدارة المستخدمين</button>
+                <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openStoreNameEdit()"><i class="fa-solid fa-store"></i> تعديل اسم المحل</button>
                 <div class="menu-import-export">
                     <button onclick="closeMenu(); document.getElementById('file-input').click()"><i class="fa-solid fa-file-arrow-up"></i> استيراد</button>
                     <button onclick="closeMenu(); exportData()"><i class="fa-solid fa-database"></i> تصدير</button>
