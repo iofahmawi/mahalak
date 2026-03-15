@@ -6380,6 +6380,7 @@
 
     // إعداد اسم المحل
     function openStoreNameEdit() {
+        if(!isAdmin()) return showToast('ليس لديك صلاحية', 'error');
         document.getElementById('setup-store-name').value = storeName;
         document.getElementById('setup-modal').classList.add('active');
         setTimeout(() => document.getElementById('setup-store-name').focus(), 100);
@@ -6428,7 +6429,7 @@
     }, 0);
 
     // Mobile Visual Viewport Handling
-    const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal','add-user-modal','change-pass-modal','users-modal','setup-admin-modal','edit-perms-modal'].map(id=>document.getElementById(id));
+    const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal','add-user-modal','change-pass-modal','users-modal','setup-admin-modal','edit-perms-modal','setup-modal'].map(id=>document.getElementById(id));
     const topFixedOverlays = ['suppliers-modal','customers-modal','sup-sheet-overlay','cust-sheet-overlay','cat-sheet-overlay'].map(id=>document.getElementById(id));
     const tallOverlays = ['cart-modal','edit-item-modal','sell-search-modal','pu-inv-search-modal','new-purchase-modal'].map(id=>document.getElementById(id));
     const centerOverlays = ['stats-modal','sales-history-modal','purchases-modal','del-purchases-modal','debt-modal','cust-debt-modal','payment-logs-modal','expenses-modal','cash-log-modal','withdrawals-modal'].map(id=>document.getElementById(id));
