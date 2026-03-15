@@ -6440,7 +6440,7 @@
         const ratio = vh / window.screen.height;
         const kbOpen = ratio < 0.75;
 
-        // النوافذ الصغيرة — نفس طريقة نافذة الدين
+        // النوافذ الصغيرة — نفس طريقة نافذة الدين بالضبط
         [...simpleOverlays, ...centerOverlays].forEach(ov => {
             if (!ov) return;
             if (kbOpen) {
@@ -6449,8 +6449,8 @@
                 ov.style.paddingTop = '0';
             } else {
                 ov.style.height     = '';
-                ov.style.alignItems = 'center';
-                ov.style.paddingTop = '0';
+                ov.style.alignItems = 'flex-start';
+                ov.style.paddingTop = '25%';
             }
         });
 
