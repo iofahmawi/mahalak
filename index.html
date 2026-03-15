@@ -40,6 +40,52 @@
             -webkit-font-smoothing: antialiased;
         }
 
+
+        /* ─── Login & Users ─── */
+        .login-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: var(--bg);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .login-box {
+            background: var(--card); border-radius: 18px;
+            padding: 28px 20px 24px; width: 88%; max-width: 320px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+            text-align: center;
+        }
+        .login-box h2 { font-size: 1.1rem; font-weight: 900; margin: 0 0 3px; color: var(--text-dark); }
+        .login-box .sub { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 20px; }
+        .user-list-login { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+        .user-btn {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; border-radius: 12px;
+            border: 1.5px solid var(--border); background: #f8fafc;
+            cursor: pointer; transition: border-color 0.15s, background 0.15s;
+            text-align: right; font-family: inherit; width: 100%;
+        }
+        .user-btn:active { border-color: var(--primary); background: #eff6ff; }
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: #dbeafe; color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.05rem; flex-shrink: 0;
+        }
+        .user-btn-name { font-size: 0.88rem; font-weight: 800; color: var(--text-dark); }
+        .login-selected-user {
+            display: flex; align-items: center; gap: 8px;
+            background: #eff6ff; border-radius: 10px;
+            padding: 9px 14px; margin-bottom: 10px; text-align: right;
+        }
+        .login-selected-user i { color: var(--primary); font-size: 1rem; }
+        .login-selected-user span { font-size: 0.88rem; font-weight: 800; color: var(--primary); }
+        .current-user-bar { display: flex; align-items: center; gap: 7px; padding: 0 2px; }
+        .current-user-avatar {
+            width: 28px; height: 28px; border-radius: 8px;
+            background: #dbeafe; color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; flex-shrink: 0;
+        }
+        .current-user-name { font-size: 0.78rem; font-weight: 800; color: var(--text-dark); }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-4px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -404,7 +450,7 @@
             position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
             color: var(--text-muted); font-size: 0.82rem; pointer-events: none;
         }
-        .modal input, .modal select {
+        .modal input, .modal select, .modal-standalone-input {
             display: block; margin: 0; width: 100%; height: 41px; padding: 0 34px 0 12px;
             background: #fff; border: 1.5px solid var(--border);
             border-radius: 12px; outline: none;
@@ -413,8 +459,8 @@
             appearance: none; -webkit-appearance: none;
             box-sizing: border-box;
         }
-        .modal input:focus, .modal select:focus { border-color: var(--primary); background: white; }
-        .modal input::placeholder { color: #94a3b8; font-weight: 600; }
+        .modal input:focus, .modal select:focus, .modal-standalone-input:focus { border-color: var(--primary); background: white; }
+        .modal input::placeholder, .modal-standalone-input::placeholder { color: #94a3b8; font-weight: 600; }
         .modal input[type=date]::-webkit-date-and-time-value { text-align: right; margin: 0; }
         .input-row { display: flex; gap: 8px; }
         .input-row .input-wrap { flex: 1; }
@@ -535,8 +581,110 @@
 </head>
 <body>
 
+<!-- ══ نافذة تسجيل الدخول ══ -->
+<div id="login-overlay" class="login-overlay" style="display:none;">
+    <div class="login-box">
+        <div style="font-size:2rem;margin-bottom:10px;">🏪</div>
+        <h2 id="login-store-title">محلك</h2>
+        <div class="sub">اختر حسابك للدخول</div>
+        <div class="user-list-login" id="login-user-list"></div>
+        <div id="login-pin-section" style="display:none;">
+            <div class="login-selected-user">
+                <i class="fa-solid fa-circle-user"></i>
+                <span id="login-pin-label"></span>
+            </div>
+            <div class="input-wrap" style="margin-bottom:12px;">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="login-pin-input" placeholder="كلمة المرور"
+                    class="modal-standalone-input"
+                    onkeydown="if(event.key==='Enter')doLogin()">
+            </div>
+            <div id="login-error" style="color:var(--danger);font-size:0.78rem;font-weight:700;margin-bottom:10px;display:none;">كلمة المرور غير صحيحة</div>
+            <div class="modal-btns">
+                <button class="mbtn mbtn-cancel" onclick="cancelLoginPin()">رجوع</button>
+                <button class="mbtn mbtn-ok" onclick="doLogin()">دخول</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ══ نافذة إنشاء حساب المدير ══ -->
+<div class="modal-overlay" id="setup-admin-modal" style="align-items:center;">
+    <div class="modal" onclick="event.stopPropagation()" style="text-align:center;padding:32px 28px;">
+        <div style="font-size:2rem;margin-bottom:10px;">👤</div>
+        <div style="font-size:1rem;font-weight:900;color:var(--text-dark);margin-bottom:4px;">أنشئ حساب المدير</div>
+        <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:20px;">سيكون الحساب الأساسي للتطبيق</div>
+        <div class="input-wrap" style="margin-bottom:8px;">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" id="setup-admin-name" placeholder="اسمك" style="text-align:right;" onkeydown="if(event.key==='Enter')document.getElementById('setup-admin-pass').focus()">
+        </div>
+        <div class="input-wrap" style="margin-bottom:16px;">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="setup-admin-pass" placeholder="كلمة المرور" style="text-align:right;" onkeydown="if(event.key==='Enter')saveSetupAdmin()">
+        </div>
+        <button onclick="saveSetupAdmin()" style="width:100%;height:41px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-family:inherit;font-size:0.88rem;font-weight:900;cursor:pointer;">ابدأ الاستخدام</button>
+    </div>
+</div>
+
+<!-- ══ نافذة إدارة المستخدمين ══ -->
+<div class="modal-overlay" id="users-modal" style="padding-top:25%;">
+    <div class="modal modal-full" onclick="event.stopPropagation()" style="overflow-y:auto;max-height:80vh;">
+        <div class="modal-top">
+            <div class="modal-ico blue"><i class="fa-solid fa-users-gear"></i></div>
+            <div><p class="modal-title">إدارة المستخدمين</p></div>
+            <button onclick="closeModals()" style="background:none;border:none;font-size:1.1rem;color:var(--text-muted);cursor:pointer;margin-right:auto;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="users-list" style="margin-bottom:14px;display:flex;flex-direction:column;gap:8px;"></div>
+        <button onclick="openAddUserForm()" style="width:100%;height:41px;border-radius:10px;border:1.5px dashed var(--border);background:none;color:var(--text-muted);font-family:inherit;font-size:0.85rem;font-weight:800;cursor:pointer;">＋ إضافة مستخدم</button>
+        <div style="margin-top:12px;">
+            <button onclick="closeModals();doLogout()" style="width:100%;height:41px;border-radius:10px;border:1.5px solid #fee2e2;background:#fff5f5;color:var(--danger);font-family:inherit;font-size:0.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fa-solid fa-right-from-bracket"></i> تسجيل خروج</button>
+        </div>
+
+    </div>
+</div>
+
+<!-- ══ نافذة إضافة مستخدم ══ -->
+<div class="modal-overlay" id="add-user-modal" style="padding-top:25%;">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-top">
+            <div class="modal-ico blue"><i class="fa-solid fa-user-plus"></i></div>
+            <div><p class="modal-title">إضافة مستخدم</p></div>
+        </div>
+        <div class="input-wrap">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" id="new-user-name" placeholder="الاسم" style="text-align:right;" onkeydown="if(event.key==='Enter')document.getElementById('new-user-pass').focus()">
+        </div>
+        <div class="input-wrap">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="new-user-pass" placeholder="كلمة المرور" style="text-align:right;" onkeydown="if(event.key==='Enter')saveNewUser()">
+        </div>
+        <div class="modal-btns">
+            <button class="mbtn mbtn-cancel" onclick="closeModals();setTimeout(()=>openModal('users-modal'),50)">إلغاء</button>
+            <button class="mbtn mbtn-ok" onclick="saveNewUser()">حفظ</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ نافذة تغيير كلمة المرور ══ -->
+<div class="modal-overlay" id="change-pass-modal" style="padding-top:25%;">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-top">
+            <div class="modal-ico blue"><i class="fa-solid fa-key"></i></div>
+            <div><p class="modal-title">تغيير كلمة المرور</p><p class="modal-subtitle" id="change-pass-username"></p></div>
+        </div>
+        <div class="input-wrap">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="change-pass-new" placeholder="كلمة المرور الجديدة" style="text-align:right;" onkeydown="if(event.key==='Enter')saveChangePass()">
+        </div>
+        <div class="modal-btns">
+            <button class="mbtn mbtn-cancel" onclick="closeModals();setTimeout(()=>openModal('users-modal'),50)">إلغاء</button>
+            <button class="mbtn mbtn-ok" onclick="saveChangePass()">حفظ</button>
+        </div>
+    </div>
+</div>
+
 <header>
     <div id="header-title"><h1 id="page-title">مبيعات</h1></div>
+
     <div class="search-bar" id="search-bar">
         <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted);font-size:0.8rem;flex-shrink:0;"></i>
         <input type="text" id="search-input" placeholder="بحث"  oninput="onSearch(this.value)" onkeydown="if(event.key==='Enter')this.blur();">
@@ -613,6 +761,7 @@
                     </div>
                 </div>
                 <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openStoreNameEdit()"><i class="fa-solid fa-store"></i> تعديل اسم المحل</button>
+                <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openUsersModal()"><i class="fa-solid fa-users-gear"></i> إدارة المستخدمين</button>
                 <div class="menu-import-export">
                     <button onclick="closeMenu(); document.getElementById('file-input').click()"><i class="fa-solid fa-file-arrow-up"></i> استيراد</button>
                     <button onclick="closeMenu(); exportData()"><i class="fa-solid fa-database"></i> تصدير</button>
@@ -1579,7 +1728,194 @@
 
 <script>
     // ─── Data State ───
-    let storeName = localStorage.getItem('mahalak_store_name') || 'المخزون';
+    // ── Users System ──
+    let appUsers = JSON.parse(localStorage.getItem('mahalak_users') || 'null') || [];
+    let currentUser = JSON.parse(localStorage.getItem('mahalak_current_user') || 'null');
+    let _loginTargetUser = null;
+
+    function saveUsers() {
+        localStorage.setItem('mahalak_users', JSON.stringify(appUsers));
+    }
+
+    function getInitials(name) {
+        const parts = name.trim().split(' ');
+        return parts.length >= 2 ? parts[0][0] + parts[1][0] : parts[0].slice(0,2);
+    }
+
+    function showLoginOverlay() {
+        const overlay = document.getElementById('login-overlay');
+        overlay.style.display = 'flex';
+        document.getElementById('login-pin-section').style.display = 'none';
+        document.getElementById('login-store-title').textContent = storeName || 'محلك';
+        const list = document.getElementById('login-user-list');
+        list.innerHTML = appUsers.map((u,i) => `
+            <button class="user-btn" onclick="selectLoginUser(${i})">
+                <div class="user-avatar"><i class="fa-solid fa-circle-user"></i></div>
+                <div class="user-btn-name">${u.name}</div>
+            </button>
+        `).join('');
+    }
+
+    function selectLoginUser(idx) {
+        _loginTargetUser = idx;
+        document.getElementById('login-user-list').style.display = 'none';
+        document.getElementById('login-pin-section').style.display = 'block';
+        document.getElementById('login-pin-label').textContent = appUsers[idx].name;
+        document.getElementById('login-pin-input').value = '';
+        document.getElementById('login-error').style.display = 'none';
+        setTimeout(() => document.getElementById('login-pin-input').focus(), 100);
+    }
+
+    function cancelLoginPin() {
+        _loginTargetUser = null;
+        document.getElementById('login-pin-section').style.display = 'none';
+        document.getElementById('login-user-list').style.display = 'flex';
+    }
+
+    function doLogin() {
+        const pin = document.getElementById('login-pin-input').value;
+        const user = appUsers[_loginTargetUser];
+        if(!user) return;
+        if(pin !== user.password) {
+            document.getElementById('login-error').style.display = 'block';
+            document.getElementById('login-pin-input').value = '';
+            setTimeout(() => document.getElementById('login-pin-input').focus(), 50);
+            return;
+        }
+        currentUser = { name: user.name, idx: _loginTargetUser };
+        localStorage.setItem('mahalak_current_user', JSON.stringify(currentUser));
+        document.getElementById('login-overlay').style.display = 'none';
+        updateUserBar();
+    }
+
+    function openSetupAdminModal() {
+        document.getElementById('setup-admin-name').value = '';
+        document.getElementById('setup-admin-pass').value = '';
+        document.getElementById('setup-admin-modal').classList.add('active');
+        setTimeout(() => document.getElementById('setup-admin-name').focus(), 100);
+    }
+
+    function saveSetupAdmin() {
+        const name = document.getElementById('setup-admin-name').value.trim();
+        const pass = document.getElementById('setup-admin-pass').value;
+        if(!name) return showToast('أدخل اسمك', 'error');
+        if(!pass) return showToast('أدخل كلمة المرور', 'error');
+        appUsers = [{ name, password: pass }];
+        saveUsers();
+        currentUser = { name, idx: 0 };
+        localStorage.setItem('mahalak_current_user', JSON.stringify(currentUser));
+        document.getElementById('setup-admin-modal').classList.remove('active');
+        updateStoreName();
+    }
+
+    function doLogout() {
+        currentUser = null;
+        localStorage.removeItem('mahalak_current_user');
+        showLoginOverlay();
+    }
+
+    function showLogoutConfirm() {
+        if(!currentUser) return;
+        showConfirm('تسجيل خروج ' + currentUser.name + '؟', doLogout);
+    }
+
+    function updateUserBar() {
+        if(!currentUser) return;
+        const bar = document.getElementById('current-user-bar');
+        bar.style.display = 'flex';
+        document.getElementById('current-user-avatar').innerHTML = '<i class="fa-solid fa-circle-user"></i>';
+        document.getElementById('current-user-name-display').textContent = currentUser.name;
+    }
+
+    function openUsersModal() {
+        renderUsersList();
+        openModal('users-modal');
+    }
+
+    function renderUsersList() {
+        const list = document.getElementById('users-list');
+        if(!appUsers.length) {
+            list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.82rem;font-weight:700;">لا يوجد مستخدمون</div>';
+            return;
+        }
+        list.innerHTML = appUsers.map((u,i) => `
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8fafc;border-radius:12px;border:1px solid var(--border);">
+                <div class="user-avatar" style="width:32px;height:32px;font-size:1rem;"><i class="fa-solid fa-circle-user"></i></div>
+                <div style="flex:1;">
+                    <div style="font-size:0.85rem;font-weight:800;color:var(--text-dark);">${u.name}</div>
+                </div>
+                <button onclick="openChangePass(${i})" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.85rem;padding:4px;"><i class="fa-solid fa-key"></i></button>
+                ${appUsers.length > 1 ? `<button onclick="deleteUser(${i})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.85rem;padding:4px;"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+            </div>
+        `).join('');
+    }
+
+    function hideUserForms() {
+        document.getElementById('add-user-form').style.display = 'none';
+        document.getElementById('change-pass-form').style.display = 'none';
+    }
+
+    function openAddUserForm() {
+        document.getElementById('new-user-name').value = '';
+        document.getElementById('new-user-pass').value = '';
+        closeModals();
+        setTimeout(() => {
+            openModal('add-user-modal');
+            setTimeout(() => document.getElementById('new-user-name').focus(), 100);
+        }, 50);
+    }
+
+    function saveNewUser() {
+        const name = document.getElementById('new-user-name').value.trim();
+        const pass = document.getElementById('new-user-pass').value;
+        if(!name) return showToast('أدخل اسم المستخدم', 'error');
+        if(!pass) return showToast('أدخل كلمة المرور', 'error');
+        if(appUsers.find(u => u.name === name)) return showToast('هذا الاسم موجود مسبقاً', 'error');
+        appUsers.push({ name, password: pass });
+        saveUsers();
+        closeModals();
+        setTimeout(() => { openModal('users-modal'); renderUsersList(); }, 50);
+    }
+
+    function deleteUser(idx) {
+        if(appUsers.length <= 1) return showAlert('يجب أن يبقى مستخدم واحد على الأقل');
+        const u = appUsers[idx];
+        showConfirm('حذف مستخدم "' + u.name + '"؟', () => {
+            appUsers.splice(idx, 1);
+            saveUsers();
+            if(currentUser && currentUser.idx === idx) doLogout();
+            else renderUsersList();
+        });
+    }
+
+    function openChangePass(idx) {
+        document.getElementById('change-pass-username').textContent = appUsers[idx].name;
+        document.getElementById('change-pass-new').value = '';
+        document.getElementById('change-pass-modal').dataset.userIdx = idx;
+        closeModals();
+        setTimeout(() => {
+            openModal('change-pass-modal');
+            setTimeout(() => document.getElementById('change-pass-new').focus(), 100);
+        }, 50);
+    }
+
+    function saveChangePass() {
+        const idx = parseInt(document.getElementById('change-pass-modal').dataset.userIdx);
+        const pass = document.getElementById('change-pass-new').value;
+        if(!pass) return showToast('أدخل كلمة المرور الجديدة', 'error');
+        appUsers[idx].password = pass;
+        saveUsers();
+        closeModals();
+        setTimeout(() => { openModal('users-modal'); renderUsersList(); }, 50);
+        showToast('تم تغيير كلمة المرور ✓');
+    }
+
+    // ── إضافة اسم المستخدم لكل عملية ──
+    function getCurrentUserName() {
+        return currentUser ? currentUser.name : 'غير معروف';
+    }
+
+        let storeName = localStorage.getItem('mahalak_store_name') || 'المخزون';
     let items = JSON.parse(localStorage.getItem('mahalak_items')) || [];
     let sales = JSON.parse(localStorage.getItem('mahalak_sales')) || [];
     let categories = JSON.parse(localStorage.getItem('mahalak_cats')) || [];
@@ -1882,7 +2218,7 @@
                             <span class="sale-item-amount">JD ${(si.qty*si.sellPrice).toFixed(2)}</span>
                         </div>`).join('')}
                         <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-                            <button onclick="event.stopPropagation();showTimeInfo(this,'${s.date}','${s.time||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
+                            <button onclick="event.stopPropagation();showTimeInfo(this,'${s.date}','${s.time||''}','${s.createdBy||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
                             <button onclick="event.stopPropagation();cancelSale(${s.id})" style="background:none;border:none;color:var(--danger);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-ban" style="margin-left:4px;"></i>إلغاء</button>
                             <button onclick="event.stopPropagation();openEditSale(${s.id})" style="background:none;border:none;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-pen-to-square" style="margin-left:4px;"></i>تعديل</button>
                         </div>
@@ -2093,7 +2429,7 @@
                         <span class="sale-item-amount">JD ${(p.buyPrice * p.qty).toFixed(2)}</span>
                     </div>`).join('')}
                     <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-                        <button onclick="event.stopPropagation();showTimeInfo(this,'${dateDisplay}','${ref.time||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
+                        <button onclick="event.stopPropagation();showTimeInfo(this,'${ref.date||''}','${ref.time||''}','${ref.createdBy||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
                         <button onclick="event.stopPropagation();openEditPurchaseInvoice('${invGid}')" style="background:none;border:none;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-pen-to-square" style="margin-left:4px;"></i>تعديل</button>
                     </div>
                 </div>
@@ -2101,11 +2437,13 @@
         }).join('');
     }
 
-    function showTimeInfo(el, date, time) {
+    function showTimeInfo(el, date, time, user) {
         document.querySelectorAll('.time-tooltip').forEach(t => t.remove());
         const tip = document.createElement('div');
         tip.className = 'time-tooltip';
-        tip.textContent = (date || '') + (time ? '  ·  ' + time : '');
+        let txt = (date || '') + (time ? '  ·  ' + time : '');
+        if(user) txt += '  ·  ' + user;
+        tip.textContent = txt;
         tip.style.cssText = 'position:fixed;background:#1e293b;color:#fff;font-size:0.72rem;font-weight:700;padding:5px 10px;border-radius:8px;z-index:9999;pointer-events:none;white-space:nowrap;font-family:Cairo,sans-serif;';
         document.body.appendChild(tip);
         const r = el.getBoundingClientRect();
@@ -2553,7 +2891,8 @@
                     supplier: supplier || null, supplierInvNum: invNum || null,
                     payType: puInvPayType,
                     paid: puInvPayType === 'cash' ? x.qty * x.buyPrice : 0,
-                    invoiceGroupId: groupId, invoiceTotal
+                    invoiceGroupId: groupId, invoiceTotal,
+                    createdBy: getCurrentUserName()
                 });
             });
 
@@ -2589,7 +2928,8 @@
                 supplier: supplier || null, supplierInvNum: invNum || null,
                 payType: puInvPayType,
                 paid: puInvPayType === 'cash' ? x.qty * x.buyPrice : 0,
-                invoiceGroupId, invoiceTotal
+                invoiceGroupId, invoiceTotal,
+                createdBy: getCurrentUserName()
             });
         });
 
@@ -3879,7 +4219,7 @@
                         <span class="sale-item-amount">JD ${x.total.toFixed(2)}</span>
                     </div>`).join('')}
                     <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-                        <button onclick="event.stopPropagation();showTimeInfo(this,'${ref.date||''}','${ref.time||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
+                        <button onclick="event.stopPropagation();showTimeInfo(this,'${ref.date||''}','${ref.time||''}','${ref.createdBy||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
                         ${gid ? `<button onclick="event.stopPropagation();openEditPurchaseInvoice('${gid}','modal')" style="background:none;border:none;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-pen-to-square" style="margin-left:4px;"></i>تعديل</button>` : '<span></span>'}
                     </div>
                 </div>
@@ -4038,7 +4378,7 @@
                         <span style="color:var(--danger);font-weight:800;">- JD ${s.discount.toFixed(2)}</span>
                     </div>` : ''}
                     <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-                        <button onclick="event.stopPropagation();showTimeInfo(this,'${s.date}','${s.time||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
+                        <button onclick="event.stopPropagation();showTimeInfo(this,'${s.date}','${s.time||''}','${s.createdBy||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
                         <button onclick="event.stopPropagation();cancelSale(${s.id})" style="background:none;border:none;color:var(--danger);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-ban" style="margin-left:4px;"></i>إلغاء</button>
                         <button onclick="event.stopPropagation();openEditSale(${s.id})" style="background:none;border:none;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-pen-to-square" style="margin-left:4px;"></i>تعديل</button>
                     </div>
@@ -4683,7 +5023,8 @@
                 payType: sellPayType,
                 customerName: customerName || null,
                 paid: sellPayType === 'cash' ? total : 0,
-                items: saleItems
+                items: saleItems,
+                createdBy: getCurrentUserName()
             });
         }
 
@@ -5251,7 +5592,8 @@
             amount: Math.round(amount * 100) / 100,
             date: dateObj.toLocaleDateString(),
             dateISO: dateVal,
-            time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            createdBy: getCurrentUserName()
         });
         saveData();
         closeModals();
@@ -5515,7 +5857,7 @@
                 <div class="sale-details" style="display:none;padding:0 16px 12px;">
                     ${e.note ? `<div style="font-weight:700;color:var(--text-muted);margin-bottom:8px;">${e.note}</div>` : ''}
                     <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border);">
-                        <button onclick="event.stopPropagation();showTimeInfo(this,'${e.date||''}','${e.time||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
+                        <button onclick="event.stopPropagation();showTimeInfo(this,'${e.date||''}','${e.time||''}','${e.createdBy||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
                         <button onclick="event.stopPropagation();openEditExpenseModal(${e.id})" style="background:none;border:none;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-pen-to-square" style="margin-left:4px;"></i>تعديل</button>
                     </div>
                 </div>
@@ -5645,7 +5987,7 @@
         if(isNaN(openingVal) || isNaN(closingVal)) { showAlert('تنبيه','أدخل الرصيد الأولي والجرد الفعلي'); return; }
         const { cashSales, cashPurchases, dayExpenses, dayWithdrawals, expected } = calcDayExpected(selectedDate, openingVal);
         const diff = closingVal - expected;
-        const entry = { date: selectedDate, opening: openingVal, closing: closingVal, expected: Math.round(expected*100)/100, cashSales, cashPurchases, dayExpenses, dayWithdrawals, diff: Math.round(diff*100)/100 };
+        const now2 = new Date(); const entry = { date: selectedDate, opening: openingVal, closing: closingVal, expected: Math.round(expected*100)/100, cashSales, cashPurchases, dayExpenses, dayWithdrawals, diff: Math.round(diff*100)/100, time: now2.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), createdBy: getCurrentUserName() };
         const idx = cashLog.findIndex(r => r.date === selectedDate);
         if(idx >= 0) cashLog[idx] = entry; else cashLog.push(entry);
         document.getElementById('cash-opening').value = '';
@@ -5714,7 +6056,7 @@
                         </div>
                     </div>` : ''}
                     <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-                        <button onclick="event.stopPropagation();showTimeInfo(this,'${formatDate(r.date)}','${r.time||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
+                        <button onclick="event.stopPropagation();showTimeInfo(this,'${formatDate(r.date)}','${r.time||''}','${r.createdBy||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
                         <button onclick="event.stopPropagation();loadCashEntryForEditByDate('${r.date}')" style="background:none;border:none;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-pen-to-square" style="margin-left:4px;"></i>تعديل</button>
                     </div>
                 </div>
@@ -5752,7 +6094,7 @@
         } else {
             const now = new Date();
             const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            withdrawals.push({ id: Date.now(), date, amount, reason, time });
+            withdrawals.push({ id: Date.now(), date, amount, reason, time, createdBy: getCurrentUserName() });
         }
         document.getElementById('wd-amount').value = '';
         document.getElementById('wd-reason').value = '';
@@ -5803,7 +6145,7 @@
                 </div>
                 <div class="sale-details" style="display:none;padding:0 16px 12px;">
                     <div style="display:flex;justify-content:space-between;margin-top:4px;padding-top:8px;border-top:1px solid var(--border);">
-                        <button onclick="event.stopPropagation();showTimeInfo(this,'${formatDate(w.date)}','${w.time||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
+                        <button onclick="event.stopPropagation();showTimeInfo(this,'${formatDate(w.date)}','${w.time||''}','${w.createdBy||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
                         <button onclick="event.stopPropagation();deleteWithdrawal(${w.id})" style="background:none;border:none;color:var(--danger);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-trash-can" style="margin-left:4px;"></i>حذف</button>
                         <button onclick="event.stopPropagation();editWithdrawal(${w.id})" style="background:none;border:none;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-pen-to-square" style="margin-left:4px;"></i>تعديل</button>
                     </div>
@@ -5893,6 +6235,10 @@
         localStorage.setItem('mahalak_store_name', storeName);
         document.getElementById('setup-modal').classList.remove('active');
         updateStoreName();
+        // أول تشغيل — اطلب إنشاء حساب المدير
+        if(!appUsers.length) {
+            setTimeout(() => openSetupAdminModal(), 200);
+        }
     }
 
     function updateStoreName() {
@@ -5906,8 +6252,26 @@
         updateStoreName();
     }
 
+    // ── تشغيل نظام المستخدمين ──
+    setTimeout(function initUsers() {
+        const isFirstRun = !localStorage.getItem('mahalak_store_name');
+        if(isFirstRun) return; // setup-modal ستتولى الأمر
+        if(!appUsers.length) {
+            // بيانات قديمة بدون مستخدمين — أظهر نافذة إنشاء حساب
+            setTimeout(() => openSetupAdminModal(), 200);
+            return;
+        }
+        if(currentUser && appUsers[currentUser.idx] && appUsers[currentUser.idx].name === currentUser.name) {
+            // مسجّل مسبقاً
+        } else {
+            localStorage.removeItem('mahalak_current_user');
+            currentUser = null;
+            showLoginOverlay();
+        }
+    }, 0);
+
     // Mobile Visual Viewport Handling
-    const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal'].map(id=>document.getElementById(id));
+    const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal','add-user-modal','change-pass-modal','users-modal','setup-admin-modal'].map(id=>document.getElementById(id));
     const topFixedOverlays = ['suppliers-modal','customers-modal','sup-sheet-overlay','cust-sheet-overlay','cat-sheet-overlay'].map(id=>document.getElementById(id));
     const tallOverlays = ['cart-modal','edit-item-modal','sell-search-modal','pu-inv-search-modal','new-purchase-modal'].map(id=>document.getElementById(id));
     const centerOverlays = ['stats-modal','sales-history-modal','purchases-modal','del-purchases-modal','debt-modal','cust-debt-modal','payment-logs-modal','expenses-modal','cash-log-modal','withdrawals-modal'].map(id=>document.getElementById(id));
