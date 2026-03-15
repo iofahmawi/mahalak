@@ -6483,6 +6483,21 @@
                 else { ov.style.height = ''; ov.style.top = ''; ov.style.alignItems = 'flex-start'; ov.style.paddingTop = '12%'; }
             } else { ov.style.height = ''; ov.style.top = ''; }
         });
+
+        // شاشة تسجيل الدخول وإعداد المحل (display:flex دائماً)
+        ['login-overlay', 'setup-modal', 'setup-admin-modal'].forEach(id => {
+            const ov = document.getElementById(id);
+            if(!ov || ov.style.display === 'none') return;
+            if(kbOpen) {
+                ov.style.height     = vh + 'px';
+                ov.style.alignItems = 'center';
+                ov.style.paddingTop = '0';
+            } else {
+                ov.style.height     = '';
+                ov.style.alignItems = 'center';
+                ov.style.paddingTop = '0';
+            }
+        });
     }
 
     if (window.visualViewport) {
