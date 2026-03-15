@@ -800,7 +800,7 @@
                 <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openUsersModal()"><i class="fa-solid fa-users-gear"></i> إدارة المستخدمين</button>
                 <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openStoreNameEdit()"><i class="fa-solid fa-store"></i> تعديل اسم المحل</button>
                 <div class="menu-import-export">
-                    <button onclick="closeMenu(); document.getElementById('file-input').click()"><i class="fa-solid fa-file-arrow-up"></i> استيراد</button>
+                    <button onclick="if(isAdmin()){closeMenu();document.getElementById('file-input').click();}else{closeMenu();showToast('ليس لديك صلاحية','error');}"><i class="fa-solid fa-file-arrow-up"></i> استيراد</button>
                     <button onclick="closeMenu(); exportData()"><i class="fa-solid fa-database"></i> تصدير</button>
                 </div>
 
