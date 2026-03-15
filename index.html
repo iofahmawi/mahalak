@@ -6434,7 +6434,7 @@
     }, 0);
 
     // Mobile Visual Viewport Handling
-    const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal','add-user-modal','change-pass-modal','users-modal','setup-admin-modal','edit-perms-modal','setup-modal'].map(id=>document.getElementById(id));
+    const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal','add-user-modal','change-pass-modal','users-modal','setup-admin-modal','edit-perms-modal','setup-modal','add-item-modal'].map(id=>document.getElementById(id));
     const topFixedOverlays = ['suppliers-modal','customers-modal','sup-sheet-overlay','cust-sheet-overlay','cat-sheet-overlay'].map(id=>document.getElementById(id));
     const tallOverlays = ['cart-modal','edit-item-modal','sell-search-modal','pu-inv-search-modal','new-purchase-modal'].map(id=>document.getElementById(id));
     const centerOverlays = ['stats-modal','sales-history-modal','purchases-modal','del-purchases-modal','debt-modal','cust-debt-modal','payment-logs-modal','expenses-modal','cash-log-modal','withdrawals-modal'].map(id=>document.getElementById(id));
@@ -6454,8 +6454,8 @@
                 ov.style.paddingTop = '0';
             } else {
                 ov.style.height     = '';
-                ov.style.alignItems = 'flex-start';
-                ov.style.paddingTop = '25%';
+                ov.style.alignItems = 'center';
+                ov.style.paddingTop = '0';
             }
         });
 
@@ -6494,20 +6494,7 @@
         if(loginOv && loginOv.style.display !== 'none') {
             loginOv.style.height = kbOpen ? vh + 'px' : '';
         }
-        // شاشة إعداد المحل
-        ['setup-modal', 'setup-admin-modal'].forEach(id => {
-            const ov = document.getElementById(id);
-            if(!ov) return;
-            if(kbOpen) {
-                ov.style.height     = vh + 'px';
-                ov.style.alignItems = 'center';
-                ov.style.paddingTop = '0';
-            } else {
-                ov.style.height     = '';
-                ov.style.alignItems = 'center';
-                ov.style.paddingTop = '0';
-            }
-        });
+
     }
 
     if (window.visualViewport) {
