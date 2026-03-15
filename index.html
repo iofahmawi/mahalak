@@ -1875,8 +1875,11 @@
         currentUser = { name, idx: 0 };
         localStorage.setItem('mahalak_current_user', JSON.stringify(currentUser));
         document.getElementById('setup-admin-modal').classList.remove('active');
+        // أخفِ login-overlay إن كان ظاهراً
+        const lo = document.getElementById('login-overlay');
+        if(lo) lo.style.display = 'none';
         updateStoreName();
-        
+        render();
     }
 
     function doLogout() {
