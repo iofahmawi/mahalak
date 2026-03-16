@@ -939,7 +939,7 @@
         <div class="modal-top" style="align-items:flex-start;">
             <div class="modal-ico blue"><i class="fa-solid fa-basket-shopping"></i></div>
             <div style="flex:1;"><p class="modal-title">السلة</p><p class="modal-subtitle" id="cart-modal-sub"></p></div>
-            <button id="cart-print-btn" onclick="printInvoice(sales.find(x=>x.id===editingSaleId))" style="display:none;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.95rem;padding:4px;margin-top:-2px;"><i class="fa-solid fa-print"></i></button>
+            <button id="cart-print-btn" onclick="const _s = sales.find(x=>x.id===editingSaleId); if(_s){ const _copy = {..._s, payType: sellPayType}; printInvoice(_copy); }" style="display:none;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.95rem;padding:4px;margin-top:-2px;"><i class="fa-solid fa-print"></i></button>
         </div>
         <div id="sell-customer-wrap" style="display:block;">
             <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 4px;">
@@ -2813,8 +2813,8 @@
         puInvPayType = t;
         const toggle = document.getElementById('pu-inv-pay-toggle');
         if(toggle) {
-            toggle.innerText = t === 'cash' ? 'نقدي' : t === 'card' ? 'بطاقة' : 'آجل';
-            toggle.style.color = t === 'cash' ? 'var(--primary)' : t === 'card' ? '#7c3aed' : 'var(--danger)';
+            if(t === 'card') { toggle.innerHTML = '<span style="font-size:0.72rem;letter-spacing:-0.5px;"><span style="color:#1a1f71;font-weight:900;">Visa</span><span style="color:var(--text-muted);font-weight:700;margin:0 2px;">/</span><span style="color:#eb001b;font-weight:900;">Master</span><span style="color:#f79e1b;font-weight:900;">card</span></span>'; toggle.style.color = ''; }
+            else { toggle.innerText = t === 'cash' ? 'نقدي' : 'آجل'; toggle.style.color = t === 'cash' ? 'var(--primary)' : 'var(--danger)'; }
         }
     }
 
@@ -3539,8 +3539,8 @@
         const toggle = document.getElementById('sell-pay-toggle');
         const custWrap = document.getElementById('sell-customer-wrap');
         if(toggle) {
-            toggle.innerText = t === 'cash' ? 'نقدي' : t === 'card' ? 'بطاقة' : 'آجل';
-            toggle.style.color = t === 'cash' ? 'var(--primary)' : t === 'card' ? '#7c3aed' : 'var(--danger)';
+            if(t === 'card') { toggle.innerHTML = '<span style="font-size:0.72rem;letter-spacing:-0.5px;"><span style="color:#1a1f71;font-weight:900;">Visa</span><span style="color:var(--text-muted);font-weight:700;margin:0 2px;">/</span><span style="color:#eb001b;font-weight:900;">Master</span><span style="color:#f79e1b;font-weight:900;">card</span></span>'; toggle.style.color = ''; }
+            else { toggle.innerText = t === 'cash' ? 'نقدي' : 'آجل'; toggle.style.color = t === 'cash' ? 'var(--primary)' : 'var(--danger)'; }
         }
         if(custWrap) custWrap.style.display = 'block';
     }
@@ -3963,8 +3963,8 @@
         currentPayType = t;
         const toggle = document.getElementById('pay-toggle');
         if(toggle) {
-            toggle.innerText = t === 'cash' ? 'نقدي' : t === 'card' ? 'بطاقة' : 'آجل';
-            toggle.style.color = t === 'cash' ? 'var(--primary)' : t === 'card' ? '#7c3aed' : 'var(--danger)';
+            if(t === 'card') { toggle.innerHTML = '<span style="font-size:0.72rem;letter-spacing:-0.5px;"><span style="color:#1a1f71;font-weight:900;">Visa</span><span style="color:var(--text-muted);font-weight:700;margin:0 2px;">/</span><span style="color:#eb001b;font-weight:900;">Master</span><span style="color:#f79e1b;font-weight:900;">card</span></span>'; toggle.style.color = ''; }
+            else { toggle.innerText = t === 'cash' ? 'نقدي' : 'آجل'; toggle.style.color = t === 'cash' ? 'var(--primary)' : 'var(--danger)'; }
         }
     }
 
@@ -5248,7 +5248,7 @@
   body { font-family:'Segoe UI',Tahoma,Arial,sans-serif; background:#fff; color:#1e293b; direction:rtl; font-size:13px; }
   .page { max-width:600px; margin:30px auto; padding:20px; }
   .box { border:1.5px solid #1e293b; border-radius:8px; overflow:hidden; }
-  .box-header { padding:18px 20px 14px; border-bottom:1.5px solid #1e293b; display:flex; justify-content:space-between; align-items:flex-start; }
+  .box-header { padding:14px 20px 10px; border-bottom:1.5px solid #1e293b; display:flex; flex-direction:column; }
   .store-name { font-size:1.3rem; font-weight:900; color:#1e293b; }
   .store-sub { font-size:0.7rem; color:#1e293b; margin-top:2px; font-weight:600; }
   .inv-num { font-size:0.85rem; font-weight:900; color:#1e293b; text-align:left; }
@@ -5256,7 +5256,7 @@
   .box-info { padding:12px 20px; border-bottom:1px dashed #cbd5e1; display:flex; justify-content:space-between; align-items:center; }
   .field label { font-size:0.65rem; font-weight:700; color:#1e293b; display:block; margin-bottom:2px; }
   .field span { font-size:0.82rem; font-weight:800; color:#1e293b; }
-  .badge { display:inline-block; font-size:0.82rem; font-weight:900; color:#1e293b; }
+  .badge { display:inline-block; font-size:0.82rem; font-weight:900; color:#1e293b; margin-bottom:8px; }
   .cash { } .credit-due { } .credit-paid { }
   .item-row { padding:12px 20px; display:flex; justify-content:space-between; align-items:center; }
   .item-name { font-size:0.88rem; font-weight:800; color:#1e293b; }
@@ -5272,19 +5272,21 @@
 <body>
 <div class="page">
   <div class="box">
-    <div class="box-header">
-      <div>
-        <div class="store-name">${storeName}</div>
-        <div class="store-sub">فاتورة مشتريات</div>
-      </div>
-      <div style="text-align:center;align-self:flex-start;padding-top:2px;">
-        <div class="badge ${isCash ? 'cash' : remaining > 0 ? 'credit-due' : 'credit-paid'}">
-          ${isCash ? 'نقداً' : remaining > 0 ? 'آجل' : 'مسدّد'}
+    <div style="padding:14px 20px 10px;border-bottom:1.5px solid #1e293b;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div class="store-name">${storeName}</div>
+          <div class="store-sub">فاتورة مشتريات</div>
         </div>
-      </div>
-      <div>
-        ${p.supplierInvNum ? `<div class="inv-num">#${p.supplierInvNum}</div>` : ''}
-        <div class="inv-meta">${p.date}<br>${p.time}</div>
+        <div style="text-align:center;">
+          <div class="badge ${isCash ? 'cash' : remaining > 0 ? 'credit-due' : 'credit-paid'}" style="font-size:0.85rem;">
+            ${p.payType === 'card' ? 'Visa/Mastercard' : isCash ? 'نقداً' : remaining > 0 ? 'آجل' : 'مسدّد'}
+          </div>
+        </div>
+        <div>
+          ${p.supplierInvNum ? `<div class="inv-num">#${p.supplierInvNum}</div>` : ''}
+          <div class="inv-meta">${p.date}<br>${p.time}</div>
+        </div>
       </div>
     </div>
     <div class="box-info">
@@ -5343,7 +5345,7 @@
   .store-sub { font-size:0.7rem; margin-top:2px; font-weight:600; }
   .inv-num { font-size:0.85rem; font-weight:900; text-align:left; }
   .inv-meta { font-size:0.7rem; margin-top:3px; font-weight:600; line-height:1.7; text-align:left; }
-  .badge { font-size:0.82rem; font-weight:900; }
+  .badge { font-size:0.82rem; font-weight:900; margin-bottom:8px; }
   .box-info { padding:10px 20px; border-bottom:1px dashed #cbd5e1; }
   .field label { font-size:0.65rem; font-weight:700; display:block; margin-bottom:2px; }
   .field span { font-size:0.82rem; font-weight:800; }
@@ -5360,15 +5362,19 @@
 <body>
 <div class="page">
   <div class="box">
-    <div class="box-header">
-      <div>
-        <div class="store-name">${storeName}</div>
-        <div class="store-sub">فاتورة مشتريات</div>
-      </div>
-      <div><div class="badge">${isCash ? 'نقداً' : 'آجل'}</div></div>
-      <div>
-        ${invNum ? `<div class="inv-num">#${invNum}</div>` : ''}
-        <div class="inv-meta">${dateLocal}${supplier ? `<br><span style="font-weight:800;">${supplier}</span>` : ''}</div>
+    <div style="padding:14px 20px 10px;border-bottom:1.5px solid #1e293b;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div class="store-name">${storeName}</div>
+          <div class="store-sub">فاتورة مشتريات</div>
+        </div>
+        <div style="text-align:center;">
+          <div class="badge" style="font-size:0.85rem;">${puInvPayType === 'card' ? 'Visa/Mastercard' : isCash ? 'نقداً' : 'آجل'}</div>
+        </div>
+        <div>
+          ${invNum ? `<div class="inv-num">#${invNum}</div>` : ''}
+          <div class="inv-meta">${dateLocal}${supplier ? `<br><span style="font-weight:800;">${supplier}</span>` : ''}</div>
+        </div>
       </div>
     </div>
     <table class="items-table">
@@ -5440,7 +5446,7 @@
   body { font-family:'Segoe UI',Tahoma,Arial,sans-serif; background:#fff; color:#1e293b; direction:rtl; font-size:13px; }
   .page { max-width:600px; margin:30px auto; padding:20px; }
   .box { border:1.5px solid #1e293b; border-radius:8px; overflow:hidden; }
-  .box-header { padding:18px 20px 14px; border-bottom:1.5px solid #1e293b; display:flex; justify-content:space-between; align-items:flex-start; }
+  .box-header { padding:14px 20px 10px; border-bottom:1.5px solid #1e293b; display:flex; flex-direction:column; }
   .store-name { font-size:1.3rem; font-weight:900; color:#1e293b; }
   .store-sub { font-size:0.7rem; color:#1e293b; margin-top:2px; font-weight:600; }
   .inv-num { font-size:0.85rem; font-weight:900; color:#1e293b; text-align:left; }
@@ -5609,7 +5615,7 @@
 
   .box { border:1.5px solid #1e293b; border-radius:8px; overflow:hidden; margin-bottom:0; }
 
-  .box-header { padding:18px 20px 14px; border-bottom:1.5px solid #1e293b; display:flex; justify-content:space-between; align-items:flex-start; }
+  .box-header { padding:14px 20px 10px; border-bottom:1.5px solid #1e293b; display:flex; flex-direction:column; }
   .store-name { font-size:1.3rem; font-weight:900; color:#1e293b; }
   .store-sub { font-size:0.7rem; color:#1e293b; margin-top:2px; font-weight:600; }
   .inv-num { font-size:0.85rem; font-weight:900; color:#1e293b; text-align:left; }
@@ -5618,7 +5624,7 @@
   .box-info { padding:12px 20px; border-bottom:1px dashed #cbd5e1; display:flex; justify-content:space-between; align-items:center; }
   .field label { font-size:0.65rem; font-weight:700; color:#1e293b; display:block; margin-bottom:2px; }
   .field span { font-size:0.82rem; font-weight:800; color:#1e293b; }
-  .badge { display:inline-block; font-size:0.82rem; font-weight:900; color:#1e293b; }
+  .badge { display:inline-block; font-size:0.82rem; font-weight:900; color:#1e293b; margin-bottom:8px; }
   .cash { } .credit-due { } .credit-paid { }
 
   table { width:100%; border-collapse:collapse; }
@@ -5647,18 +5653,20 @@
 <div class="page">
   <div class="box">
     <div class="box-header">
-      <div>
-        <div class="store-name">${storeName}</div>
-        <div class="store-sub">فاتورة مبيعات</div>
-      </div>
-      <div style="text-align:center;align-self:flex-start;padding-top:2px;">
-        <div class="badge ${isCredit ? (remaining > 0 ? 'credit-due' : 'credit-paid') : 'cash'}">
-          ${isCredit ? (remaining > 0 ? 'آجل' : 'مسدّد') : 'نقداً'}
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;width:100%;">
+        <div>
+          <div class="store-name">${storeName}</div>
+          <div class="store-sub">فاتورة مبيعات</div>
         </div>
-      </div>
-      <div>
-        <div class="inv-num">#${s.invoiceNumber}</div>
-        <div class="inv-meta">${s.date}${s.customerName ? `<br><span style="font-weight:800;">${s.customerName}</span>` : ''}</div>
+        <div style="text-align:center;">
+          <div class="badge ${s.payType === 'card' ? 'cash' : isCredit ? (remaining > 0 ? 'credit-due' : 'credit-paid') : 'cash'}" style="font-size:0.85rem;">
+            ${s.payType === 'card' ? 'Visa/Mastercard' : isCredit ? (remaining > 0 ? 'آجل' : 'مسدّد') : 'نقداً'}
+          </div>
+        </div>
+        <div>
+          <div class="inv-num">#${s.invoiceNumber}</div>
+          <div class="inv-meta">${s.date}${s.customerName ? `<br><span style="font-weight:800;">${s.customerName}</span>` : ''}</div>
+        </div>
       </div>
     </div>
 
