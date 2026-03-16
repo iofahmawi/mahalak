@@ -628,6 +628,84 @@
         </div>
     </div>
 </div>
+<!-- ══ نافذة سجل الموردين ══ -->
+<div class="modal-overlay" id="supplier-logs-modal" style="align-items:center;padding:0;">
+    <div class="modal" style="max-height:82vh;display:flex;flex-direction:column;width:92%;max-width:360px;padding-left:0;padding-right:0;" onclick="event.stopPropagation()">
+        <div class="modal-top" style="padding:0 20px;">
+            <div class="modal-ico blue"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div style="flex:1"><p class="modal-title">سجل الموردين</p><p class="modal-subtitle" id="sup-logs-sub"></p></div>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;padding:0 20px;">
+            <button id="sl-mode-day" onclick="setSlMode('day')" style="flex:1;height:32px;border-radius:8px;border:2px solid var(--primary);background:#fff;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;">يوم</button>
+            <button id="sl-mode-range" onclick="setSlMode('range')" style="flex:1;height:32px;border-radius:8px;border:1.5px solid var(--border);background:#f8fafc;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;">فترة</button>
+            <button id="sl-mode-all" onclick="setSlMode('all')" style="flex:1;height:32px;border-radius:8px;border:1.5px solid var(--border);background:#f8fafc;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;">الكل</button>
+        </div>
+        <div id="sl-date-day" style="margin:0 20px 10px;">
+            <input type="date" id="sl-date" style="display:block;width:100%;height:41px;border:1.5px solid var(--border);border-radius:12px;padding:0 10px;box-sizing:border-box;font-family:inherit;font-size:0.85rem;font-weight:700;color:var(--text-dark);background:#f8fafc;outline:none;-webkit-appearance:none;" onchange="renderSupplierLogs()">
+        </div>
+        <div id="sl-date-range" style="display:none;margin:0 20px 10px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <input type="date" id="sl-date-from" style="flex:1;height:41px;border:1.5px solid var(--border);border-radius:12px;padding:0 10px;box-sizing:border-box;font-family:inherit;font-size:0.82rem;font-weight:700;color:var(--text-dark);background:#f8fafc;outline:none;-webkit-appearance:none;" onchange="renderSupplierLogs()">
+                <span style="font-size:0.75rem;font-weight:700;color:var(--text-muted);">إلى</span>
+                <input type="date" id="sl-date-to" style="flex:1;height:41px;border:1.5px solid var(--border);border-radius:12px;padding:0 10px;box-sizing:border-box;font-family:inherit;font-size:0.82rem;font-weight:700;color:var(--text-dark);background:#f8fafc;outline:none;-webkit-appearance:none;" onchange="renderSupplierLogs()">
+            </div>
+        </div>
+        <div style="margin:0 20px 10px;">
+            <div class="input-wrap" style="margin:0;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="sl-search" placeholder="بحث باسم المورد" oninput="renderSupplierLogs()">
+            </div>
+        </div>
+        <div id="sup-logs-list" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;padding:0 20px;"></div>
+        <div style="margin:10px 40px 0;border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:center;align-items:center;gap:8px;">
+            <div style="font-weight:700;color:var(--text-muted);">إجمالي المسدّد</div>
+            <div style="font-size:1rem;font-weight:900;color:#16a34a;" id="sup-logs-total">JD 0</div>
+        </div>
+        <div class="modal-btns" style="margin-top:10px;padding:0 20px;">
+            <button class="mbtn mbtn-cancel" onclick="closeModals()">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ نافذة سجل الزبائن ══ -->
+<div class="modal-overlay" id="customer-logs-modal" style="align-items:center;padding:0;">
+    <div class="modal" style="max-height:82vh;display:flex;flex-direction:column;width:92%;max-width:360px;padding-left:0;padding-right:0;" onclick="event.stopPropagation()">
+        <div class="modal-top" style="padding:0 20px;">
+            <div class="modal-ico blue"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div style="flex:1"><p class="modal-title">سجل الزبائن</p><p class="modal-subtitle" id="cust-logs-sub"></p></div>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;padding:0 20px;">
+            <button id="cl-mode-day" onclick="setClMode('day')" style="flex:1;height:32px;border-radius:8px;border:2px solid var(--primary);background:#fff;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;">يوم</button>
+            <button id="cl-mode-range" onclick="setClMode('range')" style="flex:1;height:32px;border-radius:8px;border:1.5px solid var(--border);background:#f8fafc;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;">فترة</button>
+            <button id="cl-mode-all" onclick="setClMode('all')" style="flex:1;height:32px;border-radius:8px;border:1.5px solid var(--border);background:#f8fafc;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;">الكل</button>
+        </div>
+        <div id="cl-date-day" style="margin:0 20px 10px;">
+            <input type="date" id="cl-date" style="display:block;width:100%;height:41px;border:1.5px solid var(--border);border-radius:12px;padding:0 10px;box-sizing:border-box;font-family:inherit;font-size:0.85rem;font-weight:700;color:var(--text-dark);background:#f8fafc;outline:none;-webkit-appearance:none;" onchange="renderCustomerLogs()">
+        </div>
+        <div id="cl-date-range" style="display:none;margin:0 20px 10px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <input type="date" id="cl-date-from" style="flex:1;height:41px;border:1.5px solid var(--border);border-radius:12px;padding:0 10px;box-sizing:border-box;font-family:inherit;font-size:0.82rem;font-weight:700;color:var(--text-dark);background:#f8fafc;outline:none;-webkit-appearance:none;" onchange="renderCustomerLogs()">
+                <span style="font-size:0.75rem;font-weight:700;color:var(--text-muted);">إلى</span>
+                <input type="date" id="cl-date-to" style="flex:1;height:41px;border:1.5px solid var(--border);border-radius:12px;padding:0 10px;box-sizing:border-box;font-family:inherit;font-size:0.82rem;font-weight:700;color:var(--text-dark);background:#f8fafc;outline:none;-webkit-appearance:none;" onchange="renderCustomerLogs()">
+            </div>
+        </div>
+        <div style="margin:0 20px 10px;">
+            <div class="input-wrap" style="margin:0;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="cl-search" placeholder="بحث باسم الزبون" oninput="renderCustomerLogs()">
+            </div>
+        </div>
+        <div id="cust-logs-list" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;padding:0 20px;"></div>
+        <div style="margin:10px 40px 0;border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:center;align-items:center;gap:8px;">
+            <div style="font-weight:700;color:var(--text-muted);">إجمالي المسدّد</div>
+            <div style="font-size:1rem;font-weight:900;color:#16a34a;" id="cust-logs-total">JD 0</div>
+        </div>
+        <div class="modal-btns" style="margin-top:10px;padding:0 20px;">
+            <button class="mbtn mbtn-cancel" onclick="closeModals()">إغلاق</button>
+        </div>
+    </div>
+</div>
+
 <!-- ══ نافذة إنشاء حساب المدير ══ -->
 <div class="modal-overlay" id="setup-admin-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()" style="text-align:center;padding:32px 28px;">
@@ -767,6 +845,7 @@
                     </button>
                     <div class="menu-submenu">
                         <button onclick="closeMenu(); openDebtModal()"><i class="fa-solid fa-file-invoice-dollar"></i> ذمم الموردين</button>
+                        <button onclick="closeMenu(); openSupplierLogsModal()"><i class="fa-solid fa-clock-rotate-left"></i> سجل الموردين</button>
                         <button onclick="if(requirePerm('contacts')){closeMenu();openSuppliersModal()}"><i class="fa-solid fa-truck"></i> إضافة مورد</button>
                     </div>
                 </div>
@@ -794,6 +873,7 @@
                     </button>
                     <div class="menu-submenu">
                         <button onclick="closeMenu(); openCustDebtModal()"><i class="fa-solid fa-user-clock"></i> ذمم الزبائن</button>
+                        <button onclick="closeMenu(); openCustomerLogsModal()"><i class="fa-solid fa-clock-rotate-left"></i> سجل الزبائن</button>
                         <button onclick="if(requirePerm('contacts')){closeMenu();openCustomersModal()}"><i class="fa-solid fa-users"></i> إضافة زبون</button>
                     </div>
                 </div>
@@ -1403,9 +1483,9 @@
             <div class="modal-ico red"><i class="fa-solid fa-money-bill-trend-up"></i></div>
             <div><p class="modal-title">تسجيل مصروف</p><p class="modal-subtitle">أدخل بيانات المصروف</p></div>
         </div>
-        <div class="input-wrap"><i class="fa-solid fa-pen"></i><input type="text" id="exp-name" placeholder="اسم المصروف" onkeydown="if(event.key==='Enter')confirmAddExpense()"></div>
+        <div class="input-wrap"><i class="fa-solid fa-pen"></i><input type="text" id="exp-name" placeholder="اسم المصروف" onkeydown="if(event.key==='Enter')document.getElementById('exp-beneficiary').focus()"></div>
+        <div class="input-wrap"><i class="fa-solid fa-user"></i><input type="text" id="exp-beneficiary" placeholder="المستفيد (اختياري)" onkeydown="if(event.key==='Enter')document.getElementById('exp-amount').focus()"></div>
         <div class="input-wrap"><i class="fa-solid fa-coins"></i><input type="number" id="exp-amount" inputmode="decimal" placeholder="المبلغ" onkeydown="if(event.key==='Enter')confirmAddExpense()"></div>
-        <div class="input-wrap"><i class="fa-solid fa-hashtag"></i><input type="text" id="exp-inv-num" placeholder="رقم الفاتورة (اختياري)"></div>
         <div class="input-wrap"><i class="fa-solid fa-calendar-days"></i><input type="date" id="exp-manual-date"></div>
         <div class="modal-btns">
             <button class="mbtn mbtn-cancel" onclick="closeModals()">إلغاء</button>
@@ -1417,14 +1497,14 @@
 <!-- نافذة تعديل مصروف -->
 <div class="modal-overlay" id="edit-expense-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()">
-        <div class="modal-top" style="padding:0 20px;">
+        <div class="modal-top">
             <div class="modal-ico red"><i class="fa-solid fa-money-bill-trend-up"></i></div>
             <div style="flex:1;"><p class="modal-title">تعديل مصروف</p><p class="modal-subtitle" id="edit-exp-sub"></p></div>
-            <button onclick="printExpenseFromEdit()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem;padding:6px;"><i class="fa-solid fa-print"></i></button>
+            <button onclick="printExpenseFromEdit()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem;padding:4px;"><i class="fa-solid fa-print"></i></button>
         </div>
         <div class="input-wrap"><i class="fa-solid fa-pen"></i><input type="text" id="edit-exp-name" placeholder="اسم المصروف"></div>
+        <div class="input-wrap"><i class="fa-solid fa-user"></i><input type="text" id="edit-exp-beneficiary" placeholder="المستفيد (اختياري)"></div>
         <div class="input-wrap"><i class="fa-solid fa-coins"></i><input type="number" id="edit-exp-amount" inputmode="decimal" placeholder="المبلغ"></div>
-        <div class="input-wrap"><i class="fa-solid fa-hashtag"></i><input type="text" id="edit-exp-inv-num" placeholder="رقم الفاتورة (اختياري)"></div>
         <div class="input-wrap"><i class="fa-solid fa-calendar-days"></i><input type="date" id="edit-exp-date"></div>
         <div class="modal-btns">
             <button class="mbtn mbtn-cancel" style="color:var(--danger);border-color:var(--danger);" onclick="deleteExpenseFromEdit()"><i class="fa-solid fa-trash-can"></i></button>
@@ -1553,7 +1633,7 @@
         </div>
         <!-- القائمة -->
         <div id="wd-list" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;padding:12px 20px;"></div>
-        <div style="border-top:1px solid var(--border);padding:10px 20px 0;display:flex;justify-content:center;align-items:center;gap:8px;">
+        <div style="margin:10px 40px 0;border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:center;align-items:center;gap:8px;">
             <div style="font-weight:700;color:var(--text-muted);">إجمالي المسحوبات</div>
             <div style="font-size:1rem;font-weight:900;color:#d97706;" id="wd-total">JD 0</div>
         </div>
@@ -3386,7 +3466,7 @@
                 const now = new Date();
                 purchases.push({
                     id: Date.now(),
-                    date: now.toLocaleDateString(),
+                    date: now.toLocaleDateString('en-CA'),
                     time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     itemId: it.id, itemName: it.name,
                     qty, buyPrice: buy, sellPrice: sell,
@@ -3830,6 +3910,7 @@
     }
 
     function openPaymentLogs(type, name) {
+        window._plogType = type; window._plogName = name;
         const logs = paymentLogs.filter(l => l.type === type && l.name === name).reverse();
         const typeLabel = type === 'supplier' ? 'مورد' : 'زبون';
         document.getElementById('plog-sub').innerText = `${name} - ${logs.length} تسديد`;
@@ -3848,16 +3929,36 @@
                     <span style="font-weight:700;color:#16a34a;">إجمالي المدفوع</span>
                     <span style="font-size:0.9rem;font-weight:900;color:#16a34a;">JD ${total.toFixed(2)}</span>
                 </div>
-                ${logs.map(l => `
+                ${logs.map((l,i) => `
                 <div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
                     <div>
                         <div style="font-size:0.75rem;font-weight:800;color:var(--text-dark);">${l.date}</div>
                         <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">${l.time}</div>
                     </div>
-                    <span style="font-size:0.9rem;font-weight:900;color:#16a34a;">JD ${l.amount.toFixed(2)}</span>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:0.9rem;font-weight:900;color:#16a34a;">JD ${l.amount.toFixed(2)}</span>
+                        <button onclick="event.stopPropagation();printReceiptFromLog(${i})" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.85rem;padding:2px;"><i class='fa-solid fa-print'></i></button>
+                    </div>
                 </div>`).join('')}`;
         }
         openModal('payment-logs-modal');
+    }
+
+    function printReceiptFromLog(idx) {
+        const type = window._plogType;
+        const name = window._plogName;
+        const logs = paymentLogs.filter(l => l.type === type && l.name === name).reverse();
+        const l = logs[idx];
+        if(!l) return;
+        const rcptNum = paymentLogs.indexOf(l) + 1;
+        let label = '';
+        if(l.invoices && l.invoices.length) {
+            label = type === 'customer'
+                ? 'سداد فاتورة مبيعات #' + l.invoices.map(inv => inv.num).join('، #')
+                : 'سداد فاتورة مشتريات #' + l.invoices.map(inv => inv.num).join('، #');
+        }
+        const html = buildReceiptHtml(name, l.amount, type, l.date, l.time, rcptNum, label);
+        openPrintWindow(html);
     }
 
     // ─── Customer Debt ───
@@ -3893,11 +3994,8 @@
             return `
             <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:12px 14px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                    <span style="font-size:0.9rem;font-weight:800;color:var(--text-dark);"><i class="fa-solid fa-user" style="margin-left:6px;color:var(--text-muted);font-size:0.75rem;"></i>${name}</span>
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:0.88rem;font-weight:900;color:var(--danger);">JD ${remaining.toFixed(2)}</span>
-                        <button onclick="openPaymentLogs('customer','${name.replace(/'/g,"\\'")}') " style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.82rem;" title=">سجل التسديدات"><i class="fa-solid fa-clock-rotate-left"></i></button>
-                    </div>
+                    <span style="font-size:0.9rem;font-weight:800;color:var(--text-dark);">${name}</span>
+                    <span style="font-size:0.88rem;font-weight:900;color:var(--danger);">JD ${remaining.toFixed(2)}</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;font-size:0.72rem;font-weight:700;color:var(--text-muted);margin-bottom:10px;">
                     <span>الإجمالي: JD ${v.total.toFixed(2)}</span>
@@ -3925,6 +4023,269 @@
         setTimeout(() => document.getElementById('pay-cust-debt-amount').focus(), 150);
     }
 
+
+    function _dateToISO(d) {
+        if(!d) return '';
+        // إذا كان ISO بالفعل
+        if(/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+        // تحويل من toLocaleDateString
+        const parsed = new Date(d);
+        if(!isNaN(parsed)) return parsed.toLocaleDateString('en-CA');
+        return '';
+    }
+
+        let _slMode = 'day', _clMode = 'day';
+
+    function openSupplierLogsModal() {
+        const today = new Date().toLocaleDateString('en-CA');
+        document.getElementById('sl-date').value = today;
+        document.getElementById('sl-date-from').value = today;
+        document.getElementById('sl-date-to').value = today;
+        _slMode = 'day';
+        setSlMode('day');
+        openModal('supplier-logs-modal');
+    }
+
+    function setSlMode(mode) {
+        _slMode = mode;
+        ['day','range','all'].forEach(m => {
+            const btn = document.getElementById('sl-mode-'+m);
+            const isActive = m === mode;
+            btn.style.border = isActive ? '2px solid var(--primary)' : '1.5px solid var(--border)';
+            btn.style.background = isActive ? '#fff' : '#f8fafc';
+            btn.style.color = isActive ? 'var(--primary)' : 'var(--text-muted)';
+        });
+        document.getElementById('sl-date-day').style.display = mode === 'day' ? 'block' : 'none';
+        document.getElementById('sl-date-range').style.display = mode === 'range' ? 'block' : 'none';
+        renderSupplierLogs();
+    }
+
+    function renderSupplierLogs() {
+        let logs = [...paymentLogs].filter(l => l.type === 'supplier');
+        if(_slMode === 'day') {
+            const dateStr = new Date(document.getElementById('sl-date').value).toLocaleDateString();
+            logs = logs.filter(l => l.date === dateStr);
+        } else if(_slMode === 'range') {
+            const dates = dateStringsInRange(
+                document.getElementById('sl-date-from').value,
+                document.getElementById('sl-date-to').value
+            );
+            logs = logs.filter(l => dates.has(l.date));
+        }
+        const q = (document.getElementById('sl-search')?.value || '').trim().toLowerCase();
+        if(q) logs = logs.filter(l => l.name.toLowerCase().includes(q));
+        logs = logs.reverse();
+        const total = logs.reduce((s,l) => s + l.amount, 0);
+        document.getElementById('sup-logs-sub').innerText = logs.length + ' تسديد';
+        document.getElementById('sup-logs-total').innerText = 'JD ' + total.toFixed(2);
+        const list = document.getElementById('sup-logs-list');
+        if(!logs.length) {
+            list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:0.85rem;font-weight:700;">لا توجد تسديدات</div>';
+            return;
+        }
+        list.innerHTML = logs.map((l,i) => {
+            // ابحث عن فواتير المورد المسددة بنفس التاريخ إذا لم تكن محفوظة
+            let invGid = null, invLabel = 'سداد ذمة مشتريات';
+            if(l.invoices && l.invoices.length) {
+                invLabel = 'سداد فاتورة مشتريات #' + l.invoices.map(inv => inv.num).join('، #');
+                invGid = l.invoices[0].gid;
+            } else {
+                // السجلات القديمة — ابحث عن فاتورة آجل للمورد
+                const supInv = purchases.find(p => p.supplier === l.name && p.payType === 'credit' && (p.paid||0) > 0);
+                if(supInv) {
+                    invGid = supInv.invoiceGroupId || supInv.id;
+                    invLabel = supInv.supplierInvNum ? 'سداد فاتورة مشتريات #' + supInv.supplierInvNum : 'سداد فاتورة مشتريات';
+                }
+            }
+            return `
+            <div class="sale-card" style="padding:0;">
+                <div class="sale-header" onclick="toggleSaleCard(this)" style="cursor:pointer;padding:10px 14px;margin-bottom:0;">
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <span style="font-size:0.85rem;font-weight:800;color:var(--text-dark);">${l.name}</span>
+                        <span style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">${l.date}</span>
+                    </div>
+                    <span style="font-size:0.88rem;font-weight:900;color:#16a34a;">JD ${l.amount.toFixed(2)}</span>
+                </div>
+                <div class="sale-details" style="display:none;padding:0 14px 10px;">
+                    <div style="font-size:0.75rem;font-weight:700;margin-bottom:8px;">
+                        ${invGid ? `<span onclick="event.stopPropagation();closeModals();setTimeout(()=>openEditPurchaseInvoice('${invGid}'),100)" style="cursor:pointer;color:var(--primary);font-weight:800;">${invLabel}</span>` : `<span style="color:var(--text-muted);">${invLabel}</span>`}
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <button onclick="event.stopPropagation();showTimeInfo(this,'${l.date}','${l.time}','')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
+                        <button onclick="event.stopPropagation();printReceiptFromLog2(${i},'supplier')" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.95rem;padding:2px 4px;"><i class="fa-solid fa-print"></i></button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function openCustomerLogsModal() {
+        const today = new Date().toLocaleDateString('en-CA');
+        document.getElementById('cl-date').value = today;
+        document.getElementById('cl-date-from').value = today;
+        document.getElementById('cl-date-to').value = today;
+        _clMode = 'day';
+        setClMode('day');
+        openModal('customer-logs-modal');
+    }
+
+    function setClMode(mode) {
+        _clMode = mode;
+        ['day','range','all'].forEach(m => {
+            const btn = document.getElementById('cl-mode-'+m);
+            const isActive = m === mode;
+            btn.style.border = isActive ? '2px solid var(--primary)' : '1.5px solid var(--border)';
+            btn.style.background = isActive ? '#fff' : '#f8fafc';
+            btn.style.color = isActive ? 'var(--primary)' : 'var(--text-muted)';
+        });
+        document.getElementById('cl-date-day').style.display = mode === 'day' ? 'block' : 'none';
+        document.getElementById('cl-date-range').style.display = mode === 'range' ? 'block' : 'none';
+        renderCustomerLogs();
+    }
+
+    function renderCustomerLogs() {
+        let logs = [...paymentLogs].filter(l => l.type === 'customer');
+        if(_clMode === 'day') {
+            const dateStr = new Date(document.getElementById('cl-date').value).toLocaleDateString();
+            logs = logs.filter(l => l.date === dateStr);
+        } else if(_clMode === 'range') {
+            const dates = dateStringsInRange(
+                document.getElementById('cl-date-from').value,
+                document.getElementById('cl-date-to').value
+            );
+            logs = logs.filter(l => dates.has(l.date));
+        }
+        const q = (document.getElementById('cl-search')?.value || '').trim().toLowerCase();
+        if(q) logs = logs.filter(l => l.name.toLowerCase().includes(q));
+        logs = logs.reverse();
+        const total = logs.reduce((s,l) => s + l.amount, 0);
+        document.getElementById('cust-logs-sub').innerText = logs.length + ' تسديد';
+        document.getElementById('cust-logs-total').innerText = 'JD ' + total.toFixed(2);
+        const list = document.getElementById('cust-logs-list');
+        if(!logs.length) {
+            list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:0.85rem;font-weight:700;">لا توجد تسديدات</div>';
+            return;
+        }
+        list.innerHTML = logs.map((l,i) => {
+            let invId = null, invLabel = 'سداد ذمة مبيعات';
+            if(l.invoices && l.invoices.length) {
+                invLabel = 'سداد فاتورة مبيعات #' + l.invoices.map(inv => inv.num).join('، #');
+                invId = l.invoices[0].id;
+            } else {
+                const custSale = sales.find(s => s.customerName === l.name && s.payType === 'credit' && (s.paid||0) > 0);
+                if(custSale) {
+                    invId = custSale.id;
+                    invLabel = custSale.invoiceNumber ? 'سداد فاتورة مبيعات #' + custSale.invoiceNumber : 'سداد فاتورة مبيعات';
+                }
+            }
+            return `
+            <div class="sale-card" style="padding:0;">
+                <div class="sale-header" onclick="toggleSaleCard(this)" style="cursor:pointer;padding:10px 14px;margin-bottom:0;">
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <span style="font-size:0.85rem;font-weight:800;color:var(--text-dark);">${l.name}</span>
+                        <span style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">${l.date}</span>
+                    </div>
+                    <span style="font-size:0.88rem;font-weight:900;color:#16a34a;">JD ${l.amount.toFixed(2)}</span>
+                </div>
+                <div class="sale-details" style="display:none;padding:0 14px 10px;">
+                    <div style="font-size:0.75rem;font-weight:700;margin-bottom:8px;">
+                        ${invId ? `<span onclick="event.stopPropagation();closeModals();setTimeout(()=>openEditSale(${invId}),100)" style="cursor:pointer;color:var(--primary);font-weight:800;">${invLabel}</span>` : `<span style="color:var(--text-muted);">${invLabel}</span>`}
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <button onclick="event.stopPropagation();showTimeInfo(this,'${l.date}','${l.time}','')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
+                        <button onclick="event.stopPropagation();printReceiptFromLog2(${i},'customer')" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.95rem;padding:2px 4px;"><i class="fa-solid fa-print"></i></button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function printReceiptFromLog2(idx, type) {
+        const logs = [...paymentLogs].filter(l => l.type === type).reverse();
+        const l = logs[idx];
+        if(!l) return;
+        const rcptNum = paymentLogs.indexOf(l) + 1;
+        let label = '';
+        if(l.invoices && l.invoices.length) {
+            label = type === 'customer'
+                ? 'سداد فاتورة مبيعات #' + l.invoices.map(inv => inv.num).join('، #')
+                : 'سداد فاتورة مشتريات #' + l.invoices.map(inv => inv.num).join('، #');
+        }
+        const html = buildReceiptHtml(l.name, l.amount, type, l.date, l.time, rcptNum, label);
+        openPrintWindow(html);
+    }
+
+    function buildReceiptHtml(name, amount, type, date, time, receiptNum, invLabel) {
+        return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>سند قبض #${receiptNum}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',Tahoma,Arial,sans-serif; background:#fff; color:#1e293b; direction:rtl; font-size:13px; }
+  .page { max-width:600px; margin:30px auto; padding:20px; }
+  .box { border:1.5px solid #1e293b; border-radius:8px; overflow:hidden; }
+  .box-header { padding:16px 20px 12px; border-bottom:1.5px solid #1e293b; display:flex; justify-content:space-between; align-items:flex-start; }
+  .store-name { font-size:1.3rem; font-weight:900; }
+  .store-sub { font-size:0.7rem; margin-top:2px; font-weight:600; color:#64748b; }
+  .receipt-num { font-size:0.85rem; font-weight:900; text-align:left; }
+  .receipt-meta { font-size:0.7rem; margin-top:3px; font-weight:600; color:#64748b; text-align:left; }
+  .body { padding:18px 20px; }
+  .row { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .row-label { font-size:0.78rem; font-weight:700; color:#64748b; }
+  .row-value { font-size:0.88rem; font-weight:900; color:#1e293b; }
+  .amount-box { border:1.5px solid #1e293b; border-radius:8px; padding:14px 20px; margin-top:6px; display:flex; justify-content:space-between; align-items:center; }
+  .amount-label { font-size:0.85rem; font-weight:900; }
+  .amount-value { font-size:1.3rem; font-weight:900; color:#16a34a; }
+  .footer { text-align:center; margin-top:24px; font-size:0.7rem; color:#64748b; font-weight:600; }
+
+  .sig-box { text-align:center; }
+  .sig-line { width:120px; border-bottom:1px solid #1e293b; margin:0 auto 6px; }
+  .sig-label { font-size:0.65rem; font-weight:700; color:#64748b; }
+  @media print { .page { margin:0 auto; padding:15px; } @page { margin:10mm; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="box">
+    <div class="box-header">
+      <div>
+        <div class="store-name">${storeName}</div>
+        <div class="store-sub">سند قبض</div>
+      </div>
+      <div>
+        <div class="receipt-num">#${receiptNum}</div>
+        <div class="receipt-meta">${date}</div>
+        <div class="receipt-meta">${time}</div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="row">
+        <div class="row-label">${type === 'customer' ? 'استلمنا من السادة المحترمين' : 'سددنا للسادة المحترمين'}</div>
+        <div class="row-value">${name}</div>
+      </div>
+      <div class="row">
+        <div class="row-label">البيان</div>
+        <div class="row-value">${invLabel || (type === 'customer' ? 'سداد ذمة مبيعات' : 'سداد ذمة مشتريات')}</div>
+      </div>
+      <div class="amount-box">
+        <div class="amount-label">المبلغ المستلم</div>
+        <div class="amount-value">JD ${amount.toFixed(2)}</div>
+      </div>
+      <div style="margin-top:30px;text-align:center;">
+        <div style="font-size:0.72rem;font-weight:700;color:#64748b;">توقيع ${type === 'customer' ? 'المحل' : 'المورد'}</div>
+        <br>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>window.onload = () => window.print();<\/script>
+</body>
+</html>`;
+    }
+
     function payPartialCustDebt(custName, remaining) {
         const amount = Math.round((parseFloat(document.getElementById('pay-cust-debt-amount').value) || 0) * 100) / 100;
         if(amount <= 0) return showAlert('أدخل المبلغ');
@@ -3936,6 +4297,7 @@
 
     function applyCustPayment(custName, amount) {
         let left = amount;
+        const affectedInvNums = [];
         for(const s of sales) {
             if(left <= 0) break;
             if(s.customerName !== custName || s.payType !== 'credit') continue;
@@ -3944,6 +4306,7 @@
             const apply = Math.min(owed, left);
             s.paid = Math.round(((s.paid || 0) + apply) * 100) / 100;
             left = Math.round((left - apply) * 100) / 100;
+            affectedInvNums.push({ num: s.invoiceNumber || s.id, id: s.id });
         }
         const now = new Date();
         paymentLogs.push({
@@ -3951,12 +4314,21 @@
             type: 'customer',
             name: custName,
             amount,
-            date: now.toLocaleDateString(),
+            invoices: affectedInvNums,
+            date: now.toLocaleDateString('en-CA'),
             time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         });
         saveData();
+        const _rcptNum = paymentLogs.length;
+        const _date = now.toLocaleDateString();
+        const _time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const _label = affectedInvNums.length ? 'سداد فاتورة مبيعات #' + affectedInvNums.map(i=>i.num).join('، #') : 'سداد ذمة مبيعات';
         closeModals();
         setTimeout(() => openCustDebtModal(), 200);
+        setTimeout(() => {
+            const html = buildReceiptHtml(custName, amount, 'customer', _date, _time, _rcptNum, _label);
+            openPrintWindow(html);
+        }, 300);
     }
 
     // ─── Payment Type ───
@@ -4225,10 +4597,7 @@
                 <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:12px 14px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                         <span style="font-size:0.9rem;font-weight:800;color:var(--text-dark);">${name}</span>
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:0.88rem;font-weight:900;color:var(--danger);">JD ${remaining.toFixed(2)}</span>
-                            <button onclick="openPaymentLogs('supplier','${name.replace(/'/g,"\\'")}') " style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.82rem;" title=">سجل التسديدات"><i class="fa-solid fa-clock-rotate-left"></i></button>
-                        </div>
+                        <span style="font-size:0.88rem;font-weight:900;color:var(--danger);">JD ${remaining.toFixed(2)}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;font-size:0.72rem;font-weight:700;color:var(--text-muted);margin-bottom:10px;">
                         <span>الإجمالي: JD ${v.total.toFixed(2)}</span>
@@ -4269,6 +4638,8 @@
 
     function applyPayment(supplierName, amount) {
         let leftToApply = amount;
+        const affectedInvNums = [];
+        const seenGroups = new Set();
         for(const p of purchases) {
             if(leftToApply <= 0) break;
             if(p.supplier !== supplierName || p.payType !== 'credit') continue;
@@ -4277,6 +4648,21 @@
             const apply = Math.min(owed, leftToApply);
             p.paid = Math.round(((p.paid || 0) + apply) * 100) / 100;
             leftToApply = Math.round((leftToApply - apply) * 100) / 100;
+            const gid = p.invoiceGroupId || p.id;
+            if(!seenGroups.has(gid)) {
+                seenGroups.add(gid);
+                // استخدم رقم الفاتورة من المورد أو رقم الفاتورة الداخلي
+                const invNum = p.supplierInvNum || (gid ? String(gid) : '');
+                affectedInvNums.push({ num: invNum, gid });
+            }
+        }
+        // إذا لم نجد أي فاتورة — ابحث عن أول فاتورة آجل للمورد
+        if(!affectedInvNums.length) {
+            const fallback = purchases.find(p => p.supplier === supplierName && p.payType === 'credit');
+            if(fallback) {
+                const gid = fallback.invoiceGroupId || fallback.id;
+                affectedInvNums.push({ num: fallback.supplierInvNum || String(gid), gid });
+            }
         }
         const now = new Date();
         paymentLogs.push({
@@ -4284,12 +4670,21 @@
             type: 'supplier',
             name: supplierName,
             amount,
-            date: now.toLocaleDateString(),
+            invoices: affectedInvNums,
+            date: now.toLocaleDateString('en-CA'),
             time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         });
         saveData();
+        const _rcptNum2 = paymentLogs.length;
+        const _date2 = now.toLocaleDateString();
+        const _time2 = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const _label2 = affectedInvNums.length ? 'سداد فاتورة مشتريات #' + affectedInvNums.map(i=>i.num).join('، #') : 'سداد ذمة مشتريات';
         closeModals();
         setTimeout(() => openDebtModal(), 200);
+        setTimeout(() => {
+            const html = buildReceiptHtml(supplierName, amount, 'supplier', _date2, _time2, _rcptNum2, _label2);
+            openPrintWindow(html);
+        }, 300);
     }
 
     let puFilter = 'all'; // 'all' | 'cash' | 'credit'
@@ -5412,7 +5807,7 @@
   <div class="totals">
     <div class="tot-final"><span>الإجمالي الكلي</span><span>JD ${total.toFixed(2)}</span></div>
   </div>
-  <div class="footer">${storeName} — فاتورة مشتريات</div>
+
 </div>
 <script>window.onload = () => window.print();<\/script>
 </body>
@@ -5460,24 +5855,25 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>مصروف${e.expenseNumber ? ' #' + e.expenseNumber : ''}</title>
+<title>سند صرف${e.expenseNumber ? ' #' + e.expenseNumber : ''}</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Segoe UI',Tahoma,Arial,sans-serif; background:#fff; color:#1e293b; direction:rtl; font-size:13px; }
   .page { max-width:600px; margin:30px auto; padding:20px; }
   .box { border:1.5px solid #1e293b; border-radius:8px; overflow:hidden; }
-  .box-header { padding:14px 20px 10px; border-bottom:1.5px solid #1e293b; display:flex; flex-direction:column; }
-  .store-name { font-size:1.3rem; font-weight:900; color:#1e293b; }
-  .store-sub { font-size:0.7rem; color:#1e293b; margin-top:2px; font-weight:600; }
-  .inv-num { font-size:0.85rem; font-weight:900; color:#1e293b; text-align:left; }
-  .inv-meta { font-size:0.7rem; color:#1e293b; margin-top:3px; font-weight:600; line-height:1.7; text-align:left; }
-  .item-row { padding:16px 20px; display:flex; justify-content:space-between; align-items:center; }
-  .item-name { font-size:0.95rem; font-weight:900; color:#1e293b; }
-  .item-detail { font-size:0.72rem; font-weight:600; color:#1e293b; margin-top:3px; }
-  .totals { border:1.5px solid #1e293b; border-radius:8px; padding:14px 20px; margin-top:16px; }
-  .tot-final { display:flex; justify-content:space-between; align-items:center; font-size:1rem; font-weight:900; color:#1e293b; }
-  .footer { text-align:center; margin-top:24px; font-size:0.7rem; color:#1e293b; font-weight:600; }
-  @media print { .page { margin:0 auto; padding:15px; max-width:600px; } @page { margin:10mm; } }
+  .box-header { padding:16px 20px 12px; border-bottom:1.5px solid #1e293b; display:flex; justify-content:space-between; align-items:flex-start; }
+  .store-name { font-size:1.3rem; font-weight:900; }
+  .store-sub { font-size:0.7rem; margin-top:2px; font-weight:600; color:#64748b; }
+  .receipt-num { font-size:0.85rem; font-weight:900; text-align:left; }
+  .receipt-meta { font-size:0.7rem; margin-top:3px; font-weight:600; color:#64748b; text-align:left; }
+  .body { padding:18px 20px; }
+  .row { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .row-label { font-size:0.78rem; font-weight:700; color:#64748b; }
+  .row-value { font-size:0.88rem; font-weight:900; color:#1e293b; }
+  .amount-box { border:1.5px solid #1e293b; border-radius:8px; padding:14px 20px; margin-top:6px; display:flex; justify-content:space-between; align-items:center; }
+  .amount-label { font-size:0.85rem; font-weight:900; }
+  .amount-value { font-size:1.3rem; font-weight:900; color:#ef4444; }
+  @media print { .page { margin:0 auto; padding:15px; } @page { margin:10mm; } }
 </style>
 </head>
 <body>
@@ -5489,19 +5885,30 @@
         <div class="store-sub">سند صرف</div>
       </div>
       <div>
-        ${e.expenseNumber ? `<div class="inv-num">#${e.expenseNumber}</div>` : ''}
-        <div class="inv-meta">${e.date}<br>${e.time}</div>
+        ${e.expenseNumber ? `<div class="receipt-num">#${e.expenseNumber}</div>` : ''}
+        <div class="receipt-meta">${e.date}</div>
+        <div class="receipt-meta">${e.time || ''}</div>
       </div>
     </div>
-    <div class="item-row">
-      <div class="item-name">${e.name}</div>
-      <div style="font-size:0.95rem;font-weight:900;color:#1e293b;">JD ${e.amount.toFixed(2)}</div>
+    <div class="body">
+      <div class="row">
+        <div class="row-label">صُرف للسادة المحترمين</div>
+        <div class="row-value">${e.beneficiary || '—'}</div>
+      </div>
+      <div class="row">
+        <div class="row-label">البيان</div>
+        <div class="row-value">${e.name}</div>
+      </div>
+      <div class="amount-box">
+        <div class="amount-label">المبلغ المصروف</div>
+        <div class="amount-value">JD ${e.amount.toFixed(2)}</div>
+      </div>
+      <div style="margin-top:30px;text-align:center;">
+        <div style="font-size:0.72rem;font-weight:700;color:#64748b;">توقيع المستلم</div>
+        <br>
+      </div>
     </div>
   </div>
-  <div class="totals">
-    <div class="tot-final"><span>المبلغ</span><span>JD ${e.amount.toFixed(2)}</span></div>
-  </div>
-  <div class="footer">المخزون — سند صرف</div>
 </div>
 <script>window.onload = () => window.print();<\/script>
 </body>
@@ -5805,8 +6212,8 @@
     function openAddExpenseModal() {
         if(!requirePerm('cashier')) return;
         document.getElementById('exp-name').value = '';
+        document.getElementById('exp-beneficiary').value = '';
         document.getElementById('exp-amount').value = '';
-        document.getElementById('exp-inv-num').value = '';
         document.getElementById('exp-manual-date').value = new Date().toLocaleDateString('en-CA');
         openModal('add-expense-modal');
         setTimeout(() => document.getElementById('exp-name').focus(), 100);
@@ -5822,11 +6229,13 @@
         const [y, mo, d] = dateVal.split('-').map(Number);
         const dateObj = new Date(y, mo-1, d);
         const now = new Date();
-        const expenseNumber = document.getElementById('exp-inv-num').value.trim() || null;
+        const expenseNumber = null;
+        const beneficiary = document.getElementById('exp-beneficiary').value.trim() || null;
         expenses.push({
             id: Date.now(),
             expenseNumber,
             name,
+            beneficiary,
             amount: Math.round(amount * 100) / 100,
             date: dateObj.toLocaleDateString(),
             dateISO: dateVal,
@@ -5845,8 +6254,9 @@
         editingExpenseId = id;
         document.getElementById('edit-exp-sub').innerText = e.name;
         document.getElementById('edit-exp-name').value = e.name;
+        document.getElementById('edit-exp-beneficiary').value = e.beneficiary || '';
         document.getElementById('edit-exp-amount').value = e.amount;
-        document.getElementById('edit-exp-inv-num').value = e.expenseNumber || '';
+
         // نستخدم dateISO إن وُجد، وإلا نستخرج من الـ id
         const isoDate = e.dateISO || new Date(e.id).toLocaleDateString('en-CA');
         document.getElementById('edit-exp-date').value = isoDate;
@@ -5859,12 +6269,13 @@
         if(!e) return;
         const name = document.getElementById('edit-exp-name').value.trim();
         const amount = parseFloat(document.getElementById('edit-exp-amount').value);
-        const invNum = document.getElementById('edit-exp-inv-num').value.trim();
+        const invNum = e.expenseNumber || null;
         const dateVal = document.getElementById('edit-exp-date').value;
         if(!name) return showAlert('أدخل اسم المصروف');
         if(!amount || amount <= 0) return showAlert('أدخل مبلغاً صحيحاً');
         const [y, mo, d] = dateVal.split('-').map(Number);
         e.name = name;
+        e.beneficiary = document.getElementById('edit-exp-beneficiary').value.trim() || null;
         e.amount = Math.round(amount * 100) / 100;
         e.expenseNumber = invNum || null;
         e.date = new Date(y, mo-1, d).toLocaleDateString();
@@ -6530,7 +6941,7 @@
     });
 
     // Mobile Visual Viewport Handling
-    const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal','add-user-modal','change-pass-modal','users-modal','setup-admin-modal','edit-perms-modal','setup-modal','add-item-modal'].map(id=>document.getElementById(id));
+    const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal','add-user-modal','change-pass-modal','users-modal','setup-admin-modal','edit-perms-modal','setup-modal','add-item-modal','supplier-logs-modal','customer-logs-modal'].map(id=>document.getElementById(id));
     const topFixedOverlays = ['suppliers-modal','customers-modal','sup-sheet-overlay','cust-sheet-overlay','cat-sheet-overlay'].map(id=>document.getElementById(id));
     const tallOverlays = ['cart-modal','edit-item-modal','sell-search-modal','pu-inv-search-modal','new-purchase-modal'].map(id=>document.getElementById(id));
     const centerOverlays = ['stats-modal','sales-history-modal','purchases-modal','del-purchases-modal','debt-modal','cust-debt-modal','payment-logs-modal','expenses-modal','cash-log-modal','withdrawals-modal'].map(id=>document.getElementById(id));
