@@ -766,8 +766,8 @@
                         <i class="fa-solid fa-truck"></i> الموردين
                     </button>
                     <div class="menu-submenu">
-                        <button onclick="if(requirePerm('contacts')){closeMenu();openSuppliersModal()}"><i class="fa-solid fa-truck"></i> إضافة مورد</button>
                         <button onclick="closeMenu(); openDebtModal()"><i class="fa-solid fa-file-invoice-dollar"></i> ذمم الموردين</button>
+                        <button onclick="if(requirePerm('contacts')){closeMenu();openSuppliersModal()}"><i class="fa-solid fa-truck"></i> إضافة مورد</button>
                     </div>
                 </div>
                 <div class="menu-has-sub" id="menu-inv-sub">
@@ -793,8 +793,8 @@
                         <i class="fa-solid fa-users"></i> الزبائن
                     </button>
                     <div class="menu-submenu">
-                        <button onclick="if(requirePerm('contacts')){closeMenu();openCustomersModal()}"><i class="fa-solid fa-users"></i> إضافة زبون</button>
                         <button onclick="closeMenu(); openCustDebtModal()"><i class="fa-solid fa-user-clock"></i> ذمم الزبائن</button>
+                        <button onclick="if(requirePerm('contacts')){closeMenu();openCustomersModal()}"><i class="fa-solid fa-users"></i> إضافة زبون</button>
                     </div>
                 </div>
                 <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openUsersModal()"><i class="fa-solid fa-users-gear"></i> إدارة المستخدمين</button>
@@ -1301,6 +1301,10 @@
             <input type="text" id="debt-search" placeholder="بحث" oninput="renderDebtList(this.value)">
         </div>
         <div id="debt-list" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;"></div>
+        <div style="margin:10px 40px 0;border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:center;align-items:center;gap:8px;">
+            <div style="font-weight:700;color:var(--text-muted);">إجمالي الذمم</div>
+            <div style="font-size:1rem;font-weight:900;color:var(--danger);" id="debt-total">JD 0</div>
+        </div>
         <div class="modal-btns" style="margin-top:10px;">
             <button class="mbtn mbtn-cancel" onclick="closeModals()">إغلاق</button>
         </div>
@@ -1345,6 +1349,10 @@
             <input type="text" id="cust-debt-search" placeholder="بحث" oninput="renderCustDebtList(this.value)">
         </div>
         <div id="cust-debt-list" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;margin:0 -20px;padding:0 20px;"></div>
+        <div style="margin:10px 40px 0;border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:center;align-items:center;gap:8px;">
+            <div style="font-weight:700;color:var(--text-muted);">إجمالي الذمم</div>
+            <div style="font-size:1rem;font-weight:900;color:var(--danger);" id="cust-debt-total">JD 0</div>
+        </div>
         <div class="modal-btns" style="margin-top:10px;">
             <button class="mbtn mbtn-cancel" onclick="closeModals()">إغلاق</button>
         </div>
@@ -1465,7 +1473,7 @@
             <input type="text" id="exp-search" placeholder="بحث"  oninput="renderExpenses()">
         </div>
         <div id="exp-list" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;padding:0 20px;"></div>
-        <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:10px;display:flex;justify-content:center;align-items:center;gap:8px;padding-left:20px;padding-right:20px;">
+        <div style="margin:10px 40px 0;border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:center;align-items:center;gap:8px;">
             <div style="font-weight:700;color:var(--text-muted);">إجمالي المصاريف</div>
             <div style="font-size:1rem;font-weight:900;color:var(--danger);" id="exp-total">JD 0</div>
         </div>
@@ -3850,7 +3858,9 @@
         const allEntries = Object.entries(debtMap).filter(([, v]) => v.total - v.paid > 0.001);
         const entries = query ? allEntries.filter(([name]) => name.toLowerCase().includes(query)) : allEntries;
         const totalDebt = allEntries.reduce((s, [, v]) => s + (v.total - v.paid), 0);
-        document.getElementById('cust-debt-sub').innerText = allEntries.length === 0 ? 'لا توجد ذمم' : `إجمالي: JD ${totalDebt.toFixed(2)}`;
+        document.getElementById('cust-debt-sub').innerText = allEntries.length === 0 ? 'لا توجد ذمم' : `${allEntries.length} زبون`;
+        const cdTotal = document.getElementById('cust-debt-total');
+        if(cdTotal) cdTotal.innerText = `JD ${totalDebt.toFixed(2)}`;
 
         const list = document.getElementById('cust-debt-list');
         if(entries.length === 0) {
@@ -4178,7 +4188,9 @@
         const allEntries = Object.entries(debtMap).filter(([, v]) => v.total - v.paid > 0.001);
         const entries = query ? allEntries.filter(([name]) => name.toLowerCase().includes(query)) : allEntries;
         const totalDebt = allEntries.reduce((s, [, v]) => s + (v.total - v.paid), 0);
-        document.getElementById('debt-sub').innerText = allEntries.length === 0 ? 'لا توجد ذمم' : `إجمالي: JD ${totalDebt.toFixed(2)}`;
+        document.getElementById('debt-sub').innerText = allEntries.length === 0 ? 'لا توجد ذمم' : `${allEntries.length} مورد`;
+        const dTotal = document.getElementById('debt-total');
+        if(dTotal) dTotal.innerText = `JD ${totalDebt.toFixed(2)}`;
 
         const list = document.getElementById('debt-list');
         if(entries.length === 0) {
