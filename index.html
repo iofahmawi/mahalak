@@ -810,9 +810,9 @@
 </header>
 
 <div class="total-banner banner-sell" id="main-banner">
-    <div class="banner-block">
+    <div class="banner-block" id="b1-block" style="cursor:pointer;" onclick="toggleSalesBannerMode()">
         <small id="b1-label">مبيعات اليوم</small>
-        <div><span class="currency">JD</span><span class="amount" id="b1-val">0</span></div>
+        <div><span class="currency" id="b1-currency">JD</span><span class="amount" id="b1-val">0</span></div>
     </div>
     <div class="banner-divider"></div>
     <div class="banner-block">
@@ -2257,6 +2257,15 @@
         saveData();
     }
 
+    // ─── Sales Banner Mode ───
+    let _salesBannerMode = 'today'; // 'today' or 'all'
+
+    function toggleSalesBannerMode() {
+        if(currentTab !== 'sell') return;
+        _salesBannerMode = _salesBannerMode === 'today' ? 'all' : 'today';
+        updateBanners();
+    }
+
     // ─── Master Render ───
     function render() {
         updateBanners();
@@ -2299,12 +2308,24 @@
             document.getElementById('b3-block').style.cursor = 'pointer';
             document.getElementById('b3-block').onclick = openPurchasesModal;
         } else {
-            document.getElementById('b1-label').innerText = 'مبيعات اليوم';
-            document.getElementById('b1-val').innerText = total.toFixed(2);
-            document.getElementById('b2-label').innerText = 'ربح اليوم';
-            document.getElementById('b2-val').innerText = profit.toFixed(2);
-            document.getElementById('b3-label').innerText = 'عدد الفواتير';
-            document.getElementById('b3-val').textContent = todaySales.length;
+            if(_salesBannerMode === 'all') {
+                const allSales = sales.filter(s => !s.cancelled);
+                const allTotal = allSales.reduce((s, x) => s + x.total, 0);
+                const allProfit = allSales.reduce((s, x) => s + x.profit, 0);
+                document.getElementById('b1-label').innerText = 'إجمالي المبيعات';
+                document.getElementById('b1-val').innerText = allTotal.toFixed(2);
+                document.getElementById('b2-label').innerText = 'إجمالي الأرباح';
+                document.getElementById('b2-val').innerText = allProfit.toFixed(2);
+                document.getElementById('b3-label').innerText = 'عدد الفواتير';
+                document.getElementById('b3-val').textContent = allSales.length;
+            } else {
+                document.getElementById('b1-label').innerText = 'مبيعات اليوم';
+                document.getElementById('b1-val').innerText = total.toFixed(2);
+                document.getElementById('b2-label').innerText = 'ربح اليوم';
+                document.getElementById('b2-val').innerText = profit.toFixed(2);
+                document.getElementById('b3-label').innerText = 'عدد الفواتير';
+                document.getElementById('b3-val').textContent = todaySales.length;
+            }
             document.getElementById('b3-block').style.cursor = 'pointer';
             document.getElementById('b3-block').onclick = openSalesHistoryModal;
         }
