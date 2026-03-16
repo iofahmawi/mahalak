@@ -1399,7 +1399,7 @@
         </div>
         <div class="input-wrap"><i class="fa-solid fa-coins"></i><input type="number" id="pay-debt-amount" inputmode="decimal" placeholder="المبلغ"></div>
         <div class="modal-btns">
-            <button class="mbtn mbtn-cancel" onclick="openModal('debt-modal')">رجوع</button>
+            <button class="mbtn mbtn-cancel" onclick="closeModals();setTimeout(()=>openDebtModal(),150)">رجوع</button>
             <button class="mbtn mbtn-ok" id="pay-debt-btn">تسديد</button>
         </div>
     </div>
@@ -1443,11 +1443,11 @@
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-money-bill-wave"></i></div>
-            <div><p class="modal-title">تسديد دفعة</p><p class="modal-subtitle" id="pay-cust-debt-sub"></p></div>
+            <div><p class="modal-title">تسديد دفعة</p><p class="modal-subtitle" id="pay-cust-debt-sub" style="font-size:0.8rem;font-weight:800;color:var(--text-dark);"></p></div>
         </div>
         <div class="input-wrap"><i class="fa-solid fa-coins"></i><input type="number" id="pay-cust-debt-amount" inputmode="decimal" placeholder="المبلغ"></div>
         <div class="modal-btns">
-            <button class="mbtn mbtn-cancel" onclick="openModal('cust-debt-modal')">رجوع</button>
+            <button class="mbtn mbtn-cancel" onclick="closeModals();setTimeout(()=>openCustDebtModal(),150)">رجوع</button>
             <button class="mbtn mbtn-ok" id="pay-cust-debt-btn">تسديد</button>
         </div>
     </div>
