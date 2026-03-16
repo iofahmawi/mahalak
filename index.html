@@ -2615,7 +2615,7 @@
         const r = el.getBoundingClientRect();
         tip.style.top = (r.bottom + 6) + 'px';
         tip.style.left = Math.min(r.left, window.innerWidth - tip.offsetWidth - 8) + 'px';
-        setTimeout(() => tip.remove(), 2500);
+        setTimeout(() => tip.remove(), 5000);
     }
 
     function showAlert(msg, type = 'warn') {
