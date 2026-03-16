@@ -4682,18 +4682,17 @@
                 </div>`;
 
             content.innerHTML = `
-            ${sec('📊 الملخص المالي الكلي')}
-            <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-                ${row('إيرادات المبيعات',      'JD '+d.allSalesTotal.toFixed(2),     '#2563eb', 'fa-receipt')}
-                ${row('تكلفة البضاعة المباعة','− JD '+allCOGS.toFixed(2),           '#64748b', 'fa-cart-arrow-down')}
-                ${netRow('الربح الإجمالي', 'JD '+grossProfit.toFixed(2), grossProfit>=0?'#16a34a':'#ef4444')}
-            </div>
-            ${sec('📉 المصاريف والتكاليف')}
-            <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-                ${row('المصاريف التشغيلية',   '− JD '+d.allExpenses.toFixed(2),     '#ef4444', 'fa-money-bill-trend-up')}
-                ${row('المسحوبات الشخصية',    '− JD '+allWd.toFixed(2),             '#d97706', 'fa-hand-holding-dollar')}
-                ${cashLog.length > 0 ? row('فرق الجرد', (allDiff>=0?'+ ':'− ')+'JD '+Math.abs(allDiff).toFixed(2), allDiff>=0?'#16a34a':'#ef4444', 'fa-scale-balanced') : ''}
-                ${netRow('صافي الربح', (allNet>=0?'+ ':'− ')+'JD '+Math.abs(allNet).toFixed(2), allNet>=0?'#16a34a':'#ef4444')}
+            ${grid(
+                card('fa-receipt',            '#2563eb', 'إيرادات المبيعات',      'JD '+d.allSalesTotal.toFixed(2), '#2563eb'),
+                card('fa-cart-arrow-down',    '#64748b', 'تكلفة البضاعة',        'JD '+allCOGS.toFixed(2),        '#64748b'),
+                card('fa-chart-line',         grossProfit>=0?'#16a34a':'#ef4444', 'الربح الإجمالي', 'JD '+grossProfit.toFixed(2), grossProfit>=0?'#16a34a':'#ef4444'),
+                card('fa-money-bill-trend-up','#ef4444', 'المصاريف',   'JD '+d.allExpenses.toFixed(2),  '#ef4444'),
+                card('fa-hand-holding-dollar','#d97706', 'المسحوبات الشخصية',    'JD '+allWd.toFixed(2),          '#d97706'),
+                card('fa-scale-balanced',     allDiff>=0?'#16a34a':'#ef4444', 'فرق الجرد', (allDiff>=0?'+ ':'− ')+'JD '+Math.abs(allDiff).toFixed(2), allDiff>=0?'#16a34a':'#ef4444')
+            )}
+            <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
+                <span style="font-size:0.88rem;font-weight:900;color:var(--text-dark);">صافي الربح</span>
+                <span style="font-size:1.1rem;font-weight:900;color:${allNet>=0?'#16a34a':'#ef4444'};">${(allNet>=0?'+ ':'− ')+'JD '+Math.abs(allNet).toFixed(2)}</span>
             </div>`;
         }
         else if(tab === 'inventory') {
@@ -4724,10 +4723,6 @@
         else if(tab === 'customers') {
             content.innerHTML = `
             ${sec('💳 ذمم الزبائن')}
-            <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
-                <div style="font-weight:700;color:#ef4444;">إجمالي الذمم المتبقية</div>
-                <div style="font-size:1rem;font-weight:900;color:#ef4444;">JD ${d.custDebtTotal.toFixed(2)}</div>
-            </div>
             ${d.custDebts.length === 0
                 ? `<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:0.85rem;font-weight:700;">لا توجد ذمم متبقية</div>`
                 : d.custDebts.map(([name, amt]) => `
@@ -4736,7 +4731,11 @@
                     <div style="flex:1;font-size:0.82rem;font-weight:800;color:var(--text-dark);">${name}</div>
                     <div style="font-size:0.85rem;font-weight:900;color:#ef4444;">JD ${amt.toFixed(2)}</div>
                 </div>`).join('')
-            }`;
+            }
+            <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);">إجمالي الذمم المتبقية</div>
+                <div style="font-size:0.95rem;font-weight:900;color:#ef4444;">JD ${d.custDebtTotal.toFixed(2)}</div>
+            </div>`;
         }
         else if(tab === 'cash') {
             const sorted = [...cashLog].sort((a,b) => b.date.localeCompare(a.date));
