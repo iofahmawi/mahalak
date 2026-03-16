@@ -2269,10 +2269,11 @@
         if(currentTab === 'inv') {
             const invVal = items.reduce((sum, it) => sum + it.batches.reduce((s, b) => s + (b.qty * b.buyPrice), 0), 0);
             const invPotential = items.reduce((sum, it) => sum + it.batches.reduce((s, b) => s + (b.qty * b.sellPrice), 0), 0);
+            const invProfit = invPotential - invVal;
             document.getElementById('b1-label').innerText = 'قيمة المخزون';
             document.getElementById('b1-val').innerText = invVal.toFixed(2);
-            document.getElementById('b2-label').innerText = 'البيع المتوقع';
-            document.getElementById('b2-val').innerText = invPotential.toFixed(2);
+            document.getElementById('b2-label').innerText = 'الربح المتوقع';
+            document.getElementById('b2-val').innerText = invProfit.toFixed(2);
             document.getElementById('b3-label').innerText = 'الأصناف';
             document.getElementById('b3-val').textContent = items.length;
             document.getElementById('b3-block').style.cursor = 'default';
