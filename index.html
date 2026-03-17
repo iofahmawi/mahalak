@@ -7012,7 +7012,7 @@
             items, sales, categories,
             purchases, suppliers, customers, paymentLogs, expenses,
             cashLog, withdrawals, supplierDetails, customerDetails,
-            appUsers,
+            appUsers, employees,
             version: '2.0'
         };
         const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
@@ -7044,6 +7044,7 @@
                 if(data.withdrawals)     withdrawals     = data.withdrawals;
                 if(data.supplierDetails) supplierDetails = data.supplierDetails;
                 if(data.customerDetails) customerDetails = data.customerDetails;
+                if(data.employees)       employees       = data.employees;
                 // استيراد المستخدمين فقط إذا كان المدير هو من يستورد
                 if(data.appUsers && isAdmin()) {
                     appUsers = data.appUsers;
