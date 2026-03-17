@@ -7349,7 +7349,7 @@
     function renderAttendanceList() {
         const dateVal = document.getElementById('att-date').value;
         const d = new Date(dateVal);
-        document.getElementById('att-sub').textContent = d.toLocaleDateString('ar-EG', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+        document.getElementById('att-sub').textContent = d.toLocaleDateString('ar-EG-u-nu-latn', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
         const list = document.getElementById('att-list');
         if(!employees.length) { list.innerHTML = ''; return; }
         list.innerHTML = employees.map(e => {
