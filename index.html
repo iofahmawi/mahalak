@@ -5355,15 +5355,9 @@
             const totalDiff = sorted.reduce((s,r) => s + (r.diff ?? 0), 0);
             const totalWd = withdrawals.reduce((s,w) => s + w.amount, 0);
 
-            // تجميع الأيام لحساب أيام النقص والزيادة (بإجمالي الجرود لكل يوم)
-            const dayMap = {};
-            sorted.forEach(r => {
-                if(!dayMap[r.date]) dayMap[r.date] = 0;
-                dayMap[r.date] += (r.diff ?? 0);
-            });
-            const dayVals = Object.values(dayMap);
-            const posCount = dayVals.filter(v => v > 0).length;
-            const negCount = dayVals.filter(v => v < 0).length;
+            // كل جرد مستقل — النقص والزيادة لكل موظف على حدة
+            const posCount = sorted.filter(r => (r.diff ?? 0) > 0).length;
+            const negCount = sorted.filter(r => (r.diff ?? 0) < 0).length;
 
             if(sorted.length === 0) {
                 content.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:0.85rem;font-weight:700;">لا يوجد سجل للصندوق بعد</div>`;
