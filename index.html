@@ -7546,12 +7546,13 @@
         const e = employees.find(x => x.id === empId);
         if(!e) return;
         const daysInMonth = new Date(year, month, 0).getDate();
-        let absent = 0, off = 0, late = 0, lateDeductTotal = 0;
+        let present = 0, absent = 0, off = 0, late = 0, lateDeductTotal = 0;
         for(let d = 1; d <= daysInMonth; d++) {
             const key = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
             const rec = (e.attendance||{})[key];
             const st  = rec && typeof rec === 'object' ? rec.status : rec;
-            if(st==='absent') absent++;
+            if(st==='present')   present++;
+            else if(st==='absent') absent++;
             else if(st==='off') off++;
             else if(st==='late') { late++; lateDeductTotal += (rec && rec.lateDeduct) ? rec.lateDeduct : 0; }
         }
