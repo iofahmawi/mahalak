@@ -876,6 +876,16 @@
                         <button onclick="if(requirePerm('contacts')){closeMenu();openCustomersModal()}"><i class="fa-solid fa-users"></i> إضافة زبون</button>
                     </div>
                 </div>
+                <div class="menu-has-sub" id="menu-employees-sub">
+                    <button onclick="toggleMenuSub('menu-employees-sub', event)">
+                        <i class="fa-solid fa-id-badge"></i> الموظفين
+                    </button>
+                    <div class="menu-submenu">
+                        <button onclick="closeMenu(); openEmployeesModal()"><i class="fa-solid fa-users"></i> إدارة الموظفين</button>
+                        <button onclick="closeMenu(); openAttendanceModal()"><i class="fa-solid fa-calendar-check"></i> تسجيل الحضور</button>
+                        <button onclick="closeMenu(); openSalariesModal()"><i class="fa-solid fa-money-bill-wave"></i> الرواتب</button>
+                    </div>
+                </div>
                 <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openUsersModal()"><i class="fa-solid fa-users-gear"></i> إدارة المستخدمين</button>
                 <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openStoreNameEdit()"><i class="fa-solid fa-store"></i> تعديل اسم المحل</button>
                 <div class="menu-import-export">
@@ -1643,6 +1653,138 @@
     </div>
 </div>
 
+<!-- ══ نافذة إدارة الموظفين ══ -->
+<div class="modal-overlay" id="employees-modal" style="align-items:center;padding:0;">
+    <div class="modal" style="max-height:85vh;display:flex;flex-direction:column;width:92%;max-width:380px;padding-left:0;padding-right:0;" onclick="event.stopPropagation()">
+        <div class="modal-top" style="padding:0 20px;">
+            <div class="modal-ico blue"><i class="fa-solid fa-id-badge"></i></div>
+            <div style="flex:1"><p class="modal-title">إدارة الموظفين</p><p class="modal-subtitle" id="emp-sub">قائمة الموظفين</p></div>
+        </div>
+        <div style="padding:0 20px 12px;">
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <div class="input-wrap" style="flex:1;margin-bottom:0;"><i class="fa-solid fa-user"></i><input type="text" id="emp-name-input" placeholder="اسم الموظف"></div>
+                <div class="input-wrap" style="flex:1;margin-bottom:0;"><i class="fa-solid fa-coins"></i><input type="number" id="emp-salary-input" placeholder="الراتب" step="0.01" min="0"></div>
+            </div>
+            <button onclick="addEmployee()" class="mbtn mbtn-ok" style="width:100%;height:41px;border-radius:10px;">إضافة موظف</button>
+        </div>
+        <div style="margin:0 20px;border-top:1px solid var(--border);"></div>
+        <div id="emp-list" style="overflow-y:auto;flex:1;padding:12px 20px;display:flex;flex-direction:column;gap:8px;"></div>
+        <div class="modal-btns" style="padding:0 20px;margin-top:8px;">
+            <button class="mbtn mbtn-cancel" onclick="closeModals()">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ نافذة تسجيل الحضور ══ -->
+<div class="modal-overlay" id="attendance-modal" style="align-items:center;padding:0;">
+    <div class="modal" style="max-height:85vh;display:flex;flex-direction:column;width:92%;max-width:380px;padding-left:0;padding-right:0;" onclick="event.stopPropagation()">
+        <div class="modal-top" style="padding:0 20px;">
+            <div class="modal-ico" style="background:#f0fdf4;"><i class="fa-solid fa-calendar-check" style="color:#16a34a;"></i></div>
+            <div style="flex:1"><p class="modal-title">تسجيل الحضور</p><p class="modal-subtitle" id="att-sub"></p></div>
+        </div>
+        <div style="padding:0 20px 12px;">
+            <input type="date" id="att-date" style="display:block;width:100%;height:41px;border:1.5px solid var(--border);border-radius:12px;padding:0 10px;box-sizing:border-box;font-family:inherit;font-size:0.85rem;font-weight:700;color:var(--text-dark);background:#f8fafc;outline:none;-webkit-appearance:none;appearance:none;margin-bottom:0;" onchange="renderAttendanceList()">
+        </div>
+        <div id="att-list" style="overflow-y:auto;flex:1;padding:0 20px 12px;display:flex;flex-direction:column;gap:8px;"></div>
+        <div class="modal-btns" style="padding:0 20px;margin-top:4px;">
+            <button class="mbtn mbtn-cancel" onclick="closeModals()">إغلاق</button>
+            <button class="mbtn mbtn-ok" onclick="saveAttendance()" style="background:#16a34a;">حفظ الحضور</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ نافذة الرواتب ══ -->
+<div class="modal-overlay" id="salaries-modal" style="align-items:center;padding:0;">
+    <div class="modal" style="max-height:88vh;display:flex;flex-direction:column;width:92%;max-width:400px;padding-left:0;padding-right:0;" onclick="event.stopPropagation()">
+        <div class="modal-top" style="padding:0 20px;">
+            <div class="modal-ico" style="background:#fef9c3;"><i class="fa-solid fa-money-bill-wave" style="color:#ca8a04;"></i></div>
+            <div style="flex:1"><p class="modal-title">الرواتب</p><p class="modal-subtitle" id="sal-sub"></p></div>
+        </div>
+        <div style="padding:0 20px 12px;display:flex;gap:8px;">
+            <select id="sal-month" onchange="renderSalariesList()" style="flex:1;height:41px;border:1.5px solid var(--border);border-radius:12px;padding:0 10px;box-sizing:border-box;font-family:inherit;font-size:0.82rem;font-weight:700;color:var(--text-dark);background:#f8fafc;outline:none;-webkit-appearance:none;appearance:none;"></select>
+            <select id="sal-year" onchange="renderSalariesList()" style="width:90px;height:41px;border:1.5px solid var(--border);border-radius:12px;padding:0 10px;box-sizing:border-box;font-family:inherit;font-size:0.82rem;font-weight:700;color:var(--text-dark);background:#f8fafc;outline:none;-webkit-appearance:none;appearance:none;"></select>
+        </div>
+        <div id="sal-list" style="overflow-y:auto;flex:1;padding:0 20px 12px;display:flex;flex-direction:column;gap:10px;"></div>
+        <div class="modal-btns" style="padding:0 20px;margin-top:4px;">
+            <button class="mbtn mbtn-cancel" onclick="closeModals()">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ نافذة سلفة موظف ══ -->
+<div class="modal-overlay" id="advance-modal" style="align-items:center;z-index:5500;">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-top">
+            <div class="modal-ico" style="background:#fff7ed;"><i class="fa-solid fa-hand-holding-dollar" style="color:#ea580c;"></i></div>
+            <div><p class="modal-title">إضافة سلفة</p><p class="modal-subtitle" id="adv-emp-name"></p></div>
+        </div>
+        <div id="adv-balance-info" style="margin-bottom:12px;"></div>
+        <div class="input-wrap" style="margin-bottom:10px;"><i class="fa-solid fa-coins"></i><input type="number" id="adv-amount" placeholder="مبلغ السلفة" step="0.01" min="0"></div>
+        <div class="input-wrap" style="margin-bottom:10px;"><i class="fa-solid fa-note-sticky"></i><input type="text" id="adv-note" placeholder="ملاحظة (اختياري)"></div>
+        <div class="modal-btns" style="margin-top:4px;">
+            <button class="mbtn mbtn-cancel" onclick="closeModals()">إلغاء</button>
+            <button class="mbtn mbtn-ok" style="background:#ea580c;" onclick="confirmAddAdvance()">تسجيل</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- ══ نافذة خصم التأخر ══ -->
+<div class="modal-overlay" id="late-deduct-modal" style="align-items:center;z-index:5600;">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-top">
+            <div class="modal-ico" style="background:#fff7ed;"><i class="fa-solid fa-clock" style="color:#ea580c;"></i></div>
+            <div><p class="modal-title">تأخر</p><p class="modal-subtitle" id="late-emp-name"></p></div>
+        </div>
+        <div class="input-wrap" style="margin-bottom:12px;">
+            <i class="fa-solid fa-coins"></i>
+            <input type="number" id="late-deduct-amount" placeholder="مبلغ الخصم" step="0.01" min="0">
+        </div>
+        <div class="modal-btns" style="margin-top:4px;">
+            <button class="mbtn mbtn-cancel" onclick="skipLateDeduct()">بدون خصم</button>
+            <button class="mbtn mbtn-ok" style="background:#ea580c;" onclick="confirmLateDeduct()">خصم</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ نافذة تعديل خصم التأخر ══ -->
+<div class="modal-overlay" id="late-edit-modal" style="align-items:center;z-index:5700;">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-top">
+            <div class="modal-ico" style="background:#fff7ed;"><i class="fa-solid fa-pen-to-square" style="color:#ea580c;"></i></div>
+            <div><p class="modal-title">تعديل خصم التأخر</p><p class="modal-subtitle" id="late-edit-original"></p></div>
+        </div>
+        <div class="input-wrap" style="margin-bottom:12px;">
+            <i class="fa-solid fa-coins"></i>
+            <input type="number" id="late-edit-input" placeholder="المبلغ الجديد" step="0.01" min="0">
+        </div>
+        <div class="modal-btns" style="margin-top:4px;">
+            <button class="mbtn mbtn-cancel" onclick="clearLateDeductOverride()">صفر (مسامحة)</button>
+            <button class="mbtn mbtn-ok" style="background:#ea580c;" onclick="applyLateDeductOverride()">تطبيق</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ نافذة تعديل خصم التأخر ══ -->
+<div class="modal-overlay" id="late-override-modal" style="align-items:center;z-index:9000;">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-top">
+            <div class="modal-ico" style="background:#fff7ed;"><i class="fa-solid fa-clock" style="color:#ea580c;"></i></div>
+            <div><p class="modal-title">تعديل خصم التأخر</p><p class="modal-subtitle" id="late-override-orig"></p></div>
+        </div>
+        <div class="input-wrap" style="margin-bottom:10px;">
+            <i class="fa-solid fa-coins"></i>
+            <input type="number" id="late-override-input" placeholder="مبلغ الخصم" step="0.01" min="0">
+        </div>
+        <div class="modal-btns" style="margin-top:4px;">
+            <button class="mbtn mbtn-cancel" onclick="closeModals()">إلغاء</button>
+            <button class="mbtn mbtn-ok" style="background:#ea580c;" onclick="applyLateDeductOverride()">تطبيق</button>
+        </div>
+    </div>
+</div>
+
 <!-- نافذة التنبيه الأنيقة -->
 <div class="modal-overlay" id="alert-modal" style="align-items:center;z-index:5000;">
     <div class="modal" onclick="event.stopPropagation()">
@@ -2180,6 +2322,7 @@
     let items = [], sales = [], categories = [], purchases = [];
     let suppliers = [], customers = [], supplierDetails = {}, customerDetails = {};
     let paymentLogs = [], expenses = [], cashLog = [], withdrawals = [];
+    let employees = [];
     let cart = [];
     let currentTab = 'sell';
     let currentFilter = 'all';
@@ -2205,6 +2348,7 @@
             ['expenses',        expenses],
             ['cashLog',         cashLog],
             ['withdrawals',     withdrawals],
+            ['employees',       employees],
         ]);
         render();
     }
@@ -6936,7 +7080,7 @@
 
     // ── تحميل البيانات من IndexedDB ثم تشغيل التطبيق ──
     _dbLoad(['items','sales','cats','purchases','suppliers','customers',
-             'supplierDetails','customerDetails','paymentLogs','expenses','cashLog','withdrawals'])
+             'supplierDetails','customerDetails','paymentLogs','expenses','cashLog','withdrawals','employees'])
     .then(function(d) {
         items           = d.items           || [];
         sales           = d.sales           || [];
@@ -6950,6 +7094,7 @@
         expenses        = d.expenses        || [];
         cashLog         = d.cashLog         || [];
         withdrawals     = d.withdrawals     || [];
+        employees       = d.employees       || [];
 
         // Migration: ترقيم الفواتير القديمة
         let needsSave = false;
@@ -6984,11 +7129,551 @@
         render();
     });
 
+
+    // ══════════════════════════════════════════
+    // ─── نظام الموظفين ───
+    // ══════════════════════════════════════════
+
+    let pendingAdvanceEmpId = null;
+    let pendingSalaryInfo   = null;
+    let attendanceDraft     = {}; // { empId: { status, lateDeduct } }
+    let pendingLateEmpId    = null;
+    let pendingLateDate     = null;
+
+    const MONTHS_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو',
+                       'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+    // ─── فتح النوافذ ───
+    function openEmployeesModal() {
+        renderEmployeesList();
+        openModal('employees-modal');
+    }
+
+    function openAttendanceModal() {
+        if(!employees.length) { showAlert('لا يوجد موظفين. أضف موظفاً أولاً.', 'error'); return; }
+        const today = new Date().toLocaleDateString('en-CA');
+        document.getElementById('att-date').value = today;
+        attendanceDraft = {};
+        renderAttendanceList();
+        openModal('attendance-modal');
+    }
+
+    function openSalariesModal() {
+        if(!employees.length) { showAlert('لا يوجد موظفين. أضف موظفاً أولاً.', 'error'); return; }
+        const now = new Date();
+        // ملء الشهور
+        const mSel = document.getElementById('sal-month');
+        mSel.innerHTML = MONTHS_AR.map((m,i) => `<option value="${i+1}">${m}</option>`).join('');
+        mSel.value = now.getMonth() + 1;
+        // ملء السنوات
+        const ySel = document.getElementById('sal-year');
+        ySel.innerHTML = '';
+        for(let y = now.getFullYear(); y <= now.getFullYear()+2; y++) {
+            ySel.innerHTML += `<option value="${y}">${y}</option>`;
+        }
+        ySel.value = now.getFullYear();
+        renderSalariesList();
+        openModal('salaries-modal');
+    }
+
+    // ─── إدارة الموظفين ───
+    function addEmployee() {
+        const name   = document.getElementById('emp-name-input').value.trim();
+        const salary = parseFloat(document.getElementById('emp-salary-input').value);
+        if(!name)        { showAlert('أدخل اسم الموظف', 'error'); return; }
+        if(!salary || salary <= 0) { showAlert('أدخل راتباً صحيحاً', 'error'); return; }
+        const emp = { id: Date.now(), name, salary, advances: [], salaryLogs: [], attendance: {} };
+        employees.push(emp);
+        document.getElementById('emp-name-input').value   = '';
+        document.getElementById('emp-salary-input').value = '';
+        saveData();
+        renderEmployeesList();
+        showToast('تم إضافة الموظف');
+    }
+
+    function deleteEmployee(id) {
+        showConfirm(`حذف هذا الموظف نهائياً؟`, () => {
+            employees = employees.filter(e => e.id !== id);
+            saveData();
+            renderEmployeesList();
+            showToast('تم حذف الموظف');
+        });
+    }
+
+    function renderEmployeesList() {
+        document.getElementById('emp-sub').textContent = employees.length + ' موظف';
+        const list = document.getElementById('emp-list');
+        if(!employees.length) {
+            list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:0.85rem;font-weight:700;">لا يوجد موظفين</div>';
+            return;
+        }
+        list.innerHTML = employees.map(e => {
+            const totalAdv = (e.advances||[]).filter(a => !a.deducted).reduce((s,a) => s + a.amount, 0);
+            return `
+            <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:12px 14px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:#dbeafe;color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:900;flex-shrink:0;">${e.name.charAt(0)}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:0.88rem;font-weight:800;color:var(--text-dark);">${e.name}</div>
+                        <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);">راتب: JD ${e.salary.toFixed(2)}${totalAdv > 0 ? ` · سلف: <span style="color:var(--danger);">JD ${totalAdv.toFixed(2)}</span>` : ''}</div>
+                    </div>
+                    <button onclick="openAdvanceModal(${e.id})" style="background:#fff7ed;border:1px solid #fed7aa;color:#ea580c;font-family:inherit;font-size:0.7rem;font-weight:800;padding:4px 9px;border-radius:8px;cursor:pointer;white-space:nowrap;">سلفة</button>
+                    <button onclick="deleteEmployee(${e.id})" style="background:#fff0f0;border:1px solid #fecaca;color:var(--danger);font-family:inherit;font-size:0.7rem;font-weight:800;padding:4px 9px;border-radius:8px;cursor:pointer;">حذف</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ─── السلف ───
+    function calcEmpStats(emp, fromDate, toDate) {
+        // fromDate / toDate: Date objects (inclusive). toDate can be null = all dates after fromDate
+        let present = 0, absent = 0, late = 0, off = 0;
+        Object.entries(emp.attendance || {}).forEach(([dateStr, status]) => {
+            const d = new Date(dateStr);
+            if(fromDate && d <= fromDate) return;
+            if(toDate   && d > toDate)   return;
+            if(status === 'present') present++;
+            else if(status === 'absent')  absent++;
+            else if(status === 'late')    late++;
+            else if(status === 'off')     off++;
+        });
+        return { present, absent, late, off };
+    }
+
+    function calcDailyRate(emp, month, year) {
+        // اليومية = الراتب ÷ (أيام الشهر - أيام العطلة المسجلة في ذلك الشهر)
+        const daysInMonth = new Date(year, month, 0).getDate();
+        let offDays = 0;
+        for(let d = 1; d <= daysInMonth; d++) {
+            const key = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            if((emp.attendance || {})[key] === 'off') offDays++;
+        }
+        const workDays = Math.max(1, daysInMonth - offDays);
+        return { dailyRate: emp.salary / workDays, workDays, offDays };
+    }
+
+    function getEmpAdvanceBalance(emp) {
+        // آخر تاريخ صرف راتب
+        const logs = (emp.salaryLogs || []);
+        let lastPayDate = null;
+        if(logs.length) {
+            const last = logs[logs.length - 1];
+            if(last.isoDate) {
+                lastPayDate = new Date(last.isoDate);
+            } else {
+                const [y, m] = last.monthKey.split('-').map(Number);
+                lastPayDate = new Date(y, m, 0);
+            }
+        }
+
+        // احسب أيام الحضور والعطلة بعد آخر صرف
+        let attendedDays = 0, offDays = 0, totalRecorded = 0;
+        Object.entries(emp.attendance || {}).forEach(([dateStr, rec]) => {
+            const d  = new Date(dateStr);
+            if(lastPayDate && d <= lastPayDate) return;
+            const st = rec && typeof rec === 'object' ? rec.status : rec;
+            if(st === 'present' || st === 'late') attendedDays++;
+            else if(st === 'off') offDays++;
+            totalRecorded++;
+        });
+
+        // اليومية ثابتة = الراتب ÷ 30
+        const dailyRate = emp.salary / 30;
+
+        const earned = Math.round(attendedDays * dailyRate * 100) / 100;
+
+        // اطرح السلف غير المخصومة المأخوذة بعد آخر صرف
+        const usedAdv = (emp.advances || []).filter(a => {
+            if(a.deducted) return false;
+            if(!lastPayDate) return true;
+            const advDate = a.isoDate ? new Date(a.isoDate) : new Date(a.date);
+            return advDate > lastPayDate;
+        }).reduce((s, a) => s + a.amount, 0);
+
+        const available = Math.max(0, Math.round((earned - usedAdv) * 100) / 100);
+        return { available, attendedDays, dailyRate, earned, usedAdv, lastPayDate };
+    }
+
+    function openAdvanceModal(empId) {
+        const emp = employees.find(e => e.id === empId);
+        if(!emp) return;
+        pendingAdvanceEmpId = empId;
+
+        const { available, attendedDays, dailyRate, earned, usedAdv, lastPayDate } = getEmpAdvanceBalance(emp);
+
+        document.getElementById('adv-emp-name').textContent = emp.name;
+        document.getElementById('adv-balance-info').innerHTML = `
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:9px;padding:8px 12px;font-size:0.75rem;font-weight:700;color:#16a34a;line-height:1.6;">
+                أيام الحضور: <b>${attendedDays}</b> يوم · اليومية: <b>JD ${dailyRate.toFixed(2)}</b><br>
+                المكتسب: <b>JD ${earned.toFixed(2)}</b>${usedAdv > 0 ? ` · سلف سابقة: <b style="color:#ea580c;">JD ${usedAdv.toFixed(2)}</b>` : ''}<br>
+                الحد الأقصى للسلفة: <b>JD ${available.toFixed(2)}</b>
+            </div>`;
+
+        document.getElementById('adv-amount').value = '';
+        document.getElementById('adv-note').value   = '';
+        openModal('advance-modal');
+    }
+
+    function confirmAddAdvance() {
+        const amount = parseFloat(document.getElementById('adv-amount').value);
+        const note   = document.getElementById('adv-note').value.trim();
+        if(!amount || amount <= 0) { showAlert('أدخل مبلغاً صحيحاً', 'error'); return; }
+        const emp = employees.find(e => e.id === pendingAdvanceEmpId);
+        if(!emp) return;
+
+        const { available, attendedDays, dailyRate } = getEmpAdvanceBalance(emp);
+
+        if(amount > available) {
+            const needed = Math.ceil(amount / dailyRate);
+            showAlert(
+                `لا يمكن صرف هذه السلفة.
+
+الرصيد المتاح: JD ${available.toFixed(2)}
+أيام الحضور الحالية: ${attendedDays} يوم
+
+لصرف JD ${amount.toFixed(2)} يحتاج ${needed} يوم حضور على الأقل.`,
+                'error'
+            );
+            return;
+        }
+
+        if(!emp.advances) emp.advances = [];
+        const today = new Date(); const isoDate = today.toLocaleDateString('en-CA'); emp.advances.push({ id: Date.now(), amount, note, date: today.toLocaleDateString(), isoDate, deducted: false });
+        saveData();
+        closeModals();
+        renderEmployeesList();
+        showToast('تم تسجيل السلفة');
+    }
+
+    // ─── الحضور ───
+    function renderAttendanceList() {
+        const dateVal = document.getElementById('att-date').value;
+        const d = new Date(dateVal);
+        document.getElementById('att-sub').textContent = d.toLocaleDateString('ar-EG', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+        const list = document.getElementById('att-list');
+        if(!employees.length) { list.innerHTML = ''; return; }
+        list.innerHTML = employees.map(e => {
+            const savedAtt  = (e.attendance || {})[dateVal];
+            const draftEntry = attendanceDraft[e.id];
+            const existing   = savedAtt ? (typeof savedAtt === 'object' ? savedAtt.status : savedAtt)
+                                        : (draftEntry ? draftEntry.status : '');
+            const lateDeduct = draftEntry && draftEntry.status === 'late' ? draftEntry.lateDeduct
+                             : (savedAtt && typeof savedAtt === 'object' ? savedAtt.lateDeduct || 0 : 0);
+            const states = [
+                { val:'present', label:'حاضر',  bg:'#f0fdf4', color:'#16a34a',        border:'#bbf7d0' },
+                { val:'absent',  label:'غائب',   bg:'#fff0f0', color:'var(--danger)',   border:'#fecaca' },
+                { val:'late',    label:'متأخر',  bg:'#fff7ed', color:'#ea580c',         border:'#fed7aa', showDeduct: true },
+                { val:'off',     label:'عطلة',   bg:'#f1f5f9', color:'#64748b',         border:'#cbd5e1' },
+            ];
+            return `
+            <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:10px 14px;">
+                <div style="font-size:0.85rem;font-weight:800;color:var(--text-dark);margin-bottom:8px;">${e.name}</div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;">
+                    ${states.map(s => `
+                    <button onclick="setAttDraft(${e.id},'${s.val}','${dateVal}')"
+                        style="height:34px;border-radius:9px;border:1.5px solid ${existing===s.val ? s.border : 'var(--border)'};background:${existing===s.val ? s.bg : '#fff'};color:${existing===s.val ? s.color : 'var(--text-muted)'};font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;transition:all 0.15s;position:relative;">
+                        ${s.label}${s.val==='late' && existing==='late' && lateDeduct > 0 ? `<span style="position:absolute;top:-6px;left:-4px;background:#ea580c;color:#fff;font-size:0.55rem;font-weight:900;padding:1px 4px;border-radius:10px;">-${lateDeduct}</span>` : ''}
+                    </button>`).join('')}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function setAttDraft(empId, status, dateVal) {
+        const current = attendanceDraft[empId] ? attendanceDraft[empId].status
+                      : ((e => e && (e.attendance||{})[dateVal])(employees.find(e=>e.id===empId)));
+        const currentStatus = current && typeof current === 'object' ? current.status : current;
+
+        // ضغطة ثانية على نفس الزر = إلغاء
+        if(currentStatus === status) {
+            delete attendanceDraft[empId];
+            // امسح من السجل المحفوظ أيضاً
+            const emp = employees.find(e => e.id === empId);
+            if(emp && emp.attendance && emp.attendance[dateVal]) {
+                delete emp.attendance[dateVal];
+            }
+            renderAttendanceList();
+            return;
+        }
+
+        if(status === 'late') {
+            pendingLateEmpId = empId;
+            pendingLateDate  = dateVal;
+            const emp = employees.find(e => e.id === empId);
+            document.getElementById('late-emp-name').textContent = emp ? emp.name : '';
+            document.getElementById('late-deduct-amount').value  = '';
+            openModal('late-deduct-modal');
+            return;
+        }
+        attendanceDraft[empId] = { status, lateDeduct: 0 };
+        renderAttendanceList();
+    }
+
+    function confirmLateDeduct() {
+        const amount = parseFloat(document.getElementById('late-deduct-amount').value);
+        if(!amount || amount <= 0) { showAlert('أدخل مبلغ الخصم', 'error'); return; }
+        attendanceDraft[pendingLateEmpId] = { status: 'late', lateDeduct: amount };
+        closeModals();
+        setTimeout(() => openModal('attendance-modal'), 50);
+        renderAttendanceList();
+    }
+
+    function skipLateDeduct() {
+        attendanceDraft[pendingLateEmpId] = { status: 'late', lateDeduct: 0 };
+        closeModals();
+        setTimeout(() => openModal('attendance-modal'), 50);
+        renderAttendanceList();
+    }
+
+    function saveAttendance() {
+        const dateVal = document.getElementById('att-date').value;
+        let saved = 0;
+        employees.forEach(e => {
+            const draft = attendanceDraft[e.id];
+            if(draft) {
+                if(!e.attendance) e.attendance = {};
+                e.attendance[dateVal] = draft.status === 'late'
+                    ? { status: 'late', lateDeduct: draft.lateDeduct || 0 }
+                    : draft.status;
+                saved++;
+            }
+        });
+        if(!saved) { showAlert('لم تسجّل أي حضور', 'error'); return; }
+        saveData();
+        closeModals();
+        showToast(`تم حفظ حضور ${saved} موظف`);
+    }
+
+    // ─── الرواتب ───
+    function renderSalariesList() {
+        const month = parseInt(document.getElementById('sal-month').value);
+        const year  = parseInt(document.getElementById('sal-year').value);
+        document.getElementById('sal-sub').textContent = MONTHS_AR[month-1] + ' ' + year;
+        const list = document.getElementById('sal-list');
+
+        list.innerHTML = employees.map(e => {
+            const daysInMonth = new Date(year, month, 0).getDate();
+            let present = 0, absent = 0, late = 0, off = 0, lateDeductTotal = 0;
+            for(let d = 1; d <= daysInMonth; d++) {
+                const key = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const rec = (e.attendance || {})[key];
+                const st  = rec && typeof rec === 'object' ? rec.status : rec;
+                if(st === 'present')     present++;
+                else if(st === 'absent') absent++;
+                else if(st === 'late') { late++; lateDeductTotal += (rec && rec.lateDeduct) ? rec.lateDeduct : 0; }
+                else if(st === 'off')    off++;
+            }
+
+            // السلف غير المخصومة
+            const pendingAdv = (e.advances||[]).filter(a => !a.deducted);
+            const totalAdv   = pendingAdv.reduce((s,a) => s + a.amount, 0);
+
+            // اليومية ثابتة = الراتب ÷ 30
+            const dailyRate    = e.salary / 30;
+            // الراتب المستحق = (حاضر + متأخر + عطلة) × اليومية
+            const earnedSalary = Math.round((present + late + off) * dailyRate * 100) / 100;
+            lateDeductTotal    = Math.round(lateDeductTotal * 100) / 100;
+            const extraDeduct  = e.lateOverrides && e.lateOverrides[`${year}-${String(month).padStart(2,'0')}`] !== undefined
+                                 ? e.lateOverrides[`${year}-${String(month).padStart(2,'0')}`] : lateDeductTotal;
+            const netSalary    = Math.max(0, earnedSalary - extraDeduct - totalAdv);
+
+            const monthKey = `${year}-${String(month).padStart(2,'0')}`;
+            const paid     = (e.salaryLogs||[]).find(l => l.monthKey === monthKey);
+
+            return `
+            <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:#dbeafe;color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:900;flex-shrink:0;">${e.name.charAt(0)}</div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.88rem;font-weight:800;color:var(--text-dark);">${e.name}</div>
+                        <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">راتب: JD ${e.salary.toFixed(2)} · يومية: JD ${dailyRate.toFixed(2)}</div>
+                    </div>
+                    ${paid ? `<span style="font-size:0.72rem;font-weight:800;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:3px 9px;border-radius:20px;">✓ مصروف</span>` : ''}
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px;">
+                    <div style="background:#f0fdf4;border-radius:9px;padding:7px;text-align:center;">
+                        <div style="font-size:0.6rem;font-weight:700;color:#16a34a;">حاضر</div>
+                        <div style="font-size:0.95rem;font-weight:900;color:#16a34a;">${present}</div>
+                    </div>
+                    <div style="background:#fff0f0;border-radius:9px;padding:7px;text-align:center;">
+                        <div style="font-size:0.6rem;font-weight:700;color:var(--danger);">غائب</div>
+                        <div style="font-size:0.95rem;font-weight:900;color:var(--danger);">${absent}</div>
+                    </div>
+                    <div style="background:#fff7ed;border-radius:9px;padding:7px;text-align:center;">
+                        <div style="font-size:0.6rem;font-weight:700;color:#ea580c;">متأخر</div>
+                        <div style="font-size:0.95rem;font-weight:900;color:#ea580c;">${late}</div>
+                    </div>
+                    <div style="background:#f1f5f9;border-radius:9px;padding:7px;text-align:center;">
+                        <div style="font-size:0.6rem;font-weight:700;color:#64748b;">عطلة</div>
+                        <div style="font-size:0.95rem;font-weight:900;color:#64748b;">${off}</div>
+                    </div>
+                </div>
+                ${earnedSalary < e.salary ? `<div style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;"><span>مكتسب (${present+late+off} يوم × JD ${dailyRate.toFixed(2)})</span><span>JD ${earnedSalary.toFixed(2)}</span></div>` : ''}
+                ${lateDeductTotal > 0 ? `<div onclick="openLateOverrideModal(${e.id},${month},${year})" style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:#ea580c;margin-bottom:4px;cursor:pointer;"><span>خصم تأخر</span><span>- JD ${extraDeduct.toFixed(2)}</span></div>` : `<div onclick="openLateOverrideModal(${e.id},${month},${year})" style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:#ea580c;margin-bottom:4px;cursor:pointer;"><span>خصم إضافي</span><span style="color:var(--text-muted);">+ إضافة</span></div>`}
+                ${totalAdv > 0 ? `<div style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:#ea580c;margin-bottom:4px;"><span>سلف مستحقة</span><span>- JD ${totalAdv.toFixed(2)}</span></div>` : ''}
+                <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--border);margin-top:4px;">
+                    <div>
+                        <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">صافي الراتب</div>
+                        <div style="font-size:1.1rem;font-weight:900;color:var(--primary);">JD ${netSalary.toFixed(2)}</div>
+                    </div>
+                    ${!paid ? `<button onclick="confirmPaySalaryDirect(${e.id},${month},${year})" style="background:#ca8a04;color:#fff;border:none;font-family:inherit;font-size:0.78rem;font-weight:800;padding:8px 14px;border-radius:9px;cursor:pointer;">صرف الراتب</button>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function confirmPaySalaryDirect(empId, month, year) {
+        const e = employees.find(x => x.id === empId);
+        if(!e) return;
+        const daysInMonth = new Date(year, month, 0).getDate();
+        let absent = 0, off = 0, late = 0, lateDeductTotal = 0;
+        for(let d = 1; d <= daysInMonth; d++) {
+            const key = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const rec = (e.attendance||{})[key];
+            const st  = rec && typeof rec === 'object' ? rec.status : rec;
+            if(st==='absent') absent++;
+            else if(st==='off') off++;
+            else if(st==='late') { late++; lateDeductTotal += (rec && rec.lateDeduct) ? rec.lateDeduct : 0; }
+        }
+        const pendingAdv   = (e.advances||[]).filter(a => !a.deducted);
+        const totalAdv     = pendingAdv.reduce((s,a) => s + a.amount, 0);
+        const dailyRate    = e.salary / 30;
+        const earnedSalary = Math.round((present + late + off) * dailyRate * 100) / 100;
+        lateDeductTotal    = Math.round(lateDeductTotal * 100) / 100;
+        const mKey         = `${year}-${String(month).padStart(2,'0')}`;
+        const extraDeduct  = e.lateOverrides && e.lateOverrides[mKey] !== undefined ? e.lateOverrides[mKey] : lateDeductTotal;
+        const netSalary    = Math.max(0, earnedSalary - extraDeduct - totalAdv);
+        const monthKey     = `${year}-${String(month).padStart(2,'0')}`;
+
+        const mKeyFinal = `${year}-${String(month).padStart(2,'0')}`;
+        pendingSalaryInfo = { empId, month, year, monthKey: mKeyFinal, netSalary, salary: e.salary, totalAdv, pendingAdvIds: pendingAdv.map(a=>a.id), lateDeductTotal: extraDeduct };
+
+        showConfirm(
+            `صرف راتب ${e.name} — ${MONTHS_AR[month-1]} ${year}
+صافي الراتب: JD ${netSalary.toFixed(2)}`,
+            () => confirmPaySalary(),
+            'تأكيد الصرف', 'صرف', '#ca8a04'
+        );
+    }
+
+    function openPaySalaryModal(empId, month, year) {
+        const e = employees.find(x => x.id === empId);
+        if(!e) return;
+        const daysInMonth = new Date(year, month, 0).getDate();
+        let present = 0, absent = 0, late = 0, off = 0, lateDeductTotal = 0;
+        for(let d = 1; d <= daysInMonth; d++) {
+            const key = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const rec = (e.attendance||{})[key];
+            const st  = rec && typeof rec === 'object' ? rec.status : rec;
+            if(st==='present')     present++;
+            else if(st==='absent') absent++;
+            else if(st==='late') { late++; lateDeductTotal += (rec && rec.lateDeduct) ? rec.lateDeduct : 0; }
+            else if(st==='off')    off++;
+        }
+        const pendingAdv   = (e.advances||[]).filter(a => !a.deducted);
+        const totalAdv     = pendingAdv.reduce((s,a) => s + a.amount, 0);
+        const dailyRate    = e.salary / 30;
+        const earnedSalary = Math.round((present + late + off) * dailyRate * 100) / 100;
+        lateDeductTotal    = Math.round(lateDeductTotal * 100) / 100;
+        const mKey         = `${year}-${String(month).padStart(2,'0')}`;
+        const extraDeduct  = e.lateOverrides && e.lateOverrides[mKey] !== undefined ? e.lateOverrides[mKey] : lateDeductTotal;
+        const netSalary    = Math.max(0, earnedSalary - extraDeduct - totalAdv);
+        const monthKey     = `${year}-${String(month).padStart(2,'0')}`;
+        const paid         = (e.salaryLogs||[]).find(l => l.monthKey === monthKey);
+
+        pendingSalaryInfo = { empId, month, year, monthKey, netSalary, salary: e.salary, totalAdv, pendingAdvIds: pendingAdv.map(a=>a.id), absentDeduct, lateDeductTotal };
+
+        document.getElementById('pay-sal-sub').textContent = e.name + ' — ' + MONTHS_AR[month-1] + ' ' + year;
+
+        // بناء تفاصيل الراتب في العناصر الثابتة
+        let detHtml = '';
+        detHtml += '<div style="display:flex;justify-content:space-between;font-size:0.82rem;font-weight:700;color:var(--text-dark);"><span>الراتب الأساسي</span><span>JD ' + e.salary.toFixed(2) + '</span></div>';
+        if(off > 0) detHtml += '<div style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:#64748b;"><span>أيام العطلة (' + off + ' يوم) · أيام الدوام ' + workDays + '</span><span>يومية JD ' + dailyRate.toFixed(2) + '</span></div>';
+        if(absentDeduct > 0) detHtml += '<div style="display:flex;justify-content:space-between;font-size:0.82rem;font-weight:700;color:var(--danger);"><span>خصم غياب (' + absent + ' يوم × JD ' + dailyRate.toFixed(2) + ')</span><span>- JD ' + absentDeduct.toFixed(2) + '</span></div>';
+        if(totalAdv > 0) detHtml += '<div style="display:flex;justify-content:space-between;font-size:0.82rem;font-weight:700;color:#ea580c;"><span>السلف المستحقة</span><span>- JD ' + totalAdv.toFixed(2) + '</span></div>';
+        if(paid) detHtml += '<div style="text-align:center;font-size:0.78rem;font-weight:800;color:#16a34a;background:#f0fdf4;border-radius:8px;padding:6px;">✓ تم صرف هذا الراتب مسبقاً</div>';
+
+        // نملأ الـ details بالعناصر الثابتة (بدون صف التأخر — له عنصر ثابت خاص)
+        document.getElementById('pay-sal-details').innerHTML = detHtml;
+
+        // صف خصم التأخر
+        const lateRow = document.getElementById('late-row');
+        if(lateDeductTotal > 0) {
+            document.getElementById('late-row-label').textContent = 'خصم تأخر (' + late + ' مرة)';
+            document.getElementById('late-deduct-display').textContent = 'JD ' + lateDeductTotal.toFixed(2) + ' ✏️';
+            lateRow.style.display = 'flex';
+        } else {
+            lateRow.style.display = 'none';
+        }
+
+        // صافي الراتب
+        document.getElementById('pay-sal-net-val').textContent = 'JD ' + netSalary.toFixed(2);
+
+        const okBtn = document.querySelector('#pay-salary-modal .mbtn-ok');
+        if(okBtn) okBtn.style.display = paid ? 'none' : '';
+        openModal('pay-salary-modal');
+    }
+
+    function openLateDeductEdit() {
+        const info = pendingSalaryInfo;
+        const current = (info.lateDeductOverride !== undefined) ? info.lateDeductOverride : info.lateDeductTotal;
+        document.getElementById('late-override-orig').textContent = '';
+        document.getElementById('late-override-input').value = '';
+        openModal('late-override-modal');
+    }
+
+    function openLateOverrideModal(empId, month, year) {
+        const e = employees.find(x => x.id === empId);
+        if(!e) return;
+        const monthKey = `${year}-${String(month).padStart(2,'0')}`;
+        pendingSalaryInfo = { empId, month, year, monthKey };
+        document.getElementById('late-override-orig').textContent = '';
+        document.getElementById('late-override-input').value = '';
+        openModal('late-override-modal');
+    }
+
+    function applyLateDeductOverride() {
+        const raw = document.getElementById('late-override-input').value;
+        const val = raw === '' ? 0 : parseFloat(raw);
+        if(isNaN(val) || val < 0) { showAlert('أدخل قيمة صحيحة', 'error'); return; }
+        const e = employees.find(x => x.id === pendingSalaryInfo.empId);
+        if(!e) return;
+        if(!e.lateOverrides) e.lateOverrides = {};
+        e.lateOverrides[pendingSalaryInfo.monthKey] = val;
+        saveData();
+        document.getElementById('late-override-modal').classList.remove('active');
+        showToast('تم تعديل الخصم');
+        renderSalariesList();
+    }
+
+    function confirmPaySalary() {
+        if(!pendingSalaryInfo) return;
+        const effectiveLateDeduct = pendingSalaryInfo.lateDeductOverride !== undefined
+            ? pendingSalaryInfo.lateDeductOverride : pendingSalaryInfo.lateDeductTotal;
+        const finalNet = Math.max(0, pendingSalaryInfo.salary - pendingSalaryInfo.absentDeduct - effectiveLateDeduct - pendingSalaryInfo.totalAdv);
+        pendingSalaryInfo.netSalary = finalNet;
+        const { empId, monthKey, netSalary, pendingAdvIds } = pendingSalaryInfo;
+        const e = employees.find(x => x.id === empId);
+        if(!e) return;
+        // سدّد السلف
+        (e.advances||[]).forEach(a => { if(pendingAdvIds.includes(a.id)) a.deducted = true; });
+        // احذف الـ override بعد الصرف
+        if(e.lateOverrides) delete e.lateOverrides[monthKey];
+        // سجّل الصرف
+        if(!e.salaryLogs) e.salaryLogs = [];
+        const payIso = new Date().toLocaleDateString('en-CA'); e.salaryLogs.push({ monthKey, net: netSalary, date: new Date().toLocaleDateString(), isoDate: payIso });
+        saveData();
+        closeModals();
+        showToast('تم صرف الراتب بنجاح');
+        // أعد فتح نافذة الرواتب لتحديث العرض
+        setTimeout(() => openSalariesModal(), 300);
+    }
+
     // Mobile Visual Viewport Handling
-    const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal','add-user-modal','change-pass-modal','users-modal','setup-admin-modal','edit-perms-modal','setup-modal','add-item-modal','supplier-logs-modal','customer-logs-modal'].map(id=>document.getElementById(id));
+    const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal','add-user-modal','change-pass-modal','users-modal','setup-admin-modal','edit-perms-modal','setup-modal','add-item-modal','supplier-logs-modal','customer-logs-modal','employees-modal','attendance-modal','advance-modal','late-deduct-modal','late-override-modal'].map(id=>document.getElementById(id));
     const topFixedOverlays = ['suppliers-modal','customers-modal','sup-sheet-overlay','cust-sheet-overlay','cat-sheet-overlay'].map(id=>document.getElementById(id));
     const tallOverlays = ['cart-modal','edit-item-modal','sell-search-modal','pu-inv-search-modal','new-purchase-modal'].map(id=>document.getElementById(id));
-    const centerOverlays = ['stats-modal','sales-history-modal','purchases-modal','del-purchases-modal','debt-modal','cust-debt-modal','payment-logs-modal','expenses-modal','cash-log-modal','withdrawals-modal'].map(id=>document.getElementById(id));
+    const centerOverlays = ['stats-modal','sales-history-modal','purchases-modal','del-purchases-modal','debt-modal','cust-debt-modal','payment-logs-modal','expenses-modal','cash-log-modal','withdrawals-modal','salaries-modal'].map(id=>document.getElementById(id));
 
     function syncOverlays() {
         const vh = window.visualViewport.height;
