@@ -891,7 +891,7 @@
                         <button onclick="closeMenu(); openSalariesModal()"><i class="fa-solid fa-money-bill-wave"></i> الرواتب</button>
                     </div>
                 </div>
-                <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openStoreNameEdit()"><i class="fa-solid fa-store"></i> تعديل اسم المحل</button>
+                <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); doLogout()"><i class="fa-solid fa-right-from-bracket"></i> تسجيل خروج</button>
                 <div class="menu-import-export">
                     <button onclick="if(isAdmin()){closeMenu();document.getElementById('file-input').click();}else{closeMenu();showToast('ليس لديك صلاحية','error');}"><i class="fa-solid fa-file-arrow-up"></i> استيراد</button>
                     <button onclick="closeMenu(); exportData()"><i class="fa-solid fa-database"></i> تصدير</button>
