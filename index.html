@@ -672,7 +672,7 @@
     <div class="modal" style="max-height:82vh;display:flex;flex-direction:column;width:92%;max-width:360px;padding-left:0;padding-right:0;" onclick="event.stopPropagation()">
         <div class="modal-top" style="padding:0 20px;">
             <div class="modal-ico blue"><i class="fa-solid fa-clock-rotate-left"></i></div>
-            <div style="flex:1"><p class="modal-title">سجل الزبائن</p><p class="modal-subtitle" id="cust-logs-sub"></p></div>
+            <div style="flex:1"><p class="modal-title">الذمم المسددة</p><p class="modal-subtitle" id="cust-logs-sub"></p></div>
         </div>
         <div style="display:flex;gap:6px;margin-bottom:10px;padding:0 20px;">
             <button id="cl-mode-day" onclick="setClMode('day')" style="flex:1;height:32px;border-radius:8px;border:2px solid var(--primary);background:#fff;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;">يوم</button>
@@ -872,7 +872,7 @@
                     </button>
                     <div class="menu-submenu">
                         <button onclick="closeMenu(); openCustDebtModal()"><i class="fa-solid fa-user-clock"></i> ذمم الزبائن</button>
-                        <button onclick="closeMenu(); openCustomerLogsModal()"><i class="fa-solid fa-clock-rotate-left"></i> سجل الزبائن</button>
+                        <button onclick="closeMenu(); openCustomerLogsModal()"><i class="fa-solid fa-clock-rotate-left"></i> الذمم المسددة</button>
                         <button onclick="if(requirePerm('contacts')){closeMenu();openCustomersModal()}"><i class="fa-solid fa-users"></i> إضافة زبون</button>
                     </div>
                 </div>
