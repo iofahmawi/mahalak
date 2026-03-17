@@ -885,12 +885,12 @@
                         <i class="fa-solid fa-id-badge"></i> الموظفين
                     </button>
                     <div class="menu-submenu">
+                        <button onclick="closeMenu(); openUsersModal()"><i class="fa-solid fa-users-gear"></i> إدارة المستخدمين</button>
                         <button onclick="closeMenu(); openAttendanceModal()"><i class="fa-solid fa-calendar-check"></i> تسجيل الحضور</button>
                         <button onclick="closeMenu(); openEmployeesModal()"><i class="fa-solid fa-hand-holding-dollar"></i> تسجيل سلفة</button>
                         <button onclick="closeMenu(); openSalariesModal()"><i class="fa-solid fa-money-bill-wave"></i> الرواتب</button>
                     </div>
                 </div>
-                <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openUsersModal()"><i class="fa-solid fa-users-gear"></i> إدارة المستخدمين</button>
                 <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); openStoreNameEdit()"><i class="fa-solid fa-store"></i> تعديل اسم المحل</button>
                 <div class="menu-import-export">
                     <button onclick="if(isAdmin()){closeMenu();document.getElementById('file-input').click();}else{closeMenu();showToast('ليس لديك صلاحية','error');}"><i class="fa-solid fa-file-arrow-up"></i> استيراد</button>
@@ -1702,7 +1702,7 @@
             <select id="sal-month" onchange="renderSalariesList()" style="flex:1;height:41px;border:1.5px solid var(--border);border-radius:12px;padding:0 10px;box-sizing:border-box;font-family:inherit;font-size:0.82rem;font-weight:700;color:var(--text-dark);background:#f8fafc;outline:none;-webkit-appearance:none;appearance:none;"></select>
             <select id="sal-year" onchange="renderSalariesList()" style="width:90px;height:41px;border:1.5px solid var(--border);border-radius:12px;padding:0 10px;box-sizing:border-box;font-family:inherit;font-size:0.82rem;font-weight:700;color:var(--text-dark);background:#f8fafc;outline:none;-webkit-appearance:none;appearance:none;"></select>
         </div>
-        <div id="sal-list" style="overflow-y:auto;flex:1;padding:0 20px 12px;display:flex;flex-direction:column;gap:10px;"></div>
+        <div id="sal-list" style="overflow-y:auto;flex:1;min-height:0;padding:0 20px 12px;display:flex;flex-direction:column;gap:10px;"></div>
         <div class="modal-btns" style="padding:0 20px;margin-top:4px;">
             <button class="mbtn mbtn-cancel" onclick="closeModals()">إغلاق</button>
         </div>
@@ -7503,7 +7503,10 @@
                         <div style="font-size:0.88rem;font-weight:800;color:var(--text-dark);">${e.name}</div>
                         <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">JD ${netSalary.toFixed(2)} صافي</div>
                     </div>
-                    ${paid ? `<span style="font-size:0.72rem;font-weight:800;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:3px 9px;border-radius:20px;">✓ مصروف</span>` : ''}
+                    ${paid ? `<div style="display:flex;align-items:center;gap:6px;">
+                        <span style="font-size:0.72rem;font-weight:800;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:3px 9px;border-radius:20px;">✓ مصروف</span>
+                        <button onclick="event.stopPropagation();undoPaySalary(${e.id},${month},${year})" style="background:#fff0f0;color:var(--danger);border:1px solid #fecaca;font-family:inherit;font-size:0.72rem;font-weight:800;padding:3px 9px;border-radius:20px;cursor:pointer;">تعديل</button>
+                    </div>` : ''}
 
                 </div>
                 <!-- تفاصيل البطاقة — مخفية افتراضياً -->
@@ -7530,13 +7533,20 @@
                     ${earnedSalary < e.salary ? `<div style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;"><span>مكتسب (${present+late+off} يوم × JD ${dailyRate.toFixed(2)})</span><span>JD ${earnedSalary.toFixed(2)}</span></div>` : ''}
                     ${lateDeductTotal > 0 ? `<div onclick="openLateOverrideModal(${e.id},${month},${year})" style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:#ea580c;margin-bottom:4px;cursor:pointer;"><span>خصم تأخر</span><span>- JD ${extraDeduct.toFixed(2)}</span></div>` : `<div onclick="openLateOverrideModal(${e.id},${month},${year})" style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:#ea580c;margin-bottom:4px;cursor:pointer;"><span>خصم إضافي</span><span style="color:var(--text-muted);">+ إضافة</span></div>`}
                     ${totalAdv > 0 ? `<div style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:#ea580c;margin-bottom:4px;"><span>سلف مستحقة</span><span>- JD ${totalAdv.toFixed(2)}</span></div>` : ''}
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--border);margin-top:4px;">
-                        <div>
-                            <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">صافي الراتب</div>
+                    ${paid ? `
+                    <div style="display:flex;justify-content:center;align-items:center;padding-top:8px;border-top:1px solid var(--border);margin-top:4px;">
+                        <div style="text-align:center;">
+                            <div style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">صافي الراتب</div>
                             <div style="font-size:1.1rem;font-weight:900;color:var(--primary);">JD ${netSalary.toFixed(2)}</div>
                         </div>
-                        ${!paid ? `<button onclick="confirmPaySalaryDirect(${e.id},${month},${year})" style="background:#ca8a04;color:#fff;border:none;font-family:inherit;font-size:0.78rem;font-weight:800;padding:8px 14px;border-radius:9px;cursor:pointer;">صرف الراتب</button>` : ''}
-                    </div>
+                    </div>` : `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--border);margin-top:4px;">
+                        <div style="text-align:right;">
+                            <div style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">صافي الراتب</div>
+                            <div style="font-size:1.1rem;font-weight:900;color:var(--primary);">JD ${netSalary.toFixed(2)}</div>
+                        </div>
+                        <button onclick="confirmPaySalaryDirect(${e.id},${month},${year})" style="background:#ca8a04;color:#fff;border:none;font-family:inherit;font-size:0.78rem;font-weight:800;padding:8px 14px;border-radius:9px;cursor:pointer;">صرف الراتب</button>
+                    </div>`}
                 </div>
             </div>`;
         }).join('');
@@ -7667,6 +7677,24 @@
         renderSalariesList();
     }
 
+    function undoPaySalary(empId, month, year) {
+        const monthKey = `${year}-${String(month).padStart(2,'0')}`;
+        showConfirm('إلغاء صرف هذا الراتب والرجوع للتعديل؟', () => {
+            const e = employees.find(x => x.id === empId);
+            if(!e) return;
+            const logIdx = (e.salaryLogs||[]).findIndex(l => l.monthKey === monthKey);
+            if(logIdx === -1) return;
+            const log = e.salaryLogs[logIdx];
+            if(log.deductedAdvIds) {
+                (e.advances||[]).forEach(a => { if(log.deductedAdvIds.includes(a.id)) a.deducted = false; });
+            }
+            e.salaryLogs.splice(logIdx, 1);
+            saveData();
+            renderSalariesList();
+            showToast('تم إلغاء الصرف — يمكنك التعديل الآن');
+        }, 'تأكيد الإلغاء', 'إلغاء الصرف', 'var(--danger)');
+    }
+
     function confirmPaySalary() {
         if(!pendingSalaryInfo) return;
         const effectiveLateDeduct = pendingSalaryInfo.lateDeductOverride !== undefined
@@ -7693,8 +7721,8 @@
     // Mobile Visual Viewport Handling
     const simpleOverlays = ['batch-modal','stock-modal','cat-modal','del-modal','del-blocked-modal','batches-breakdown-modal','contact-details-modal','alert-modal','confirm-modal','pay-debt-modal','pay-cust-debt-modal','add-expense-modal','edit-expense-modal','post-sale-modal','pu-inv-search-modal','pu-inv-qty-modal','add-user-modal','change-pass-modal','users-modal','setup-admin-modal','edit-perms-modal','setup-modal','add-item-modal','supplier-logs-modal','customer-logs-modal','employees-modal','attendance-modal','advance-modal','late-deduct-modal','late-override-modal'].map(id=>document.getElementById(id));
     const topFixedOverlays = ['suppliers-modal','customers-modal','sup-sheet-overlay','cust-sheet-overlay','cat-sheet-overlay'].map(id=>document.getElementById(id));
-    const tallOverlays = ['cart-modal','edit-item-modal','sell-search-modal','pu-inv-search-modal','new-purchase-modal'].map(id=>document.getElementById(id));
-    const centerOverlays = ['stats-modal','sales-history-modal','purchases-modal','del-purchases-modal','debt-modal','cust-debt-modal','payment-logs-modal','expenses-modal','cash-log-modal','withdrawals-modal','salaries-modal'].map(id=>document.getElementById(id));
+    const tallOverlays = ['cart-modal','edit-item-modal','sell-search-modal','pu-inv-search-modal','new-purchase-modal','salaries-modal'].map(id=>document.getElementById(id));
+    const centerOverlays = ['stats-modal','sales-history-modal','purchases-modal','del-purchases-modal','debt-modal','cust-debt-modal','payment-logs-modal','expenses-modal','cash-log-modal','withdrawals-modal'].map(id=>document.getElementById(id));
 
     function syncOverlays() {
         const vh = window.visualViewport.height;
