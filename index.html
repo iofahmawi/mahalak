@@ -6020,8 +6020,6 @@
         if(win) {
             win.document.write(html);
             win.document.close();
-            win.focus();
-            win.onload = () => { win.print(); };
         } else {
             const blob = new Blob([html], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
@@ -7550,11 +7548,12 @@
                     <div style="width:36px;height:36px;border-radius:10px;background:#dbeafe;color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"><i class="fa-solid fa-user"></i></div>
                     <div style="flex:1;">
                         <div style="font-size:0.88rem;font-weight:800;color:var(--text-dark);">${e.name}</div>
-                        <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">JD ${netSalary.toFixed(2)} صافي</div>
+                        <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">JD ${netSalary.toFixed(2)}</div>
                     </div>
                     ${paid ? `<div style="display:flex;align-items:center;gap:6px;">
-                        <span style="font-size:0.72rem;font-weight:800;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:3px 9px;border-radius:20px;">✓ مصروف</span>
-                        <button onclick="event.stopPropagation();undoPaySalary(${e.id},${month},${year})" style="background:#fff0f0;color:var(--danger);border:1px solid #fecaca;font-family:inherit;font-size:0.72rem;font-weight:800;padding:3px 9px;border-radius:20px;cursor:pointer;">تعديل</button>
+                        <span style="font-size:0.72rem;font-weight:800;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:3px 9px;border-radius:20px;display:inline-flex;align-items:center;height:24px;">✓ مصروف</span>
+                        <button onclick="event.stopPropagation();undoPaySalary(${e.id},${month},${year})" style="background:#fff0f0;color:var(--danger);border:1px solid #fecaca;font-family:inherit;font-size:0.72rem;font-weight:800;padding:0 9px;border-radius:20px;cursor:pointer;height:24px;display:inline-flex;align-items:center;">تعديل</button>
+                        <button onclick="event.stopPropagation();event.preventDefault();printSalarySlip(${e.id},${month},${year})" style="background:#eff6ff;color:var(--primary);border:1px solid #bfdbfe;font-family:inherit;font-size:0.72rem;font-weight:800;padding:0 9px;border-radius:20px;cursor:pointer;height:24px;display:inline-flex;align-items:center;"><i class='fa-solid fa-print'></i></button>
                     </div>` : ''}
 
                 </div>
@@ -7731,6 +7730,112 @@
         document.getElementById('late-override-modal').classList.remove('active');
         showToast('تم تعديل الخصم');
         renderSalariesList();
+    }
+
+    function printSalarySlip(empId, month, year) {
+        const e = employees.find(x => x.id === empId);
+        if(!e) return;
+        const monthKey   = `${year}-${String(month).padStart(2,'0')}`;
+        const log        = (e.salaryLogs||[]).find(l => l.monthKey === monthKey);
+        if(!log) return;
+
+        // احسب التفاصيل
+        const daysInMonth = new Date(year, month, 0).getDate();
+        let present = 0, absent = 0, late = 0, off = 0, lateDeductTotal = 0;
+        for(let d = 1; d <= daysInMonth; d++) {
+            const key = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const rec = (e.attendance||{})[key];
+            const st  = rec && typeof rec === 'object' ? rec.status : rec;
+            if(st==='present')     present++;
+            else if(st==='absent') absent++;
+            else if(st==='late') { late++; lateDeductTotal += (rec && rec.lateDeduct) ? rec.lateDeduct : 0; }
+            else if(st==='off')    off++;
+        }
+        const dailyRate    = e.salary / 30;
+        const earnedSalary = Math.round((present + late + off) * dailyRate * 100) / 100;
+        const pendingAdv   = (e.advances||[]).filter(a => a.deducted && (log.deductedAdvIds||[]).includes(a.id));
+        const totalAdv     = pendingAdv.reduce((s,a) => s + a.amount, 0);
+        const mStart = new Date(year, month-1, 1).toLocaleDateString('en-CA');
+        const mEnd   = new Date(year, month, 0).toLocaleDateString('en-CA');
+        const cashShort = (e.cashShortages||[]).filter(s => s.date >= mStart && s.date <= mEnd).reduce((sum,s) => sum + s.amount, 0);
+        const lateOver  = e.lateOverrides && e.lateOverrides[monthKey] !== undefined ? e.lateOverrides[monthKey] : lateDeductTotal;
+        const netSalary = Math.max(0, earnedSalary - lateOver - totalAdv - cashShort);
+
+        const html = `<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>كشف راتب - ${e.name}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Arial', sans-serif; color: #000; direction: rtl; background: #fff; }
+  .page { max-width: 600px; margin: 30px auto; padding: 20px; }
+  .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #000; padding-bottom: 16px; }
+  .header h1 { font-size: 1.3rem; font-weight: 900; margin-bottom: 4px; }
+  .header h2 { font-size: 1rem; font-weight: 700; }
+  .header p  { font-size: 0.85rem; margin-top: 6px; }
+  .section { margin-bottom: 20px; }
+  .section-title { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; border-bottom: 1px solid #000; padding-bottom: 4px; }
+  .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.88rem; border-bottom: 1px dashed #ccc; }
+  .row:last-child { border-bottom: none; }
+  .row .label { font-weight: 600; }
+  .row .value { font-weight: 800; }
+  .row.deduct .value { font-weight: 800; }
+  .row.earned .value { font-weight: 800; }
+  .net { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 14px 16px; border: 2px solid #000; border-radius: 4px; }
+  .net .label { font-size: 1rem; font-weight: 900; }
+  .net .value { font-size: 1.3rem; font-weight: 900; }
+  .attendance { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+  .att-box { text-align: center; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+  .att-box .num { font-size: 1.1rem; font-weight: 900; }
+  .att-box .lbl { font-size: 0.7rem; font-weight: 700; margin-top: 2px; }
+  .sig { display: flex; justify-content: space-between; margin-top: 20px; }
+  .sig-box { text-align: center; }
+  .sig-box .sig-label { font-size: 0.85rem; font-weight: 700; }
+  @media print { body { padding: 15px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<div class="header">
+  <h1>${storeName}</h1>
+  <h2>كشف راتب</h2>
+  <p>${e.name} &nbsp;|&nbsp; ${MONTHS_AR[month-1]} ${year} &nbsp;|&nbsp; تاريخ الصرف: ${log.date}</p>
+</div>
+
+<div class="section">
+  <div class="section-title">الحضور والغياب</div>
+  <div class="attendance">
+    <div class="att-box"><div class="num">${present}</div><div class="lbl">حاضر</div></div>
+    <div class="att-box"><div class="num">${absent}</div><div class="lbl">غائب</div></div>
+    <div class="att-box"><div class="num">${late}</div><div class="lbl">متأخر</div></div>
+    <div class="att-box"><div class="num">${off}</div><div class="lbl">عطلة</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">تفاصيل الراتب</div>
+  <div class="row earned"><span class="label">الراتب الأساسي</span><span class="value">JD ${e.salary.toFixed(2)}</span></div>
+  ${earnedSalary < e.salary ? `<div class="row"><span class="label">مكتسب (${present+late+off} يوم × JD ${dailyRate.toFixed(2)})</span><span class="value">JD ${earnedSalary.toFixed(2)}</span></div>` : ''}
+  ${lateOver > 0 ? `<div class="row deduct"><span class="label">خصم تأخر</span><span class="value">- JD ${lateOver.toFixed(2)}</span></div>` : ''}
+  ${totalAdv > 0 ? `<div class="row deduct"><span class="label">سلف مخصومة</span><span class="value">- JD ${totalAdv.toFixed(2)}</span></div>` : ''}
+  ${cashShort > 0 ? `<div class="row deduct"><span class="label">نقص صندوق</span><span class="value">- JD ${cashShort.toFixed(2)}</span></div>` : ''}
+</div>
+
+<div class="net">
+  <span class="label">صافي الراتب المستلم</span>
+  <span class="value">JD ${netSalary.toFixed(2)}</span>
+</div>
+
+<div class="sig">
+  <div class="sig-box"><div class="sig-label">توقيع صاحب العمل</div></div>
+  <div class="sig-box"><div class="sig-label">توقيع الموظف / ${e.name}</div></div>
+</div>
+</div>
+
+<script>window.onload = function(){ window.print(); }<\/script>
+</body></html>`;
+        openPrintWindow(html);
     }
 
     function undoPaySalary(empId, month, year) {
