@@ -820,7 +820,7 @@
                         <i class="fa-solid fa-vault"></i> الصندوق
                     </button>
                     <div class="menu-submenu">
-                        <button onclick="if(requirePerm('cashier')){closeMenu();openCashLogModal()}"><i class="fa-solid fa-calendar-days"></i> سجل الصندوق</button>
+                        <button onclick="if(hasPerm('cashier')||hasPerm('employee_cashier')){closeMenu();openCashLogModal()}else{showToast('ليس لديك صلاحية','error')}"><i class="fa-solid fa-calendar-days"></i> سجل الصندوق</button>
                         <button onclick="if(requirePerm('cashier')){closeMenu();openWithdrawalsModal()}"><i class="fa-solid fa-hand-holding-dollar"></i> مسحوبات شخصية</button>
                     </div>
                 </div>
@@ -866,8 +866,8 @@
                         <i class="fa-solid fa-money-bill-trend-up"></i> المصاريف
                     </button>
                     <div class="menu-submenu">
-                        <button onclick="if(requirePerm('cashier')){closeMenu();openExpensesModal()}"><i class="fa-solid fa-list"></i> عرض المصاريف</button>
-                        <button onclick="closeMenu(); openAddExpenseModal()"><i class="fa-solid fa-plus"></i> تسجيل مصروف</button>
+                        <button onclick="if(hasPerm('cashier')||isAdmin()){closeMenu();openExpensesModal()}else{showToast('ليس لديك صلاحية','error')}"><i class="fa-solid fa-list"></i> عرض المصاريف</button>
+                        <button onclick="if(hasPerm('cashier')||hasPerm('employee_cashier')){closeMenu();openAddExpenseModal()}else{showToast('ليس لديك صلاحية','error')}"><i class="fa-solid fa-plus"></i> تسجيل مصروف</button>
                     </div>
                 </div>
                 <div class="menu-has-sub" id="menu-customers-sub">
@@ -2000,12 +2000,13 @@
 
     // ── Permissions System ──
     const PERMS = {
-        sales:      { label: 'فواتير المبيعات',              desc: 'إنشاء / تعديل / إلغاء' },
-        purchases:  { label: 'فواتير المشتريات',             desc: 'إنشاء / تعديل / حذف' },
-        inventory:  { label: 'إدارة المخزون',                desc: 'إضافة / تعديل / حذف أصناف' },
-        stats:      { label: 'الإحصائيات والتقارير',         desc: 'عرض التقارير والإحصائيات' },
-        cashier:    { label: 'الصندوق والمصروفات',           desc: 'الصندوق / المصروفات / المسحوبات' },
-        contacts:   { label: 'الموردين والزبائن',            desc: 'إضافة / تعديل / حذف' },
+        sales:           { label: 'فواتير المبيعات',         desc: 'إنشاء / تعديل / إلغاء' },
+        purchases:       { label: 'فواتير المشتريات',        desc: 'إنشاء / تعديل / حذف' },
+        inventory:       { label: 'إدارة المخزون',           desc: 'إضافة / تعديل / حذف أصناف' },
+        stats:           { label: 'الإحصائيات والتقارير',    desc: 'عرض التقارير والإحصائيات' },
+        cashier:         { label: 'الصندوق والمصروفات',      desc: 'الصندوق / المصروفات / المسحوبات' },
+        contacts:        { label: 'الموردين والزبائن',       desc: 'إضافة / تعديل / حذف' },
+        employee_cashier:{ label: 'جرد الصندوق',             desc: 'تسجيل مصروف / سلفة / جرد الصندوق' },
     };
 
     function isAdmin() {
@@ -2230,7 +2231,7 @@
         if(!name) return showToast('أدخل اسم المستخدم', 'error');
         if(!pass) return showToast('أدخل كلمة المرور', 'error');
         if(appUsers.find(u => u.name === name)) return showToast('هذا الاسم موجود مسبقاً', 'error');
-        appUsers.push({ name, password: pass, perms: { sales: true } });
+        appUsers.push({ name, password: pass, perms: { sales: true, employee_cashier: salary > 0 } });
         saveUsers();
         // إنشاء موظف تلقائياً إذا أُدخل راتب
         if(salary > 0) {
@@ -5350,11 +5351,19 @@
             </div>`;
         }
         else if(tab === 'cash') {
-            const sorted = [...cashLog].sort((a,b) => b.date.localeCompare(a.date));
+            const sorted = [...cashLog].sort((a,b) => b.date.localeCompare(a.date) || (a.time||'').localeCompare(b.time||''));
             const totalDiff = sorted.reduce((s,r) => s + (r.diff ?? 0), 0);
             const totalWd = withdrawals.reduce((s,w) => s + w.amount, 0);
-            const posCount = sorted.filter(r => (r.diff ?? 0) > 0).length;
-            const negCount = sorted.filter(r => (r.diff ?? 0) < 0).length;
+
+            // تجميع الأيام لحساب أيام النقص والزيادة (بإجمالي الجرود لكل يوم)
+            const dayMap = {};
+            sorted.forEach(r => {
+                if(!dayMap[r.date]) dayMap[r.date] = 0;
+                dayMap[r.date] += (r.diff ?? 0);
+            });
+            const dayVals = Object.values(dayMap);
+            const posCount = dayVals.filter(v => v > 0).length;
+            const negCount = dayVals.filter(v => v < 0).length;
 
             if(sorted.length === 0) {
                 content.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:0.85rem;font-weight:700;">لا يوجد سجل للصندوق بعد</div>`;
@@ -5376,12 +5385,15 @@
                     const dc = zero ? '#16a34a' : (pos ? '#16a34a' : 'var(--danger)');
                     const dl = zero ? 'متطابق' : (pos ? 'زيادة' : 'نقص');
                     const ds = pos ? '+' : '';
-                    return `<div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
-                        <div>
-                            <div style="font-size:0.82rem;font-weight:800;color:var(--text-dark);">${formatDate(r.date)}</div>
-                            <div style="font-size:0.70rem;font-weight:700;color:var(--text-muted);margin-top:2px;">رصيد أولي: JD ${r.opening.toFixed(2)} ← جرد: JD ${r.closing.toFixed(2)}</div>
+                    return `<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
+                        <div style="display:flex;flex-direction:column;gap:2px;">
+                            <div style="font-size:0.82rem;font-weight:800;color:var(--text-dark);">${formatDate(r.date)} · ${r.createdBy||''}</div>
+                            <div style="font-size:0.70rem;font-weight:700;color:var(--text-muted);">${r.time||''} · رصيد أولي: JD ${r.opening.toFixed(2)} ← جرد: JD ${r.closing.toFixed(2)}</div>
                         </div>
-                        <span style="font-weight:900;color:${dc};">${dl} ${ds}${diff.toFixed(2)}</span>
+                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+                            <span style="font-size:0.75rem;font-weight:800;color:${dc};">${dl}</span>
+                            <span style="font-size:0.9rem;font-weight:900;color:${dc};">${ds}${diff.toFixed(2)}</span>
+                        </div>
                     </div>`;
                 }).join('')}`;
             }
@@ -6406,7 +6418,7 @@
     let expMode = 'day';
 
     function openAddExpenseModal() {
-        if(!requirePerm('cashier')) return;
+        if(!hasPerm('cashier') && !hasPerm('employee_cashier')) { showToast('ليس لديك صلاحية','error'); return; }
         document.getElementById('exp-name').value = '';
         document.getElementById('exp-beneficiary').value = '';
         document.getElementById('exp-amount').value = '';
@@ -6711,25 +6723,41 @@
     }
 
     // ─── Cash Log ───
-    function calcDayExpected(dateStr, opening) {
+    function calcDayExpected(dateStr, opening, userName) {
         const [y,m,d] = dateStr.split('-').map(Number);
         const localDate = new Date(y, m-1, d).toLocaleDateString();
-        const cashSales = sales.filter(s => s.date === localDate && (s.payType === 'cash' || !s.payType)).reduce((sum,s) => sum + s.total, 0);
+        // فلترة حسب الموظف إذا تم تحديده
+        const byUser = (arr, field) => userName ? arr.filter(x => x[field||'createdBy'] === userName) : arr;
+        const cashSales     = byUser(sales).filter(s => s.date === localDate && (s.payType === 'cash' || !s.payType)).reduce((sum,s) => sum + s.total, 0);
         const cashPurchases = purchases.filter(p => p.date === localDate && (p.payType === 'cash' || !p.payType)).reduce((sum,p) => sum + p.total, 0);
-        const dayExpenses = expenses.filter(e => e.date === localDate).reduce((sum,e) => sum + e.amount, 0);
+        const dayExpenses   = byUser(expenses).filter(e => e.date === localDate).reduce((sum,e) => sum + e.amount, 0);
         const dayWithdrawals = withdrawals.filter(w => w.date === dateStr).reduce((sum,w) => sum + w.amount, 0);
-        return { cashSales, cashPurchases, dayExpenses, dayWithdrawals, expected: opening + cashSales - cashPurchases - dayExpenses - dayWithdrawals };
+        // السلف المدفوعة نقداً لهذا الموظف في هذا اليوم
+        const emp = userName ? employees.find(e => e.linkedUser === userName || e.name === userName) : null;
+        const dayAdvances = emp ? (emp.advances||[]).filter(a => {
+            const aDate = a.isoDate || (() => { try { return new Date(a.date).toLocaleDateString('en-CA'); } catch(e){ return ''; } })();
+            return aDate === dateStr;
+        }).reduce((sum,a) => sum + a.amount, 0) : 0;
+        return { cashSales, cashPurchases, dayExpenses, dayWithdrawals, dayAdvances, expected: opening + cashSales - cashPurchases - dayExpenses - dayWithdrawals - dayAdvances };
     }
 
     function checkCashDateDuplicate() {
         const date = document.getElementById('cash-log-date').value;
-        const exists = cashLog.find(r => r.date === date);
+        const user = getCurrentUserName();
+        const exists = cashLog.find(r => r.date === date && r.createdBy === user);
         const status = document.getElementById('cash-date-status');
         status.style.display = exists ? 'inline-block' : 'none';
-        document.getElementById('cash-opening').value = '';
-        document.getElementById('cash-closing').value = '';
         document.getElementById('cash-expected-box').style.display = 'none';
         document.getElementById('cash-diff-box').style.display = 'none';
+        // ملء الرصيد الافتتاحي تلقائياً من آخر جرد في هذا اليوم
+        const lastEntry = cashLog.filter(r => r.date === date).sort((a,b) => (a.time||'').localeCompare(b.time||'')).pop();
+        if(lastEntry && !exists) {
+            document.getElementById('cash-opening').value = lastEntry.closing.toFixed(2);
+            updateCashExpected();
+        } else if(!exists) {
+            document.getElementById('cash-opening').value = '';
+            document.getElementById('cash-closing').value = '';
+        }
     }
 
     function loadCashEntryForEdit() {
@@ -6737,8 +6765,8 @@
         loadCashEntryForEditByDate(date);
     }
 
-    function loadCashEntryForEditByDate(date) {
-        const entry = cashLog.find(r => r.date === date);
+    function loadCashEntryForEditByDate(date, user) {
+        const entry = cashLog.find(r => r.date === date && (user ? r.createdBy === user : true));
         if(!entry) return;
         document.getElementById('cash-log-date').value = date;
         document.getElementById('cash-date-status').style.display = 'inline-block';
@@ -6791,16 +6819,17 @@
         const selectedDate = document.getElementById('cash-log-date').value || getTodayStr();
         const openingVal = parseFloat(document.getElementById('cash-opening').value);
         const opening = isNaN(openingVal) ? 0 : openingVal;
-        const { cashSales, cashPurchases, dayExpenses, dayWithdrawals, expected } = calcDayExpected(selectedDate, opening);
+        const userName = getCurrentUserName();
+        const { cashSales, cashPurchases, dayExpenses, dayWithdrawals, dayAdvances, expected } = calcDayExpected(selectedDate, opening, userName);
         const box = document.getElementById('cash-expected-box');
-        const hasActivity = cashSales || cashPurchases || dayExpenses || dayWithdrawals;
         if(!isNaN(openingVal)) {
             box.style.display = 'block';
             document.getElementById('cash-breakdown').innerHTML =
                 `<span style="color:#16a34a;">+ مبيعات نقدي</span><span style="color:#16a34a;text-align:left;">JD ${cashSales.toFixed(2)}</span>` +
                 `<span style="color:var(--danger);">- مشتريات نقدي</span><span style="color:var(--danger);text-align:left;">JD ${cashPurchases.toFixed(2)}</span>` +
                 `<span style="color:var(--danger);">- مصاريف</span><span style="color:var(--danger);text-align:left;">JD ${dayExpenses.toFixed(2)}</span>` +
-                `<span style="color:#d97706;">- مسحوبات</span><span style="color:#d97706;text-align:left;">JD ${dayWithdrawals.toFixed(2)}</span>`;
+                `<span style="color:#d97706;">- مسحوبات</span><span style="color:#d97706;text-align:left;">JD ${dayWithdrawals.toFixed(2)}</span>` +
+                (dayAdvances > 0 ? `<span style="color:#ea580c;">- سلف</span><span style="color:#ea580c;text-align:left;">JD ${dayAdvances.toFixed(2)}</span>` : '');
             document.getElementById('cash-expected-val').innerText = `JD ${expected.toFixed(2)}`;
         } else {
             box.style.display = 'none';
@@ -6814,7 +6843,7 @@
         const closingVal = parseFloat(document.getElementById('cash-closing').value);
         const diffBox = document.getElementById('cash-diff-box');
         if(isNaN(openingVal) || isNaN(closingVal)) { diffBox.style.display = 'none'; return; }
-        const { expected } = calcDayExpected(selectedDate, openingVal);
+        const { expected } = calcDayExpected(selectedDate, openingVal, getCurrentUserName());
         const diff = closingVal - expected;
         diffBox.style.display = 'block';
         diffBox.style.background = diff === 0 ? '#f0fdf4' : (diff > 0 ? '#f0fdf4' : '#fff0f0');
@@ -6830,10 +6859,27 @@
         const closingVal = parseFloat(document.getElementById('cash-closing').value);
         const selectedDate = document.getElementById('cash-log-date').value || getTodayStr();
         if(isNaN(openingVal) || isNaN(closingVal)) { showAlert('تنبيه','أدخل الرصيد الأولي والجرد الفعلي'); return; }
-        const { cashSales, cashPurchases, dayExpenses, dayWithdrawals, expected } = calcDayExpected(selectedDate, openingVal);
+        const userName = getCurrentUserName();
+        const { cashSales, cashPurchases, dayExpenses, dayWithdrawals, dayAdvances, expected } = calcDayExpected(selectedDate, openingVal, userName);
         const diff = closingVal - expected;
-        const now2 = new Date(); const entry = { date: selectedDate, opening: openingVal, closing: closingVal, expected: Math.round(expected*100)/100, cashSales, cashPurchases, dayExpenses, dayWithdrawals, diff: Math.round(diff*100)/100, time: now2.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), createdBy: getCurrentUserName() };
-        const idx = cashLog.findIndex(r => r.date === selectedDate);
+        const now2 = new Date();
+        const entry = { date: selectedDate, opening: openingVal, closing: closingVal, expected: Math.round(expected*100)/100, cashSales, cashPurchases, dayExpenses, dayWithdrawals, dayAdvances: dayAdvances||0, diff: Math.round(diff*100)/100, time: now2.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), createdBy: userName };
+        // إذا كان هناك نقص سجّله على الموظف
+        if(diff < 0) {
+            const emp = employees.find(e => e.linkedUser === userName || e.name === userName);
+            if(emp) {
+                if(!emp.cashShortages) emp.cashShortages = [];
+                // احذف أي نقص سابق لنفس اليوم ثم أضف الجديد
+                emp.cashShortages = emp.cashShortages.filter(s => s.date !== selectedDate);
+                emp.cashShortages.push({ date: selectedDate, amount: Math.abs(Math.round(diff*100)/100) });
+            }
+        } else if(diff >= 0) {
+            // لو عُدّل وأصبح متطابق أو زيادة احذف النقص السابق لهذا اليوم
+            const emp = employees.find(e => e.linkedUser === userName || e.name === userName);
+            if(emp && emp.cashShortages) emp.cashShortages = emp.cashShortages.filter(s => s.date !== selectedDate);
+        }
+        const userName2 = getCurrentUserName();
+        const idx = cashLog.findIndex(r => r.date === selectedDate && r.createdBy === userName2);
         if(idx >= 0) cashLog[idx] = entry; else cashLog.push(entry);
         document.getElementById('cash-opening').value = '';
         document.getElementById('cash-closing').value = '';
@@ -6850,18 +6896,18 @@
         if(details) details.style.display = details.style.display === 'none' ? 'block' : 'none';
     }
 
-    function deleteCashEntry(date) {
-        showConfirm('حذف سجل هذا اليوم؟', () => {
-            cashLog = cashLog.filter(r => r.date !== date);
+    function deleteCashEntry(date, user) {
+        showConfirm('حذف هذا الجرد؟', () => {
+            cashLog = cashLog.filter(r => !(r.date === date && r.createdBy === user));
             saveData();
             renderCashLogList();
         });
     }
 
     function renderCashLogList() {
-        const sorted = [...cashLog].sort((a,b) => b.date.localeCompare(a.date));
+        const sorted = [...cashLog].sort((a,b) => b.date.localeCompare(a.date) || (a.time||'').localeCompare(b.time||''));
         const list = document.getElementById('cash-log-list');
-        document.getElementById('cash-log-sub').innerText = sorted.length === 0 ? 'لا يوجد سجل' : `${sorted.length} يوم مسجل`;
+        document.getElementById('cash-log-sub').innerText = sorted.length === 0 ? 'لا يوجد سجل' : `${sorted.length} جرد مسجل`;
         if(sorted.length === 0) {
             list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:0.85rem;font-weight:700;">لا يوجد سجل بعد</div>';
             return;
@@ -6876,7 +6922,10 @@
             const borderDiff = zero ? '#bbf7d0' : (pos ? '#bbf7d0' : '#fecaca');
             return `<div class="sale-card" style="padding:0;">
                 <div onclick="toggleCashCard(this)" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;cursor:pointer;gap:8px;">
-                    <span style="font-size:0.82rem;font-weight:800;color:var(--text-dark);">${formatDate(r.date)}</span>
+                    <div style="display:flex;flex-direction:column;gap:2px;">
+                        <span style="font-size:0.82rem;font-weight:800;color:var(--text-dark);">${formatDate(r.date)}</span>
+                        <span style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">${r.createdBy||''} ${r.time ? '· '+r.time : ''}</span>
+                    </div>
                     <span style="font-size:0.75rem;font-weight:800;background:${bgDiff};border:1px solid ${borderDiff};color:${diffColor};padding:2px 8px;border-radius:6px;">${diffLabel}: ${diffSign}${diff.toFixed(2)}</span>
                 </div>
                 <div style="display:none;padding:0 12px 10px;border-top:1px dashed var(--border);">
@@ -6897,12 +6946,13 @@
                             <span style="color:var(--danger);">- مشتريات نقدي</span><span style="color:var(--danger);">JD ${(r.cashPurchases||0).toFixed(2)}</span>
                             <span style="color:var(--danger);">- مصاريف</span><span style="color:var(--danger);">JD ${(r.dayExpenses||0).toFixed(2)}</span>
                             <span style="color:#d97706;">- مسحوبات</span><span style="color:#d97706;">JD ${(r.dayWithdrawals||0).toFixed(2)}</span>
+                            ${r.dayAdvances > 0 ? `<span style="color:#ea580c;">- سلف</span><span style="color:#ea580c;">JD ${(r.dayAdvances||0).toFixed(2)}</span>` : ''}
                             <span style="color:#0284c7;border-top:1px dashed var(--border);padding-top:4px;margin-top:2px;">المتوقع</span><span style="color:#0284c7;border-top:1px dashed var(--border);padding-top:4px;margin-top:2px;">JD ${(r.expected||0).toFixed(2)}</span>
                         </div>
                     </div>` : ''}
                     <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-                        <button onclick="event.stopPropagation();showTimeInfo(this,'${formatDate(r.date)}','${r.time||''}','${r.createdBy||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
-                        <button onclick="event.stopPropagation();loadCashEntryForEditByDate('${r.date}')" style="background:none;border:none;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-pen-to-square" style="margin-left:4px;"></i>تعديل</button>
+                        <button onclick="event.stopPropagation();deleteCashEntry('${r.date}','${r.createdBy||''}')" style="background:none;border:none;color:var(--danger);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-trash-can" style="margin-left:4px;"></i>حذف</button>
+                        <button onclick="event.stopPropagation();loadCashEntryForEditByDate('${r.date}','${r.createdBy||''}')" style="background:none;border:none;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-pen-to-square" style="margin-left:4px;"></i>تعديل</button>
                     </div>
                 </div>
             </div>`;
@@ -7305,6 +7355,8 @@
     function openAdvanceModal(empId) {
         const emp = employees.find(e => e.id === empId);
         if(!emp) return;
+        // السماح للموظف بطلب سلفة لنفسه فقط
+        if(!isAdmin() && emp.linkedUser !== getCurrentUserName() && emp.name !== getCurrentUserName()) return showToast('ليس لديك صلاحية', 'error');
         pendingAdvanceEmpId = empId;
 
         const { available, attendedDays, dailyRate, earned, usedAdv, lastPayDate } = getEmpAdvanceBalance(emp);
@@ -7490,7 +7542,11 @@
             lateDeductTotal    = Math.round(lateDeductTotal * 100) / 100;
             const extraDeduct  = e.lateOverrides && e.lateOverrides[`${year}-${String(month).padStart(2,'0')}`] !== undefined
                                  ? e.lateOverrides[`${year}-${String(month).padStart(2,'0')}`] : lateDeductTotal;
-            const netSalary    = Math.max(0, earnedSalary - extraDeduct - totalAdv);
+            // نقص الصندوق لهذا الشهر
+            const monthStart  = new Date(year, month-1, 1).toLocaleDateString('en-CA');
+            const monthEnd    = new Date(year, month, 0).toLocaleDateString('en-CA');
+            const cashShort   = (e.cashShortages||[]).filter(s => s.date >= monthStart && s.date <= monthEnd).reduce((sum,s) => sum + s.amount, 0);
+            const netSalary   = Math.max(0, earnedSalary - extraDeduct - totalAdv - cashShort);
 
             const monthKey = `${year}-${String(month).padStart(2,'0')}`;
             const paid     = (e.salaryLogs||[]).find(l => l.monthKey === monthKey);
@@ -7534,6 +7590,7 @@
                     ${earnedSalary < e.salary ? `<div style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;"><span>مكتسب (${present+late+off} يوم × JD ${dailyRate.toFixed(2)})</span><span>JD ${earnedSalary.toFixed(2)}</span></div>` : ''}
                     ${lateDeductTotal > 0 ? `<div onclick="openLateOverrideModal(${e.id},${month},${year})" style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:#ea580c;margin-bottom:4px;cursor:pointer;"><span>خصم تأخر</span><span>- JD ${extraDeduct.toFixed(2)}</span></div>` : `<div onclick="openLateOverrideModal(${e.id},${month},${year})" style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:#ea580c;margin-bottom:4px;cursor:pointer;"><span>خصم إضافي</span><span style="color:var(--text-muted);">+ إضافة</span></div>`}
                     ${totalAdv > 0 ? `<div style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:#ea580c;margin-bottom:4px;"><span>سلف مستحقة</span><span>- JD ${totalAdv.toFixed(2)}</span></div>` : ''}
+                    ${cashShort > 0 ? `<div style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:var(--danger);margin-bottom:4px;"><span>نقص صندوق</span><span>- JD ${cashShort.toFixed(2)}</span></div>` : ''}
                     ${paid ? `
                     <div style="display:flex;justify-content:center;align-items:center;padding-top:8px;border-top:1px solid var(--border);margin-top:4px;">
                         <div style="text-align:center;">
@@ -7574,7 +7631,10 @@
         lateDeductTotal    = Math.round(lateDeductTotal * 100) / 100;
         const mKey         = `${year}-${String(month).padStart(2,'0')}`;
         const extraDeduct  = e.lateOverrides && e.lateOverrides[mKey] !== undefined ? e.lateOverrides[mKey] : lateDeductTotal;
-        const netSalary    = Math.max(0, earnedSalary - extraDeduct - totalAdv);
+        const monthStart   = new Date(year, month-1, 1).toLocaleDateString('en-CA');
+        const monthEnd     = new Date(year, month, 0).toLocaleDateString('en-CA');
+        const cashShort    = (e.cashShortages||[]).filter(s => s.date >= monthStart && s.date <= monthEnd).reduce((sum,s) => sum + s.amount, 0);
+        const netSalary    = Math.max(0, earnedSalary - extraDeduct - totalAdv - cashShort);
         const monthKey     = `${year}-${String(month).padStart(2,'0')}`;
 
         const mKeyFinal = `${year}-${String(month).padStart(2,'0')}`;
@@ -7609,7 +7669,10 @@
         lateDeductTotal    = Math.round(lateDeductTotal * 100) / 100;
         const mKey         = `${year}-${String(month).padStart(2,'0')}`;
         const extraDeduct  = e.lateOverrides && e.lateOverrides[mKey] !== undefined ? e.lateOverrides[mKey] : lateDeductTotal;
-        const netSalary    = Math.max(0, earnedSalary - extraDeduct - totalAdv);
+        const monthStart   = new Date(year, month-1, 1).toLocaleDateString('en-CA');
+        const monthEnd     = new Date(year, month, 0).toLocaleDateString('en-CA');
+        const cashShort    = (e.cashShortages||[]).filter(s => s.date >= monthStart && s.date <= monthEnd).reduce((sum,s) => sum + s.amount, 0);
+        const netSalary    = Math.max(0, earnedSalary - extraDeduct - totalAdv - cashShort);
         const monthKey     = `${year}-${String(month).padStart(2,'0')}`;
         const paid         = (e.salaryLogs||[]).find(l => l.monthKey === monthKey);
 
