@@ -768,12 +768,12 @@
 
 <!-- ══ نافذة تعديل الصلاحيات ══ -->
 <div class="modal-overlay" id="edit-perms-modal" style="align-items:center;">
-    <div class="modal" onclick="event.stopPropagation()" style="max-height:75vh;overflow-y:auto;">
+    <div class="modal" onclick="event.stopPropagation()" style="max-height:90vh;display:flex;flex-direction:column;">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-shield-halved"></i></div>
             <div><p class="modal-title">تعديل الصلاحيات</p><p class="modal-subtitle" id="edit-perms-username"></p></div>
         </div>
-        <div id="edit-user-perms" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;"></div>
+        <div id="edit-user-perms" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;overflow-y:auto;flex:1;min-height:0;"></div>
         <div class="modal-btns">
             <button class="mbtn mbtn-cancel" onclick="closeModals();setTimeout(()=>openModal('users-modal'),50)">إلغاء</button>
             <button class="mbtn mbtn-ok" onclick="saveEditPerms()">حفظ</button>
