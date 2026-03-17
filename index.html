@@ -836,7 +836,6 @@
                     <div class="menu-submenu">
                         <button onclick="closeMenu(); openPurchasesModal()"><i class="fa-solid fa-list"></i> عرض المشتريات</button>
                         <button onclick="if(requirePerm('purchases')){closeMenu();openNewPurchaseModal()}"><i class="fa-solid fa-file-invoice"></i> فاتورة جديدة</button>
-                        <button onclick="closeMenu(); openDeletePurchasesModal()"><i class="fa-solid fa-trash-can"></i> حذف فاتورة</button>
                     </div>
                 </div>
                 <div class="menu-has-sub" id="menu-suppliers-sub">
@@ -1395,7 +1394,7 @@
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top">
             <div class="modal-ico blue"><i class="fa-solid fa-money-bill-wave"></i></div>
-            <div><p class="modal-title">تسديد دفعة</p><p class="modal-subtitle" id="pay-debt-sub" style="font-size:0.8rem;font-weight:800;color:var(--text-dark);"></p></div>
+            <div><p class="modal-title">تسديد دفعة</p><p class="modal-subtitle" id="pay-debt-sub"></p></div>
         </div>
         <div class="input-wrap"><i class="fa-solid fa-coins"></i><input type="number" id="pay-debt-amount" inputmode="decimal" placeholder="المبلغ"></div>
         <div class="modal-btns">
@@ -4736,6 +4735,49 @@
         openModal('purchases-modal');
     }
 
+    function deletePurchaseFromCard(type, idOrGid) {
+        if(!requirePerm('purchases')) return;
+        if(type === 'group') {
+            const group = purchases.filter(x => x.invoiceGroupId === idOrGid);
+            showConfirm('حذف هذه الفاتورة نهائياً؟ لا يمكن التراجع.', () => {
+                group.forEach(p => {
+                    const it = items.find(x => x.id === p.itemId);
+                    if(it) {
+                        const totalQty = it.batches.reduce((s,b) => s + b.qty, 0);
+                        if(totalQty >= p.qty) {
+                            it.batches.sort((a,b) => new Date(a.date) - new Date(b.date));
+                            let rem = p.qty;
+                            for(let i = 0; i < it.batches.length && rem > 0; i++) {
+                                const take = Math.min(it.batches[i].qty, rem);
+                                it.batches[i].qty -= take;
+                                rem -= take;
+                            }
+                            it.batches = it.batches.filter(b => b.qty > 0);
+                        }
+                    }
+                });
+                purchases = purchases.filter(x => !group.some(p => p.id === x.id));
+                saveData(); render(); renderPurchasesHistory();
+                showToast('تم حذف الفاتورة');
+            });
+        } else {
+            const p = purchases.find(x => x.id === idOrGid);
+            if(!p) return;
+            const it = items.find(x => x.id === p.itemId);
+            if(it) {
+                const totalQty = it.batches.reduce((s,b) => s + b.qty, 0);
+                if(totalQty < p.qty) {
+                    showAlert('لا يمكن الحذف — تم بيع ' + (p.qty - totalQty) + ' قطعة من هذه الدفعة', 'error');
+                    return;
+                }
+            }
+            showConfirm('حذف هذه الفاتورة نهائياً؟ لا يمكن التراجع.', () => {
+                confirmDeletePurchase(idOrGid);
+                renderPurchasesHistory();
+            });
+        }
+    }
+
     function renderPurchasesHistory() {
         let filtered;
         if (puMode === 'all') {
@@ -4820,6 +4862,7 @@
                     </div>`).join('')}
                     <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
                         <button onclick="event.stopPropagation();showTimeInfo(this,'${ref.date||''}','${ref.time||''}','${ref.createdBy||''}')" style="background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-regular fa-clock" style="margin-left:4px;"></i>الوقت</button>
+                        <button onclick="event.stopPropagation();deletePurchaseFromCard(${gid ? `'group','${gid}'` : `'single',${ref.id}`})" style="background:none;border:none;color:var(--danger);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-trash-can" style="margin-left:4px;"></i>حذف</button>
                         ${gid ? `<button onclick="event.stopPropagation();openEditPurchaseInvoice('${gid}','modal')" style="background:none;border:none;color:var(--primary);font-family:inherit;font-size:0.75rem;font-weight:800;cursor:pointer;"><i class="fa-solid fa-pen-to-square" style="margin-left:4px;"></i>تعديل</button>` : '<span></span>'}
                     </div>
                 </div>
