@@ -5155,7 +5155,7 @@
             filtered = sales.filter(s => s.date === dateStr).reverse();
         }
 
-        if(shFilter === 'cash')   filtered = filtered.filter(s => !s.payType || s.payType === 'cash' || (s.payType === 'credit' && Math.round((s.total - (s.paid||0))*100)/100 <= 0));
+        if(shFilter === 'cash')   filtered = filtered.filter(s => s.payType === 'cash' || (!s.payType) || (s.payType === 'credit' && Math.round((s.total - (s.paid||0))*100)/100 <= 0));
         if(shFilter === 'card')   filtered = filtered.filter(s => s.payType === 'card');
         if(shFilter === 'credit') filtered = filtered.filter(s => s.payType === 'credit' && Math.round((s.total - (s.paid||0))*100)/100 > 0);
 
@@ -5862,7 +5862,7 @@
                 existing.profit = profit;
                 existing.payType = sellPayType;
                 existing.customerName = customerName || null;
-                existing.paid = sellPayType === 'cash' ? total : Math.min(prevPaid, total);
+                existing.paid = (sellPayType === 'cash' || sellPayType === 'card') ? total : Math.min(prevPaid, total);
                 existing.items = saleItems;
             }
             editingSaleId = null;
@@ -5879,7 +5879,7 @@
                 subtotal, discount, total, profit,
                 payType: sellPayType,
                 customerName: customerName || null,
-                paid: sellPayType === 'cash' ? total : 0,
+                paid: (sellPayType === 'cash' || sellPayType === 'card') ? total : 0,
                 items: saleItems,
                 createdBy: getCurrentUserName()
             });
