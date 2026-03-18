@@ -1019,8 +1019,12 @@
             <div><p class="modal-title" id="pu-inv-qty-title">أدخل الكمية والسعر</p><p class="modal-subtitle" id="pu-inv-qty-sub"></p></div>
         </div>
         <div class="input-row">
-            <div class="input-wrap"><i class="fa-solid fa-cubes"></i><input type="number" id="pu-inv-qty" inputmode="numeric" placeholder="الكمية" onkeydown="if(event.key==='Enter')document.getElementById('pu-inv-buy').focus()"></div>
-            <div class="input-wrap"><i class="fa-solid fa-tag"></i><input type="number" id="pu-inv-buy" inputmode="decimal" placeholder="سعر الشراء" onkeydown="if(event.key==='Enter')addPuInvItem()"></div>
+            <div class="input-wrap"><i class="fa-solid fa-cubes"></i><input type="number" id="pu-inv-qty" inputmode="numeric" placeholder="الكمية" onkeydown="if(event.key==='Enter')document.getElementById('pu-inv-low').focus()"></div>
+            <div class="input-wrap"><i class="fa-solid fa-triangle-exclamation"></i><input type="number" id="pu-inv-low" inputmode="numeric" placeholder="حد التنبيه" onkeydown="if(event.key==='Enter')document.getElementById('pu-inv-buy').focus()"></div>
+        </div>
+        <div class="input-row">
+            <div class="input-wrap"><i class="fa-solid fa-tag"></i><input type="number" id="pu-inv-buy" inputmode="decimal" placeholder="سعر الشراء" onkeydown="if(event.key==='Enter')document.getElementById('pu-inv-sell').focus()"></div>
+            <div class="input-wrap"><i class="fa-solid fa-arrow-up"></i><input type="number" id="pu-inv-sell" inputmode="decimal" placeholder="سعر البيع" onkeydown="if(event.key==='Enter')addPuInvItem()"></div>
         </div>
         <div class="modal-btns">
             <button class="mbtn mbtn-cancel" onclick="closePuInvQtyModal()">إلغاء</button>
@@ -1098,10 +1102,6 @@
                 <i class="fa-solid fa-chevron-down sup-chev"></i>
             </button>
             <input type="hidden" id="add-cat" value="">
-        </div>
-        <div class="input-row">
-            <div class="input-wrap"><i class="fa-solid fa-arrow-up"></i><input type="number" id="add-sell" inputmode="decimal" placeholder="سعر البيع"></div>
-            <div class="input-wrap"><i class="fa-solid fa-triangle-exclamation"></i><input type="number" id="add-low" inputmode="numeric" placeholder="حد التنبيه"></div>
         </div>
         <div class="modal-btns">
             <button class="mbtn mbtn-cancel" onclick="closeModals()">إلغاء</button>
@@ -2982,14 +2982,12 @@
     function confirmAddItem() {
         const name = document.getElementById('add-name').value.trim();
         const cat = document.getElementById('add-cat').value;
-        const sell = parseFloat(document.getElementById('add-sell').value) || 0;
-        const low = parseInt(document.getElementById('add-low').value) || 5;
         if(!name) return showAlert('أدخل اسم الصنف');
-        const newItem = { id: Date.now(), name, category: cat, sellPrice: sell, lowStockThreshold: low, batches: [] };
+        const newItem = { id: Date.now(), name, category: cat, sellPrice: 0, lowStockThreshold: 0, batches: [] };
         items.push(newItem);
         saveData();
         closeModals();
-        ['add-name','add-sell','add-low'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('add-name').value = '';
     }
 
     // ─── فاتورة الشراء الجديدة ───
@@ -3170,10 +3168,12 @@
         if(!it) return;
         _puInvSelectedItem = it;
         document.getElementById('pu-inv-qty-title').textContent = it.name;
-        document.getElementById('pu-inv-qty-sub').textContent = 'أدخل الكمية وسعر الشراء';
+        document.getElementById('pu-inv-qty-sub').textContent = 'أدخل الكمية والأسعار';
         document.getElementById('pu-inv-qty').value = '';
-        const lastBuy = it.batches.length > 0 ? it.batches[it.batches.length-1].buyPrice : '';
-        document.getElementById('pu-inv-buy').value = lastBuy || '';
+        const lastBatch = it.batches.length > 0 ? it.batches[it.batches.length-1] : null;
+        document.getElementById('pu-inv-buy').value = lastBatch ? lastBatch.buyPrice : '';
+        document.getElementById('pu-inv-sell').value = it.sellPrice || (lastBatch ? lastBatch.sellPrice : '') || '';
+        document.getElementById('pu-inv-low').value = it.batches.length > 0 ? (it.lowStockThreshold || '') : '';
         document.getElementById('pu-inv-search-modal').classList.remove('active');
         document.getElementById('pu-inv-qty-modal').classList.add('active');
         setTimeout(() => document.getElementById('pu-inv-qty').focus(), 300);
@@ -3182,21 +3182,25 @@
     function addPuInvItem() {
         const it = _puInvSelectedItem;
         if(!it) return showAlert('اختر صنفاً من القائمة');
-        const qty = parseInt(document.getElementById('pu-inv-qty').value) || 0;
-        const buy = parseFloat(document.getElementById('pu-inv-buy').value) || 0;
+        const qty  = parseInt(document.getElementById('pu-inv-qty').value) || 0;
+        const buy  = parseFloat(document.getElementById('pu-inv-buy').value) || 0;
+        const sell = parseFloat(document.getElementById('pu-inv-sell').value) || 0;
+        const low  = parseInt(document.getElementById('pu-inv-low').value) || it.lowStockThreshold || 0;
         if(qty <= 0) return showAlert('أدخل كمية صحيحة');
         if(buy <= 0) return showAlert('أدخل سعر الشراء');
+        if(sell <= 0) return showAlert('أدخل سعر البيع');
+        // تحديث سعر البيع وحد التنبيه على الصنف
+        it.sellPrice = sell;
+        it.lowStockThreshold = low;
         const existing = puInvItems.find(x => x.itemId === it.id);
-        if(existing) { existing.qty += qty; existing.buyPrice = buy; }
-        else {
-            const sellPrice = it.sellPrice || (it.batches.length > 0 ? it.batches[it.batches.length-1].sellPrice : 0);
-            puInvItems.push({ itemId: it.id, itemName: it.name, qty, buyPrice: buy, sellPrice });
-        }
+        if(existing) { existing.qty += qty; existing.buyPrice = buy; existing.sellPrice = sell; }
+        else { puInvItems.push({ itemId: it.id, itemName: it.name, qty, buyPrice: buy, sellPrice: sell }); }
         _puInvSelectedItem = null;
         document.getElementById('pu-inv-qty').value = '';
         document.getElementById('pu-inv-buy').value = '';
+        document.getElementById('pu-inv-sell').value = '';
+        document.getElementById('pu-inv-low').value = '';
         renderPuInvItems();
-        // ارجع لنافذة البحث
         document.getElementById('pu-inv-qty-modal').classList.remove('active');
         openPuInvSearchModal();
     }
