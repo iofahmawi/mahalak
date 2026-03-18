@@ -3057,16 +3057,14 @@
     }
 
     function openNewPurchaseModalWithItem(itemName) {
-        openNewPurchaseModal();
-        // بعد فتح النافذة نملأ البحث باسم الصنف
-        setTimeout(() => {
-            const inp = document.getElementById('pu-inv-search-input');
-            if(inp) {
-                inp.value = itemName;
-                renderPuInvSearchList(itemName);
-                inp.focus();
-            }
-        }, 100);
+        // ابحث عن الصنف مباشرة وافتح نافذة الكمية
+        const it = items.find(x => x.name === itemName);
+        if(it) {
+            openNewPurchaseModal();
+            setTimeout(() => selectPuInvSearchItem(it.id), 100);
+        } else {
+            openNewPurchaseModal();
+        }
     }
 
     function openNewPurchaseModal() {
