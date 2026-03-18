@@ -2727,7 +2727,7 @@
                             <div class="price-cell profit"><span class="p-label">الربح</span><span class="p-value">JD ${(lastBatch.sellPrice - lastBatch.buyPrice).toFixed(2)}</span></div>
                         </div>
                         <div class="btn-group" onclick="event.stopPropagation()">
-                            <button class="btn btn-add-stock" onclick="if(requirePerm('purchases'))openNewPurchaseModal()"><i class="fa-solid fa-plus"></i> توريد</button>
+                            <button class="btn btn-add-stock" onclick="if(requirePerm('purchases'))openNewPurchaseModalWithItem('${it.name}')"><i class="fa-solid fa-plus"></i> توريد</button>
                             <button class="btn btn-edit" onclick="openEditItemModal(${it.id})"><i class="fa-solid fa-pen"></i></button>
                             <button class="btn ${it.pinned ? 'btn-pin-active' : 'btn-pin'}" onclick="togglePin(${it.id})" title="${it.pinned ? 'إزالة من البيع السريع' : 'تثبيت في البيع السريع'}"><i class="fa-solid fa-thumbtack"></i></button>
                             <button class="btn btn-del" onclick="openDelModal(${it.id})"><i class="fa-solid fa-trash-can"></i></button>
@@ -3015,6 +3015,19 @@
         renderPuInvItems();
         closeModals();
         setTimeout(() => openModal('new-purchase-modal'), 150);
+    }
+
+    function openNewPurchaseModalWithItem(itemName) {
+        openNewPurchaseModal();
+        // بعد فتح النافذة نملأ البحث باسم الصنف
+        setTimeout(() => {
+            const inp = document.getElementById('pu-inv-search-input');
+            if(inp) {
+                inp.value = itemName;
+                renderPuInvSearchList(itemName);
+                inp.focus();
+            }
+        }, 100);
     }
 
     function openNewPurchaseModal() {
