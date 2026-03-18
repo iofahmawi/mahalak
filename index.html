@@ -5030,6 +5030,7 @@
         const totalDay = filtered.reduce((s, p) => s + p.total, 0);
         document.getElementById('pu-total').innerText = `JD ${totalDay.toFixed(2)}`;
 
+
         const list = document.getElementById('pu-list');
         if(!displayList.length) {
             list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:0.85rem;font-weight:700;">لا توجد مشتريات في هذه الفترة</div>';
@@ -5175,6 +5176,7 @@
 
         const totalDay = active.reduce((s, x) => s + x.total, 0);
         document.getElementById('sh-total').innerText = `JD ${totalDay.toFixed(2)}`;
+
 
         const list = document.getElementById('sh-list');
         if(filtered.length === 0) {
