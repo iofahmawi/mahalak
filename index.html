@@ -812,7 +812,6 @@
         <div class="menu-wrap">
             <button class="btn-icon" onclick="toggleMenu(event)"><i class="fa-solid fa-bars"></i></button>
             <div class="menu-dropdown" id="main-menu">
-                <button onmouseenter="closeAllSubMenus()" onclick="if(requirePerm('stats')){closeMenu();openStatsModal()}"><i class="fa-solid fa-chart-pie"></i> إحصائيات</button>
                 <div class="menu-has-sub" id="menu-cash-sub">
                     <button onclick="toggleMenuSub('menu-cash-sub', event)">
                         <i class="fa-solid fa-vault"></i> الصندوق
@@ -878,15 +877,17 @@
                         <button onclick="if(requirePerm('contacts')){closeMenu();openCustomersModal()}"><i class="fa-solid fa-users"></i> إضافة زبون</button>
                     </div>
                 </div>
-                <div class="menu-has-sub" id="menu-employees-sub">
-                    <button onclick="toggleMenuSub('menu-employees-sub', event)">
-                        <i class="fa-solid fa-id-badge"></i> الموظفين
+                <button onmouseenter="closeAllSubMenus()" onclick="if(requirePerm('stats')){closeMenu();openStatsModal()}"><i class="fa-solid fa-chart-pie"></i> إحصائيات</button>
+                <div class="menu-has-sub" id="menu-extras-sub">
+                    <button onclick="toggleMenuSub('menu-extras-sub', event)">
+                        <i class="fa-solid fa-sliders"></i> ميزات إضافية
                     </button>
-                    <div class="menu-submenu">
+                    <div class="menu-submenu" style="top:auto;bottom:0;">
                         <button onclick="closeMenu(); openUsersModal()"><i class="fa-solid fa-users-gear"></i> إدارة المستخدمين</button>
                         <button onclick="closeMenu(); openAttendanceModal()"><i class="fa-solid fa-calendar-check"></i> تسجيل الحضور</button>
                         <button onclick="closeMenu(); openEmployeesModal()"><i class="fa-solid fa-hand-holding-dollar"></i> تسجيل سلفة</button>
                         <button onclick="closeMenu(); openSalariesModal()"><i class="fa-solid fa-money-bill-wave"></i> الرواتب</button>
+                        <button onclick="closeMenu(); openStoreNameEdit()"><i class="fa-solid fa-store"></i> تعديل اسم المحل</button>
                     </div>
                 </div>
                 <button onmouseenter="closeAllSubMenus()" onclick="closeMenu(); doLogout()"><i class="fa-solid fa-right-from-bracket"></i> تسجيل خروج</button>
