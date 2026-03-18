@@ -1266,7 +1266,7 @@
         </div>
         <div class="input-wrap" style="margin:0 20px 8px;width:auto;">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="sh-search" placeholder="بحث"  oninput="renderSalesHistory()">
+            <input type="text" id="sh-search" placeholder="بحث... أو #اسم الصنف"  oninput="renderSalesHistory()">
         </div>
         <div id="sh-list" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;padding:0 20px;"></div>
         <div style="margin:10px 40px 0;border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:center;align-items:center;gap:8px;">
@@ -1318,7 +1318,7 @@
         </div>
         <div class="input-wrap" style="margin:0 20px 8px;width:auto;">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="pu-search" placeholder="بحث"  oninput="renderPurchasesHistory()">
+            <input type="text" id="pu-search" placeholder="بحث... أو #اسم الصنف"  oninput="renderPurchasesHistory()">
         </div>
         <div id="pu-list" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;padding:0 20px;"></div>
         <div style="margin:10px 40px 0;border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:center;align-items:center;gap:8px;">
@@ -5005,12 +5005,45 @@
         if(puFilter === 'card')   filtered = filtered.filter(p => p.payType === 'card');
         if(puFilter === 'credit') filtered = filtered.filter(p => p.payType === 'credit');
 
-        const q = (document.getElementById('pu-search')?.value || '').trim().toLowerCase();
+        const q = (document.getElementById('pu-search')?.value || '').trim();
+        const isPuItemSearch = q.startsWith('#');
+
+        if(isPuItemSearch) {
+            const itemQ = q.slice(1).trim().toLowerCase();
+            let totalQty = 0, totalAmt = 0;
+            const invoiceIds = new Set();
+            filtered.forEach(p => {
+                if(p.itemName.toLowerCase() === itemQ) {
+                    totalQty += p.qty || 0;
+                    totalAmt += p.total || 0;
+                    invoiceIds.add(p.invoiceGroupId || p.id);
+                }
+            });
+            document.getElementById('pu-sub').innerText = totalQty === 0 ? 'لا توجد نتائج' : `${totalQty} قطعة في ${invoiceIds.size} فاتورة`;
+            document.getElementById('pu-total').innerText = `JD ${totalAmt.toFixed(2)}`;
+            const list = document.getElementById('pu-list');
+            if(!totalQty) {
+                list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:0.85rem;font-weight:700;">لا توجد نتائج</div>';
+            } else {
+                list.innerHTML = `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-size:0.88rem;font-weight:900;color:var(--text-dark);">${q.slice(1).trim()}</div>
+                        <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);margin-top:2px;">${totalQty} قطعة مشتراة</div>
+                    </div>
+                    <div style="text-align:left;">
+                        <div style="font-size:1rem;font-weight:900;color:var(--primary);">JD ${totalAmt.toFixed(2)}</div>
+                        <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">${invoiceIds.size} فاتورة</div>
+                    </div>
+                </div>`;
+            }
+            return;
+        }
+
         if(q) {
             filtered = filtered.filter(p =>
-                p.itemName.toLowerCase().includes(q) ||
-                (p.supplier && p.supplier.toLowerCase().includes(q)) ||
-                (p.supplierInvNum && p.supplierInvNum.toLowerCase().includes(q))
+                p.itemName.toLowerCase().includes(q.toLowerCase()) ||
+                (p.supplier && p.supplier.toLowerCase().includes(q.toLowerCase())) ||
+                (p.supplierInvNum && p.supplierInvNum.toLowerCase().includes(q.toLowerCase()))
             );
         }
 
@@ -5167,12 +5200,47 @@
         if(shFilter === 'card')   filtered = filtered.filter(s => s.payType === 'card');
         if(shFilter === 'credit') filtered = filtered.filter(s => s.payType === 'credit' && Math.round((s.total - (s.paid||0))*100)/100 > 0);
 
-        const q = (document.getElementById('sh-search')?.value || '').trim().toLowerCase();
+        const q = (document.getElementById('sh-search')?.value || '').trim();
+        const isItemSearch = q.startsWith('#');
+
+        if(isItemSearch) {
+            // بحث مخصص عن صنف محدد — يظهر إجمالي الكمية والمبلغ
+            const itemQ = q.slice(1).trim().toLowerCase();
+            const itemResults = [];
+            filtered.filter(s => !s.cancelled).forEach(s => {
+                s.items.forEach(si => {
+                    if(si.name.toLowerCase() === itemQ) {
+                        itemResults.push({ qty: si.qty, total: si.qty * si.sellPrice, sale: s });
+                    }
+                });
+            });
+            const totalQty = itemResults.reduce((sum, r) => sum + r.qty, 0);
+            const totalAmt = itemResults.reduce((sum, r) => sum + r.total, 0);
+            document.getElementById('sh-sub').innerText = itemResults.length === 0 ? 'لا توجد نتائج' : `${totalQty} قطعة في ${new Set(itemResults.map(r=>r.sale.id)).size} فاتورة`;
+            document.getElementById('sh-total').innerText = `JD ${totalAmt.toFixed(2)}`;
+            const list = document.getElementById('sh-list');
+            if(!itemResults.length) {
+                list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:0.85rem;font-weight:700;">لا توجد نتائج</div>';
+                return;
+            }
+            list.innerHTML = `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-size:0.88rem;font-weight:900;color:var(--text-dark);">${q.slice(1).trim()}</div>
+                    <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);margin-top:2px;">${totalQty} قطعة مباعة</div>
+                </div>
+                <div style="text-align:left;">
+                    <div style="font-size:1rem;font-weight:900;color:var(--primary);">JD ${totalAmt.toFixed(2)}</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">${new Set(itemResults.map(r=>r.sale.id)).size} فاتورة</div>
+                </div>
+            </div>`;
+            return;
+        }
+
         if(q) {
             filtered = filtered.filter(s =>
-                (s.invoiceNumber && String(s.invoiceNumber).includes(q)) ||
-                (s.customerName && s.customerName.toLowerCase().includes(q)) ||
-                s.items.some(si => si.name.toLowerCase().includes(q))
+                (s.invoiceNumber && String(s.invoiceNumber).includes(q.toLowerCase())) ||
+                (s.customerName && s.customerName.toLowerCase().includes(q.toLowerCase())) ||
+                s.items.some(si => si.name.toLowerCase().includes(q.toLowerCase()))
             );
         }
 
