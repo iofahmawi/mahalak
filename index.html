@@ -4855,6 +4855,8 @@
             const apply = Math.min(owed, leftToApply);
             p.paid = Math.round(((p.paid || 0) + apply) * 100) / 100;
             leftToApply = Math.round((leftToApply - apply) * 100) / 100;
+            // إذا سُدّدت الفاتورة بالكامل تصبح نقدي
+            if(Math.round((p.total - p.paid) * 100) / 100 <= 0) p.payType = 'cash';
             const gid = p.invoiceGroupId || p.id;
             if(!seenGroups.has(gid)) {
                 seenGroups.add(gid);
