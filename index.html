@@ -605,7 +605,10 @@
 <!-- ══ نافذة تسجيل الدخول ══ -->
 <div id="login-overlay" class="login-overlay" style="display:none;">
     <div class="login-box">
-        <div style="font-size:2rem;margin-bottom:10px;">🏪</div>
+        <div style="margin-bottom:10px;text-align:center;" id="login-logo-wrap">
+            <img id="login-logo-img" src="" alt="" style="display:none;height:85px;max-width:220px;object-fit:contain;margin:0 auto;">
+            <div id="login-default-icon" style="font-size:2rem;">🏪</div>
+        </div>
         <h2 id="login-store-title">محلك</h2>
         <div class="sub">اختر حسابك للدخول</div>
         <div class="user-list-login" id="login-user-list"></div>
@@ -1872,14 +1875,29 @@
 <!-- نافذة الإعداد الأولي -->
 <div class="modal-overlay" id="setup-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()" style="text-align:center;padding:32px 28px;">
-        <div style="font-size:2.5rem;margin-bottom:12px;">🏪</div>
+        <div id="setup-logo-wrap" style="margin-bottom:12px;text-align:center;">
+            <img id="logo-preview-img" src="" alt="" style="display:none;height:85px;max-width:220px;object-fit:contain;margin:0 auto;">
+            <div id="setup-default-icon" style="font-size:2.5rem;">🏪</div>
+        </div>
         <div style="font-size:1.2rem;font-weight:900;color:var(--text-dark);margin-bottom:6px;">مرحباً بك!</div>
         <div style="font-size:0.82rem;font-weight:600;color:var(--text-muted);margin-bottom:24px;">أدخل اسم محلك ليظهر على جميع الفواتير</div>
         <div class="input-wrap" style="margin-bottom:12px;">
             <i class="fa-solid fa-store"></i>
             <input type="text" id="setup-store-name" placeholder="اسم المحل" style="text-align:right;" onkeydown="if(event.key==='Enter')saveStoreName()">
         </div>
-        <button onclick="saveStoreName()" style="width:100%;height:41px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-family:inherit;font-size:0.88rem;font-weight:900;cursor:pointer;">ابدأ الآن</button>
+        <div class="input-wrap" style="margin-bottom:8px;">
+            <i class="fa-solid fa-image"></i>
+            <input type="url" id="setup-store-logo" placeholder="رابط شعار المحل (اختياري)" style="text-align:right;" oninput="previewStoreLogo()">
+        </div>
+
+        <div id="logo-size-wrap" style="display:none;margin-bottom:12px;width:100%;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <span style="font-size:0.72rem;font-weight:700;color:var(--text-muted);margin-right:4px;">حجم الشعار</span>
+                <span id="logo-size-val" style="font-size:0.85rem;font-weight:800;color:var(--text-dark);margin-left:4px;">85px</span>
+            </div>
+            <input type="range" id="logo-size-slider" min="50" max="200" value="85" oninput="updateLogoSize(this.value)" style="width:100%;accent-color:var(--primary);display:block;box-sizing:border-box;">
+        </div>
+        <button onclick="saveStoreName()" style="width:100%;height:41px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-family:inherit;font-size:0.88rem;font-weight:900;cursor:pointer;">حفظ</button>
     </div>
 </div>
 
@@ -2046,6 +2064,19 @@
         document.getElementById('login-pin-section').style.display = 'none';
         document.getElementById('login-user-list').style.display = 'flex';
         document.getElementById('login-store-title').textContent = storeName || 'محلك';
+        const loginLogo = localStorage.getItem('mahalak_store_logo') || '';
+        const loginLogoSize = localStorage.getItem('mahalak_store_logo_size') || '85';
+        const loginImg = document.getElementById('login-logo-img');
+        const loginIcon = document.getElementById('login-default-icon');
+        if(loginLogo && loginImg) {
+            loginImg.src = loginLogo;
+            loginImg.style.height = loginLogoSize + 'px';
+            loginImg.style.display = 'block';
+            if(loginIcon) loginIcon.style.display = 'none';
+        } else {
+            if(loginImg) loginImg.style.display = 'none';
+            if(loginIcon) loginIcon.style.display = 'block';
+        }
         const list = document.getElementById('login-user-list');
         list.innerHTML = appUsers.map((u,i) => `
             <button class="user-btn" onclick="selectLoginUser(${i})">
@@ -7121,8 +7152,53 @@
     function openStoreNameEdit() {
         if(!isAdmin()) return showToast('ليس لديك صلاحية', 'error');
         document.getElementById('setup-store-name').value = storeName;
+        const savedLogo = localStorage.getItem('mahalak_store_logo') || '';
+        document.getElementById('setup-store-logo').value = savedLogo;
+        const img = document.getElementById('logo-preview-img');
+        const defIcon = document.getElementById('setup-default-icon');
+        const savedSize = localStorage.getItem('mahalak_store_logo_size') || '85';
+        document.getElementById('logo-size-slider').value = savedSize;
+        document.getElementById('logo-size-val').textContent = savedSize + 'px';
+        img.style.height = savedSize + 'px';
+        if(savedLogo) {
+            img.src = savedLogo;
+            img.style.display = 'block';
+            defIcon.style.display = 'none';
+            document.getElementById('logo-size-wrap').style.display = 'block';
+            // نضمن ظهوره حتى لو الصورة من cache
+            setTimeout(() => { document.getElementById('logo-size-wrap').style.display = 'block'; }, 50);
+        } else {
+            img.style.display = 'none';
+            defIcon.style.display = 'block';
+            document.getElementById('logo-size-wrap').style.display = 'none';
+        }
         document.getElementById('setup-modal').classList.add('active');
         setTimeout(() => document.getElementById('setup-store-name').focus(), 100);
+    }
+
+    function previewStoreLogo() {
+        const url = document.getElementById('setup-store-logo').value.trim();
+        const img = document.getElementById('logo-preview-img');
+        const defIcon = document.getElementById('setup-default-icon');
+        const sizeWrap = document.getElementById('logo-size-wrap');
+        if(url) {
+            img.src = url;
+            img.onerror = () => { img.style.display = 'none'; defIcon.style.display = 'block'; sizeWrap.style.display = 'none'; };
+            img.onload  = () => { img.style.display = 'block'; defIcon.style.display = 'none'; sizeWrap.style.display = 'block'; };
+            // حالة cache — الصورة قد تكون جاهزة فوراً
+            if(img.complete && img.naturalWidth > 0) { img.style.display = 'block'; defIcon.style.display = 'none'; sizeWrap.style.display = 'block'; }
+        } else {
+            img.style.display = 'none';
+            defIcon.style.display = 'block';
+            sizeWrap.style.display = 'none';
+        }
+    }
+
+    function updateLogoSize(val) {
+        document.getElementById('logo-size-val').textContent = val + 'px';
+        document.getElementById('logo-preview-img').style.height = val + 'px';
+        document.getElementById('login-logo-img').style.height = val + 'px';
+        localStorage.setItem('mahalak_store_logo_size', val);
     }
 
     function saveStoreName() {
@@ -7130,6 +7206,11 @@
         if(!val) return;
         storeName = val;
         localStorage.setItem('mahalak_store_name', storeName);
+        const logo = document.getElementById('setup-store-logo').value.trim();
+        if(logo) localStorage.setItem('mahalak_store_logo', logo);
+        else localStorage.removeItem('mahalak_store_logo');
+        const logoSize = document.getElementById('logo-size-slider').value;
+        localStorage.setItem('mahalak_store_logo_size', logoSize);
         document.getElementById('setup-modal').classList.remove('active');
         updateStoreName();
         // أول تشغيل - اطلب إنشاء حساب المدير
