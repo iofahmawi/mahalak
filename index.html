@@ -4268,14 +4268,14 @@
     function renderSupplierLogs() {
         let logs = [...paymentLogs].filter(l => l.type === 'supplier');
         if(_slMode === 'day') {
-            const dateStr = new Date(document.getElementById('sl-date').value).toLocaleDateString();
-            logs = logs.filter(l => l.date === dateStr);
+            const dateStr = document.getElementById('sl-date').value;
+            logs = logs.filter(l => l.date === dateStr || new Date(l.date).toLocaleDateString('en-CA') === dateStr);
         } else if(_slMode === 'range') {
             const dates = dateStringsInRange(
                 document.getElementById('sl-date-from').value,
                 document.getElementById('sl-date-to').value
             );
-            logs = logs.filter(l => dates.has(l.date));
+            logs = logs.filter(l => dates.has(l.date) || dates.has(new Date(l.date).toLocaleDateString('en-CA')));
         }
         const q = (document.getElementById('sl-search')?.value || '').trim().toLowerCase();
         if(q) logs = logs.filter(l => l.name.toLowerCase().includes(q));
@@ -4351,14 +4351,14 @@
     function renderCustomerLogs() {
         let logs = [...paymentLogs].filter(l => l.type === 'customer');
         if(_clMode === 'day') {
-            const dateStr = new Date(document.getElementById('cl-date').value).toLocaleDateString();
-            logs = logs.filter(l => l.date === dateStr);
+            const dateStr = document.getElementById('cl-date').value;
+            logs = logs.filter(l => l.date === dateStr || new Date(l.date).toLocaleDateString('en-CA') === dateStr);
         } else if(_clMode === 'range') {
             const dates = dateStringsInRange(
                 document.getElementById('cl-date-from').value,
                 document.getElementById('cl-date-to').value
             );
-            logs = logs.filter(l => dates.has(l.date));
+            logs = logs.filter(l => dates.has(l.date) || dates.has(new Date(l.date).toLocaleDateString('en-CA')));
         }
         const q = (document.getElementById('cl-search')?.value || '').trim().toLowerCase();
         if(q) logs = logs.filter(l => l.name.toLowerCase().includes(q));
@@ -4511,6 +4511,8 @@
             const apply = Math.min(owed, left);
             s.paid = Math.round(((s.paid || 0) + apply) * 100) / 100;
             left = Math.round((left - apply) * 100) / 100;
+            // إذا سُدّدت الفاتورة بالكامل تصبح نقدي
+            if(Math.round((s.total - s.paid) * 100) / 100 <= 0) s.payType = 'cash';
             affectedInvNums.push({ num: s.invoiceNumber || s.id, id: s.id });
         }
         const now = new Date();
@@ -5088,8 +5090,10 @@
         const from = new Date(fy, fm-1, fd);
         const to   = new Date(ty, tm-1, td);
         const set = new Set();
-        for (let d = new Date(from); d <= to; d.setDate(d.getDate()+1))
+        for (let d = new Date(from); d <= to; d.setDate(d.getDate()+1)) {
+            set.add(new Date(d).toLocaleDateString('en-CA'));
             set.add(new Date(d).toLocaleDateString());
+        }
         return set;
     }
 
