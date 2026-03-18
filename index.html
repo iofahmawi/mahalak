@@ -3373,7 +3373,7 @@
                     total: x.qty * x.buyPrice,
                     supplier: supplier || null, supplierInvNum: invNum || null,
                     payType: puInvPayType,
-                    paid: puInvPayType === 'cash' ? x.qty * x.buyPrice : 0,
+                    paid: (puInvPayType === 'cash' || puInvPayType === 'card') ? x.qty * x.buyPrice : 0,
                     invoiceGroupId: groupId, invoiceTotal,
                     createdBy: getCurrentUserName()
                 });
@@ -3410,7 +3410,7 @@
                 total: x.qty * x.buyPrice,
                 supplier: supplier || null, supplierInvNum: invNum || null,
                 payType: puInvPayType,
-                paid: puInvPayType === 'cash' ? x.qty * x.buyPrice : 0,
+                paid: (puInvPayType === 'cash' || puInvPayType === 'card') ? x.qty * x.buyPrice : 0,
                 invoiceGroupId, invoiceTotal,
                 createdBy: getCurrentUserName()
             });
@@ -5040,12 +5040,13 @@
             const ref = item.type === 'single' ? item.p : item.ref;
             const grp = item.type === 'single' ? [item.p] : item.group;
             const isCash = (ref.payType || 'cash') === 'cash';
+            const isCard = ref.payType === 'card';
             const groupTotal = grp.reduce((s,x) => s + x.total, 0);
             const groupPaid  = grp.reduce((s,x) => s + (x.paid||0), 0);
             const remaining  = Math.round((groupTotal - groupPaid) * 100) / 100;
-            const payLabel = isCash ? 'نقدي' : remaining > 0 ? (groupPaid > 0 ? 'آجل: JD '+remaining.toFixed(2) : 'آجل') : 'مسدّد';
-            const payBg    = isCash ? '#f0fdf4' : remaining > 0 ? '#fff0f0' : '#f0fdf4';
-            const payColor = isCash ? '#16a34a' : remaining > 0 ? 'var(--danger)' : '#16a34a';
+            const payLabel = isCard ? 'بطاقة' : isCash ? 'نقدي' : remaining > 0 ? (groupPaid > 0 ? 'آجل: JD '+remaining.toFixed(2) : 'آجل') : 'مسدّد';
+            const payBg    = isCard ? '#f5f3ff' : isCash ? '#f0fdf4' : remaining > 0 ? '#fff0f0' : '#f0fdf4';
+            const payColor = isCard ? '#7c3aed' : isCash ? '#16a34a' : remaining > 0 ? 'var(--danger)' : '#16a34a';
             const supName  = ref.supplier || ref.supplierName || 'بدون مورد';
             const gid      = ref.invoiceGroupId || ref.groupId;
             return `
@@ -5155,7 +5156,7 @@
             filtered = sales.filter(s => s.date === dateStr).reverse();
         }
 
-        if(shFilter === 'cash')   filtered = filtered.filter(s => s.payType === 'cash' || (!s.payType) || (s.payType === 'credit' && Math.round((s.total - (s.paid||0))*100)/100 <= 0));
+        if(shFilter === 'cash')   filtered = filtered.filter(s => s.payType === 'cash' || !s.payType);
         if(shFilter === 'card')   filtered = filtered.filter(s => s.payType === 'card');
         if(shFilter === 'credit') filtered = filtered.filter(s => s.payType === 'credit' && Math.round((s.total - (s.paid||0))*100)/100 > 0);
 
@@ -5183,10 +5184,11 @@
 
         list.innerHTML = filtered.map(s => {
             const isCredit = s.payType === 'credit';
+            const isCard   = s.payType === 'card';
             const remaining = isCredit ? Math.round((s.total - (s.paid || 0)) * 100) / 100 : 0;
-            const payLabel = isCredit ? (remaining > 0 ? (s.paid > 0 ? 'آجل: JD '+remaining.toFixed(2) : 'آجل') : 'مسدّد') : 'نقدي';
-            const payBg = isCredit ? (remaining > 0 ? '#fff0f0' : '#f0fdf4') : '#f0fdf4';
-            const payColor = isCredit ? (remaining > 0 ? 'var(--danger)' : '#16a34a') : '#16a34a';
+            const payLabel = isCard ? 'بطاقة' : isCredit ? (remaining > 0 ? (s.paid > 0 ? 'آجل: JD '+remaining.toFixed(2) : 'آجل') : 'مسدّد') : 'نقدي';
+            const payBg    = isCard ? '#f5f3ff' : isCredit ? (remaining > 0 ? '#fff0f0' : '#f0fdf4') : '#f0fdf4';
+            const payColor = isCard ? '#7c3aed' : isCredit ? (remaining > 0 ? 'var(--danger)' : '#16a34a') : '#16a34a';
 
             if(s.cancelled) return `
             <div class="sale-card" style="padding:0;overflow:hidden;opacity:0.6;">
