@@ -1090,7 +1090,7 @@
         <div class="sup-picker" id="add-cat-picker">
             <i class="fa-solid fa-tag sup-icon"></i>
             <button type="button" class="sup-trigger" onclick="openCatSheet()">
-                <span class="sup-label" id="add-cat-label">— بدون تصنيف —</span>
+                <span class="sup-label" id="add-cat-label">- بدون تصنيف -</span>
                 <i class="fa-solid fa-chevron-down sup-chev"></i>
             </button>
             <input type="hidden" id="add-cat" value="">
@@ -2123,7 +2123,7 @@
     }
 
     function updateUserBar() {
-        // العنصر محذوف من الهيدر — لا حاجة لشيء
+        // العنصر محذوف من الهيدر - لا حاجة لشيء
     }
 
     function openUsersModal() {
@@ -2143,7 +2143,7 @@
                 <div class="user-avatar" style="width:32px;height:32px;font-size:1rem;"><i class="fa-solid fa-circle-user"></i></div>
                 <div style="flex:1;">
                     <div style="font-size:0.85rem;font-weight:800;color:var(--text-dark);">${u.name}</div>
-                    <div style="font-size:0.68rem;font-weight:600;color:var(--text-muted);">${i===0 ? 'مدير — كل الصلاحيات' : getPermsLabel(u.perms)}</div>
+                    <div style="font-size:0.68rem;font-weight:600;color:var(--text-muted);">${i===0 ? 'مدير - كل الصلاحيات' : getPermsLabel(u.perms)}</div>
                 </div>
                 ${(amAdmin && i > 0) ? `<button onclick="openEditPerms(${i})" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.85rem;padding:4px;"><i class="fa-solid fa-shield-halved"></i></button>` : ''}
                 ${(amAdmin || currentUser?.idx === i) ? `<button onclick="openChangePass(${i})" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.85rem;padding:4px;"><i class="fa-solid fa-key"></i></button>` : ''}
@@ -2833,7 +2833,7 @@
             const total = grp.reduce((s,p) => s + p.buyPrice * p.qty, 0);
             const isCash = (ref.payType || 'cash') === 'cash';
             const supName = ref.supplierName || ref.supplier || 'بدون مورد';
-            const dateDisplay = ref.date ? (ref.date.includes('/') ? ref.date : ref.date.split('-').reverse().join('/')) : '—';
+            const dateDisplay = ref.date ? (ref.date.includes('/') ? ref.date : ref.date.split('-').reverse().join('/')) : '-';
             const invGid = ref.invoiceGroupId || ref.groupId || gid;
             return `
             <div class="sale-card" style="padding:0;">
@@ -2935,7 +2935,7 @@
     function openAddItemModal() {
         if(!requirePerm('inventory')) return;
         document.getElementById('add-cat').value = '';
-        document.getElementById('add-cat-label').textContent = '— بدون تصنيف —';
+        document.getElementById('add-cat-label').textContent = '- بدون تصنيف -';
         openModal('add-item-modal');
         setTimeout(() => document.getElementById('add-name').focus(), 100);
     }
@@ -3378,7 +3378,7 @@
         saveData();
         render();
         closeModals();
-        showToast('تم حفظ الفاتورة — ' + puInvItems.length + ' صنف — JD ' + invoiceTotal.toFixed(2));
+        showToast('تم حفظ الفاتورة - ' + puInvItems.length + ' صنف - JD ' + invoiceTotal.toFixed(2));
         puInvItems = [];
     }
 
@@ -3438,10 +3438,10 @@
         if(it) {
             const totalQty = it.batches.reduce((s, b) => s + b.qty, 0);
             if(totalQty < p.qty) {
-                showAlert(`لا يمكن الحذف — تم بيع ${p.qty - totalQty} قطعة من هذه الدفعة`, 'error');
+                showAlert(`لا يمكن الحذف - تم بيع ${p.qty - totalQty} قطعة من هذه الدفعة`, 'error');
                 return;
             }
-            // طرح بـ FIFO — الأقدم أولاً
+            // طرح بـ FIFO - الأقدم أولاً
             it.batches.sort((a, b) => new Date(a.date) - new Date(b.date));
             let rem = p.qty;
             for(let i = 0; i < it.batches.length && rem > 0; i++) {
@@ -3853,7 +3853,7 @@
         const filtered = query ? customers.filter(c => c.toLowerCase().includes(query)) : customers;
 
         if(customers.length === 0) {
-            list.innerHTML = '<div class="sup-empty"><i class="fa-solid fa-users" style="display:block;font-size:1.6rem;margin-bottom:8px;opacity:0.25;"></i>لا يوجد زبائن — أضف من إدارة الزبائن</div>';
+            list.innerHTML = '<div class="sup-empty"><i class="fa-solid fa-users" style="display:block;font-size:1.6rem;margin-bottom:8px;opacity:0.25;"></i>لا يوجد زبائن - أضف من إدارة الزبائن</div>';
             return;
         }
         if(filtered.length === 0) {
@@ -3910,7 +3910,7 @@
         const list = document.getElementById('cat-sheet-list');
         const query = q.trim().toLowerCase();
         const current = document.getElementById('add-cat').value;
-        const all = [{ value: '', label: '— بدون تصنيف —', none: true }, ...categories.map(c => ({ value: c, label: c, none: false }))];
+        const all = [{ value: '', label: '- بدون تصنيف -', none: true }, ...categories.map(c => ({ value: c, label: c, none: false }))];
         const filtered = query ? all.filter(o => o.none || o.label.toLowerCase().includes(query)) : all;
         if (filtered.length === 0) {
             list.innerHTML = '<div class="sup-empty"><i class="fa-solid fa-magnifying-glass" style="display:block;font-size:1.6rem;margin-bottom:8px;opacity:0.25;"></i>لا توجد نتائج</div>';
@@ -3930,7 +3930,7 @@
 
     function selectCatSheetOpt(value) {
         document.getElementById('add-cat').value = value;
-        document.getElementById('add-cat-label').textContent = value || '— بدون تصنيف —';
+        document.getElementById('add-cat-label').textContent = value || '- بدون تصنيف -';
         closeCatSheet();
     }
 
@@ -4180,7 +4180,7 @@
     }
 
     function openPayCustDebt(custName, remaining) {
-        document.getElementById('pay-cust-debt-sub').innerText = `${custName} — المتبقي: JD ${remaining.toFixed(2)}`;
+        document.getElementById('pay-cust-debt-sub').innerText = `${custName} - المتبقي: JD ${remaining.toFixed(2)}`;
         document.getElementById('pay-cust-debt-amount').value = '';
         document.getElementById('pay-cust-debt-btn').onclick = () => payPartialCustDebt(custName, remaining);
         openModal('pay-cust-debt-modal');
@@ -4254,7 +4254,7 @@
                 invLabel = 'سداد فاتورة مشتريات #' + l.invoices.map(inv => inv.num).join('، #');
                 invGid = l.invoices[0].gid;
             } else {
-                // السجلات القديمة — ابحث عن فاتورة آجل للمورد
+                // السجلات القديمة - ابحث عن فاتورة آجل للمورد
                 const supInv = purchases.find(p => p.supplier === l.name && p.payType === 'credit' && (p.paid||0) > 0);
                 if(supInv) {
                     invGid = supInv.invoiceGroupId || supInv.id;
@@ -4571,7 +4571,7 @@
     function renderSupSheetList(q, selectedValue) {
         const list = document.getElementById('sup-sheet-list');
         const query = q.trim().toLowerCase();
-        const all = [{ value: '', label: '— بدون مورد —', none: true }, ...suppliers.map(s => ({ value: s, label: s, none: false }))];
+        const all = [{ value: '', label: '- بدون مورد -', none: true }, ...suppliers.map(s => ({ value: s, label: s, none: false }))];
         const filtered = query ? all.filter(o => o.none || o.label.toLowerCase().includes(query)) : all;
 
         if (filtered.length === 0) {
@@ -4632,7 +4632,7 @@
         }
         const picker = document.getElementById(pickerId + '-picker');
         if(!picker) return;
-        picker.querySelector('.sup-label').textContent = selectedValue || '— بدون مورد —';
+        picker.querySelector('.sup-label').textContent = selectedValue || '- بدون مورد -';
         
         let inputId = pickerId;
         if(pickerId === 'add-sup') inputId = 'add-supplier';
@@ -4782,7 +4782,7 @@
     }
 
     function openPayDebt(supplierName, remaining) {
-        document.getElementById('pay-debt-sub').innerText = `${supplierName} — المتبقي: JD ${remaining.toFixed(2)}`;
+        document.getElementById('pay-debt-sub').innerText = `${supplierName} - المتبقي: JD ${remaining.toFixed(2)}`;
         document.getElementById('pay-debt-amount').value = '';
         document.getElementById('pay-debt-btn').onclick = () => payPartialDebt(supplierName, remaining);
         openModal('pay-debt-modal');
@@ -4820,7 +4820,7 @@
                 affectedInvNums.push({ num: invNum, gid });
             }
         }
-        // إذا لم نجد أي فاتورة — ابحث عن أول فاتورة آجل للمورد
+        // إذا لم نجد أي فاتورة - ابحث عن أول فاتورة آجل للمورد
         if(!affectedInvNums.length) {
             const fallback = purchases.find(p => p.supplier === supplierName && p.payType === 'credit');
             if(fallback) {
@@ -4931,7 +4931,7 @@
             if(it) {
                 const totalQty = it.batches.reduce((s,b) => s + b.qty, 0);
                 if(totalQty < p.qty) {
-                    showAlert('لا يمكن الحذف — تم بيع ' + (p.qty - totalQty) + ' قطعة من هذه الدفعة', 'error');
+                    showAlert('لا يمكن الحذف - تم بيع ' + (p.qty - totalQty) + ' قطعة من هذه الدفعة', 'error');
                     return;
                 }
             }
@@ -4969,7 +4969,7 @@
             );
         }
 
-        // تجميع الفواتير متعددة الأصناف — من الأحدث للأقدم
+        // تجميع الفواتير متعددة الأصناف - من الأحدث للأقدم
         const seen = new Set();
         const displayList = [];
         filtered.forEach(p => {
@@ -5339,7 +5339,7 @@
                     <div style="width:24px;height:24px;border-radius:50%;background:${i===0?'#fef3c7':i===1?'#f1f5f9':i===2?'#fde8cc':'#f8fafc'};display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:900;color:${i===0?'#d97706':i===1?'#64748b':i===2?'#b45309':'var(--text-muted)'};">${i+1}</div>
                     <div style="flex:1;">
                         <div class="stats-label" style="color:var(--text-dark);font-weight:800;">${name}</div>
-                        <div style="font-size:0.7rem;font-weight:600;color:var(--text-muted);">${v.qty} قطعة — JD ${v.revenue.toFixed(2)}</div>
+                        <div style="font-size:0.7rem;font-weight:600;color:var(--text-muted);">${v.qty} قطعة - JD ${v.revenue.toFixed(2)}</div>
                     </div>
                     <div style="font-size:0.82rem;font-weight:900;color:#16a34a;">+JD ${v.profit.toFixed(2)}</div>
                 </div>`).join('')}`;
@@ -5366,7 +5366,7 @@
             const totalDiff = sorted.reduce((s,r) => s + (r.diff ?? 0), 0);
             const totalWd = withdrawals.reduce((s,w) => s + w.amount, 0);
 
-            // كل جرد مستقل — النقص والزيادة لكل موظف على حدة
+            // كل جرد مستقل - النقص والزيادة لكل موظف على حدة
             const posCount = sorted.filter(r => (r.diff ?? 0) > 0).length;
             const negCount = sorted.filter(r => (r.diff ?? 0) < 0).length;
 
@@ -5629,7 +5629,7 @@
         const s = sales.find(x => x.id === id);
         if(!s) return;
 
-        // حمّل الفاتورة في السلة فقط — المخزون يُعالَج في confirmSale أو cancelCartModal
+        // حمّل الفاتورة في السلة فقط - المخزون يُعالَج في confirmSale أو cancelCartModal
         cart = s.items.map(si => ({
             itemId: si.itemId,
             name: si.name,
@@ -5657,7 +5657,7 @@
         const list = document.getElementById('cart-items-list');
 
         if(existingSale || editingSaleId) {
-            document.getElementById('cart-modal-sub').innerText = `تعديل الفاتورة — ${cart.length} أصناف`;
+            document.getElementById('cart-modal-sub').innerText = `تعديل الفاتورة - ${cart.length} أصناف`;
             document.getElementById('cart-print-btn').style.display = 'flex';
             document.getElementById('cart-confirm-btn').innerHTML = '<i class="fa-solid fa-check" style="margin-left:5px;"></i>حفظ';
             const saleData = existingSale || sales.find(x => x.id === editingSaleId);
@@ -5699,7 +5699,7 @@
             </div>
         `).join('');
         updateCartTotals();
-        // تاريخ الفاتورة — افتراضي اليوم
+        // تاريخ الفاتورة - افتراضي اليوم
         const sellDateInput = document.getElementById('sell-date');
         if(sellDateInput && !editingSaleId) {
             const today = new Date().toISOString().split('T')[0];
@@ -5735,7 +5735,7 @@
             let totalCost = 0;
             const takenBatches = []; // الـ batches المأخوذة بالضبط
 
-            // FIFO — الأقدم أولاً
+            // FIFO - الأقدم أولاً
             it.batches.sort((a, b) => new Date(a.date) - new Date(b.date));
 
             for(let i = 0; i < it.batches.length && remaining > 0; i++) {
@@ -5780,7 +5780,7 @@
         const wasEditing = !!editingSaleId;
 
         if(editingSaleId) {
-            // وضع التعديل — تحقق من توفر المخزون للأصناف الجديدة أولاً
+            // وضع التعديل - تحقق من توفر المخزون للأصناف الجديدة أولاً
             const existing = sales.find(x => x.id === editingSaleId);
             if(existing) {
                 // أعد الكميات القديمة للمخزون أولاً
@@ -5799,7 +5799,7 @@
                     if(!it) continue;
                     const available = it.batches.reduce((s, b) => s + b.qty, 0);
                     if(si.qty > available) {
-                        // أعد الطرح — تراجع عن الاستعادة
+                        // أعد الطرح - تراجع عن الاستعادة
                         existing.items.forEach(old => {
                             const it2 = items.find(x => x.id === old.itemId);
                             if(!it2) return;
@@ -5808,7 +5808,7 @@
                             if(sameBatch) sameBatch.qty -= old.qty;
                             it2.batches = it2.batches.filter(b => b.qty > 0);
                         });
-                        showAlert(`المخزون غير كافٍ لـ "${si.name}" — المتوفر ${available} قطعة`, 'error');
+                        showAlert(`المخزون غير كافٍ لـ "${si.name}" - المتوفر ${available} قطعة`, 'error');
                         return;
                     }
                 }
@@ -5855,7 +5855,7 @@
         } else {
             const lastSale = sales[sales.length - 1];
             document.getElementById('post-sale-info').innerText =
-                `فاتورة #${lastSale.invoiceNumber} — JD ${lastSale.total.toFixed(2)} — ${lastSale.payType === 'cash' ? 'نقدي' : lastSale.payType === 'card' ? 'بطاقة' : 'آجل'}`;
+                `فاتورة #${lastSale.invoiceNumber} - JD ${lastSale.total.toFixed(2)} - ${lastSale.payType === 'cash' ? 'نقدي' : lastSale.payType === 'card' ? 'بطاقة' : 'آجل'}`;
             openModal('post-sale-modal');
         }
     }
@@ -6104,7 +6104,7 @@
     <div class="body">
       <div class="row">
         <div class="row-label">صُرف للسادة المحترمين</div>
-        <div class="row-value">${e.beneficiary || '—'}</div>
+        <div class="row-value">${e.beneficiary || '-'}</div>
       </div>
       <div class="row">
         <div class="row-label">البيان</div>
@@ -6367,7 +6367,7 @@
                         else it.batches.unshift({ qty: tb.qty, buyPrice: tb.buyPrice, sellPrice: tb.sellPrice, date: tb.date });
                     });
                 } else {
-                    // فواتير قديمة بدون takenBatches — نستخدم avgBuyPrice
+                    // فواتير قديمة بدون takenBatches - نستخدم avgBuyPrice
                     const buyPrice = si.avgBuyPrice !== undefined ? si.avgBuyPrice : (si.buyPrice || 0);
                     const sameBatch = it.batches.find(b => Math.abs(b.buyPrice - buyPrice) < 0.001);
                     if(sameBatch) sameBatch.qty += si.qty;
@@ -6387,7 +6387,7 @@
             const it = items.find(x => x.id === si.itemId);
             const available = it ? it.batches.reduce((s, b) => s + b.qty, 0) : 0;
             if(si.qty > available) {
-                showAlert(`لا يمكن الاسترجاع — المخزون غير كافٍ لـ "${si.name}" (متوفر: ${available})`, 'error');
+                showAlert(`لا يمكن الاسترجاع - المخزون غير كافٍ لـ "${si.name}" (متوفر: ${available})`, 'error');
                 return;
             }
         }
@@ -7036,7 +7036,7 @@
             <div class="sale-card" style="padding:0;">
                 <div class="sale-header" onclick="toggleWdCard(this)" style="cursor:pointer;padding:12px 16px;margin-bottom:0;">
                     <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
-                        <span style="font-size:0.82rem;font-weight:900;color:var(--text-dark);flex-shrink:0;">${w.reason || '—'}</span>
+                        <span style="font-size:0.82rem;font-weight:900;color:var(--text-dark);flex-shrink:0;">${w.reason || '-'}</span>
                         <span style="font-size:0.72rem;font-weight:700;color:var(--text-muted);flex-shrink:0;">${formatDate(w.date)}</span>
                     </div>
                     <span style="font-size:0.88rem;font-weight:900;color:#d97706;flex-shrink:0;">JD ${w.amount.toFixed(2)}</span>
@@ -7130,7 +7130,7 @@
         localStorage.setItem('mahalak_store_name', storeName);
         document.getElementById('setup-modal').classList.remove('active');
         updateStoreName();
-        // أول تشغيل — اطلب إنشاء حساب المدير
+        // أول تشغيل - اطلب إنشاء حساب المدير
         if(!appUsers.length) {
             setTimeout(() => openSetupAdminModal(), 200);
         }
@@ -7556,7 +7556,7 @@
 
             return `
             <div style="background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
-                <!-- رأس البطاقة — قابل للنقر -->
+                <!-- رأس البطاقة - قابل للنقر -->
                 <div onclick="toggleSalCard(this)" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;">
                     <div style="width:36px;height:36px;border-radius:10px;background:#dbeafe;color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"><i class="fa-solid fa-user"></i></div>
                     <div style="flex:1;">
@@ -7570,7 +7570,7 @@
                     </div>` : ''}
 
                 </div>
-                <!-- تفاصيل البطاقة — مخفية افتراضياً -->
+                <!-- تفاصيل البطاقة - مخفية افتراضياً -->
                 <div class="sal-card-body" style="display:none;padding:0 16px 14px;border-top:1px solid var(--border);">
                     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:10px 0;">
                         <div style="background:#f0fdf4;border-radius:9px;padding:7px;text-align:center;">
@@ -7645,7 +7645,7 @@
         pendingSalaryInfo = { empId, month, year, monthKey: mKeyFinal, netSalary, salary: e.salary, totalAdv, pendingAdvIds: pendingAdv.map(a=>a.id), lateDeductTotal: extraDeduct };
 
         showConfirm(
-            `صرف راتب ${e.name} — ${MONTHS_AR[month-1]} ${year}
+            `صرف راتب ${e.name} - ${MONTHS_AR[month-1]} ${year}
 صافي الراتب: JD ${netSalary.toFixed(2)}`,
             () => confirmPaySalary(),
             'تأكيد الصرف', 'صرف', '#ca8a04'
@@ -7682,7 +7682,7 @@
 
         pendingSalaryInfo = { empId, month, year, monthKey, netSalary, salary: e.salary, totalAdv, pendingAdvIds: pendingAdv.map(a=>a.id), absentDeduct, lateDeductTotal };
 
-        document.getElementById('pay-sal-sub').textContent = e.name + ' — ' + MONTHS_AR[month-1] + ' ' + year;
+        document.getElementById('pay-sal-sub').textContent = e.name + ' - ' + MONTHS_AR[month-1] + ' ' + year;
 
         // بناء تفاصيل الراتب في العناصر الثابتة
         let detHtml = '';
@@ -7692,7 +7692,7 @@
         if(totalAdv > 0) detHtml += '<div style="display:flex;justify-content:space-between;font-size:0.82rem;font-weight:700;color:#ea580c;"><span>السلف المستحقة</span><span>- JD ' + totalAdv.toFixed(2) + '</span></div>';
         if(paid) detHtml += '<div style="text-align:center;font-size:0.78rem;font-weight:800;color:#16a34a;background:#f0fdf4;border-radius:8px;padding:6px;">✓ تم صرف هذا الراتب مسبقاً</div>';
 
-        // نملأ الـ details بالعناصر الثابتة (بدون صف التأخر — له عنصر ثابت خاص)
+        // نملأ الـ details بالعناصر الثابتة (بدون صف التأخر - له عنصر ثابت خاص)
         document.getElementById('pay-sal-details').innerHTML = detHtml;
 
         // صف خصم التأخر
@@ -7865,7 +7865,7 @@
             e.salaryLogs.splice(logIdx, 1);
             saveData();
             renderSalariesList();
-            showToast('تم إلغاء الصرف — يمكنك التعديل الآن');
+            showToast('تم إلغاء الصرف - يمكنك التعديل الآن');
         }, 'تأكيد الإلغاء', 'إلغاء الصرف', 'var(--danger)');
     }
 
@@ -7904,7 +7904,7 @@
         const ratio = vh / window.screen.height;
         const kbOpen = ratio < 0.75;
 
-        // النوافذ الصغيرة — نفس طريقة نافذة الدين بالضبط
+        // النوافذ الصغيرة - نفس طريقة نافذة الدين بالضبط
         [...simpleOverlays, ...centerOverlays].forEach(ov => {
             if (!ov) return;
             if (kbOpen) {
@@ -7948,7 +7948,7 @@
             } else { ov.style.height = ''; ov.style.top = ''; }
         });
 
-        // شاشة تسجيل الدخول — تعتمد على CSS فقط (position:fixed + align-items:center)
+        // شاشة تسجيل الدخول - تعتمد على CSS فقط (position:fixed + align-items:center)
         const loginOv = document.getElementById('login-overlay');
         if(loginOv && loginOv.style.display !== 'none') {
             loginOv.style.height = kbOpen ? vh + 'px' : '';
