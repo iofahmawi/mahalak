@@ -1875,7 +1875,7 @@
 <!-- نافذة الإعداد الأولي -->
 <div class="modal-overlay" id="setup-modal" style="align-items:center;">
     <div class="modal" onclick="event.stopPropagation()" style="text-align:center;padding:32px 28px;">
-        <div id="setup-logo-wrap" style="margin-bottom:12px;text-align:center;">
+        <div id="setup-logo-wrap" style="margin-bottom:12px;text-align:center;" id="setup-logo-wrap">
             <img id="logo-preview-img" src="" alt="" style="display:none;height:85px;max-width:220px;object-fit:contain;margin:0 auto;">
             <div id="setup-default-icon" style="font-size:2.5rem;">🏪</div>
         </div>
@@ -1896,6 +1896,11 @@
                 <span id="logo-size-val" style="font-size:0.85rem;font-weight:800;color:var(--text-dark);margin-left:4px;">85px</span>
             </div>
             <input type="range" id="logo-size-slider" min="50" max="200" value="85" oninput="updateLogoSize(this.value)" style="width:100%;accent-color:var(--primary);display:block;box-sizing:border-box;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;margin-top:10px;">
+                <span style="font-size:0.72rem;font-weight:700;color:var(--text-muted);margin-right:4px;">المسافة السفلية</span>
+                <span id="logo-gap-val" style="font-size:0.85rem;font-weight:800;color:var(--text-dark);margin-left:4px;">12px</span>
+            </div>
+            <input type="range" id="logo-gap-slider" min="0" max="60" value="12" oninput="updateLogoGap(this.value)" style="width:100%;accent-color:var(--primary);display:block;box-sizing:border-box;">
         </div>
         <button onclick="saveStoreName()" style="width:100%;height:41px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-family:inherit;font-size:0.88rem;font-weight:900;cursor:pointer;">حفظ</button>
     </div>
@@ -2071,6 +2076,8 @@
         if(loginLogo && loginImg) {
             loginImg.src = loginLogo;
             loginImg.style.height = loginLogoSize + 'px';
+            const loginGap = localStorage.getItem('mahalak_store_logo_gap') || '12';
+            loginImg.style.marginBottom = loginGap + 'px';
             loginImg.style.display = 'block';
             if(loginIcon) loginIcon.style.display = 'none';
         } else {
@@ -7160,6 +7167,10 @@
         document.getElementById('logo-size-slider').value = savedSize;
         document.getElementById('logo-size-val').textContent = savedSize + 'px';
         img.style.height = savedSize + 'px';
+        const savedGap = localStorage.getItem('mahalak_store_logo_gap') || '12';
+        document.getElementById('logo-gap-slider').value = savedGap;
+        document.getElementById('logo-gap-val').textContent = savedGap + 'px';
+        document.getElementById('setup-logo-wrap').style.marginBottom = savedGap + 'px';
         if(savedLogo) {
             img.src = savedLogo;
             img.style.display = 'block';
@@ -7201,6 +7212,12 @@
         localStorage.setItem('mahalak_store_logo_size', val);
     }
 
+    function updateLogoGap(val) {
+        document.getElementById('logo-gap-val').textContent = val + 'px';
+        document.getElementById('setup-logo-wrap').style.marginBottom = val + 'px';
+        localStorage.setItem('mahalak_store_logo_gap', val);
+    }
+
     function saveStoreName() {
         const val = document.getElementById('setup-store-name').value.trim();
         if(!val) return;
@@ -7211,6 +7228,8 @@
         else localStorage.removeItem('mahalak_store_logo');
         const logoSize = document.getElementById('logo-size-slider').value;
         localStorage.setItem('mahalak_store_logo_size', logoSize);
+        const logoGap = document.getElementById('logo-gap-slider').value;
+        localStorage.setItem('mahalak_store_logo_gap', logoGap);
         document.getElementById('setup-modal').classList.remove('active');
         updateStoreName();
         // أول تشغيل - اطلب إنشاء حساب المدير
