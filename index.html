@@ -807,7 +807,7 @@
 
     <div class="search-bar" id="search-bar">
         <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted);font-size:0.8rem;flex-shrink:0;"></i>
-        <input type="text" id="search-input" placeholder="بحث"  oninput="onSearch(this.value)" onkeydown="if(event.key==='Enter')this.blur();">
+        <input type="text" id="search-input" placeholder="بحث... أو #اسم الصنف"  oninput="onSearch(this.value)" onkeydown="if(event.key==='Enter')this.blur();">
         <button onclick="closeSearch()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.9rem;padding:0 2px;"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="header-actions" id="header-actions">
@@ -2430,7 +2430,7 @@
     }
 
     // ─── Search UI ───
-    function onSearch(val) { searchQuery = val.trim().toLowerCase(); render(); }
+    function onSearch(val) { searchQuery = val.trim(); render(); }
     function openSearch() {
         document.getElementById('header-title').style.display = 'none';
         document.getElementById('header-actions').style.display = 'none';
@@ -2650,6 +2650,37 @@
         const grid = document.getElementById('items-grid');
 
         if(searchQuery) {
+            // بحث عميق بالصنف
+            if(searchQuery.startsWith('#')) {
+                const itemQ = searchQuery.slice(1).trim().toLowerCase();
+                let totalQty = 0, totalAmt = 0;
+                const invoiceIds = new Set();
+                sales.filter(s => !s.cancelled).forEach(s => {
+                    (s.items||[]).forEach(si => {
+                        if((si.name||'').toLowerCase() === itemQ) {
+                            totalQty += si.qty || 0;
+                            totalAmt += (si.qty * si.sellPrice) || 0;
+                            invoiceIds.add(s.id);
+                        }
+                    });
+                });
+                if(!totalQty) {
+                    grid.innerHTML = '<div class="empty-state" style="grid-column:span 2;"><i class="fa-solid fa-receipt"></i><p>لا توجد نتائج</p></div>';
+                } else {
+                    grid.innerHTML = `<div style="grid-column:span 2;background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="font-size:0.88rem;font-weight:900;color:var(--text-dark);">${searchQuery.slice(1).trim()}</div>
+                            <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);margin-top:2px;">${totalQty} قطعة مباعة</div>
+                        </div>
+                        <div style="text-align:left;">
+                            <div style="font-size:1rem;font-weight:900;color:var(--primary);">JD ${totalAmt.toFixed(2)}</div>
+                            <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">${invoiceIds.size} فاتورة</div>
+                        </div>
+                    </div>`;
+                }
+                return;
+            }
+
             const q = searchQuery.toLowerCase();
             const filtered = [...sales].filter(s => !s.cancelled && (
                 (s.customerName||'').toLowerCase().includes(q) ||
@@ -2722,7 +2753,7 @@
     function renderInvList() {
         const list = document.getElementById('inv-list');
         let filtered = items.filter(it => (currentFilter === 'all' || it.category === currentFilter));
-        if(searchQuery) filtered = filtered.filter(it => it.name.toLowerCase().includes(searchQuery));
+        if(searchQuery && !searchQuery.startsWith('#')) filtered = filtered.filter(it => it.name.toLowerCase().includes(searchQuery.toLowerCase()));
         if(lowStockOnly) {
             filtered = filtered.filter(it => {
                 const qty = it.batches.reduce((s, b) => s + b.qty, 0);
@@ -2851,6 +2882,34 @@
             return Number(b) - Number(a);
         });
         if(searchQuery) {
+            if(searchQuery.startsWith('#')) {
+                const itemQ = searchQuery.slice(1).trim().toLowerCase();
+                let totalQty = 0, totalAmt = 0;
+                const invoiceIds = new Set();
+                purchases.forEach(p => {
+                    if((p.itemName||'').toLowerCase() === itemQ) {
+                        totalQty += p.qty || 0;
+                        totalAmt += p.total || 0;
+                        invoiceIds.add(p.invoiceGroupId || p.id);
+                    }
+                });
+                if(!totalQty) {
+                    list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-cart-flatbed"></i><p>لا توجد نتائج</p></div>';
+                } else {
+                    list.innerHTML = `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="font-size:0.88rem;font-weight:900;color:var(--text-dark);">${searchQuery.slice(1).trim()}</div>
+                            <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);margin-top:2px;">${totalQty} قطعة مشتراة</div>
+                        </div>
+                        <div style="text-align:left;">
+                            <div style="font-size:1rem;font-weight:900;color:var(--primary);">JD ${totalAmt.toFixed(2)}</div>
+                            <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);">${invoiceIds.size} فاتورة</div>
+                        </div>
+                    </div>`;
+                }
+                return;
+            }
+
             const q = searchQuery.toLowerCase();
             groupIds = groupIds.filter(gid => {
                 const grp = groups[gid];
