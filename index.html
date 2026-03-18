@@ -1956,12 +1956,12 @@
             <input type="text" id="cust-search-input" placeholder="بحث"  oninput="filterCustSheet(this.value)">
         </div>
         <div style="padding:6px 12px 10px;">
-            <div id="quick-add-cust-row" style="display:flex;gap:6px;">
+            <div id="quick-add-cust-row" style="display:flex;gap:6px;margin-bottom:10px;">
                 <button onclick="showQuickCustInput()" style="width:100%;height:38px;border-radius:10px;border:1.5px dashed var(--primary);background:#f0f7ff;color:var(--primary);font-family:inherit;font-size:0.82rem;font-weight:800;cursor:pointer;">
                     <i class="fa-solid fa-plus" style="margin-left:6px;"></i>إضافة زبون جديد
                 </button>
             </div>
-            <div id="quick-add-cust-input" style="display:none;gap:6px;">
+            <div id="quick-add-cust-input" style="display:none;gap:6px;margin-bottom:10px;">
                 <input type="text" id="quick-cust-name" placeholder="اسم الزبون" onkeydown="if(event.key==='Enter')quickAddCustomer()" style="flex:1;height:41px;border:1.5px solid var(--border);border-radius:10px;padding:0 12px;font-family:inherit;font-size:0.85rem;font-weight:700;color:var(--text-dark);background:#f8fafc;outline:none;box-sizing:border-box;">
                 <button onclick="quickAddCustomer()" style="flex-shrink:0;height:41px;padding:0 14px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-family:inherit;font-size:0.82rem;font-weight:800;cursor:pointer;">إضافة</button>
             </div>
@@ -7106,6 +7106,9 @@
             purchases, suppliers, customers, paymentLogs, expenses,
             cashLog, withdrawals, supplierDetails, customerDetails,
             appUsers, employees,
+            storeLogo: localStorage.getItem('mahalak_store_logo') || '',
+            storeLogoSize: localStorage.getItem('mahalak_store_logo_size') || '85',
+            storeLogoGap: localStorage.getItem('mahalak_store_logo_gap') || '6',
             version: '2.0'
         };
         const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
@@ -7125,6 +7128,9 @@
             try {
                 const data = JSON.parse(evt.target.result);
                 if(data.storeName)       { storeName = data.storeName; localStorage.setItem('mahalak_store_name', storeName); }
+                if(data.storeLogo !== undefined)    localStorage.setItem('mahalak_store_logo', data.storeLogo);
+                if(data.storeLogoSize !== undefined) localStorage.setItem('mahalak_store_logo_size', data.storeLogoSize);
+                if(data.storeLogoGap !== undefined)  localStorage.setItem('mahalak_store_logo_gap', data.storeLogoGap);
                 if(data.items)           items           = data.items;
                 if(data.sales)           sales           = data.sales;
                 if(data.categories)      categories      = data.categories;
