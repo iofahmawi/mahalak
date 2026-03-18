@@ -6753,7 +6753,8 @@
         document.getElementById('cash-expected-box').style.display = 'none';
         document.getElementById('cash-diff-box').style.display = 'none';
         // ملء الرصيد الافتتاحي تلقائياً من آخر جرد في هذا اليوم
-        const lastEntry = cashLog.filter(r => r.date === date).sort((a,b) => (a.time||'').localeCompare(b.time||'')).pop();
+        // آخر جرد في نفس اليوم أو في أي يوم سابق
+        const lastEntry = cashLog.filter(r => r.date <= date).sort((a,b) => a.date.localeCompare(b.date) || (a.time||'').localeCompare(b.time||'')).pop();
         if(lastEntry && !exists) {
             document.getElementById('cash-opening').value = lastEntry.closing.toFixed(2);
             updateCashExpected();
