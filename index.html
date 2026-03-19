@@ -982,13 +982,10 @@
             <div class="modal-ico blue"><i class="fa-solid fa-layer-group"></i></div>
             <div><p class="modal-title" id="batch-title">اختر الكمية</p><p class="modal-subtitle" id="batch-subtitle">أدخل الكمية المطلوبة</p></div>
         </div>
-        <div style="height:41px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#f8fafc;border:1.5px solid var(--border);border-radius:12px;margin-bottom:10px;">
-            <span style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">المتوفر</span>
-            <span id="batch-available" style="font-size:0.88rem;font-weight:700;color:var(--text-dark);">0 قطعة</span>
-        </div>
+        <div id="batch-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
         <div class="input-wrap" style="margin-bottom:0;">
             <i class="fa-solid fa-cubes"></i>
-            <input type="number" id="batch-qty" inputmode="numeric" placeholder="الكمية" onkeydown="if(event.key==='Enter')confirmAddToCart()">
+            <input type="number" id="batch-qty" inputmode="numeric" onkeydown="if(event.key==='Enter')confirmAddToCart()">
         </div>
         <div class="modal-btns">
             <button class="mbtn mbtn-cancel" onclick="closeModals()">إلغاء</button>
@@ -3233,8 +3230,8 @@
         document.getElementById('pu-inv-qty-sub').textContent = 'أدخل الكمية والأسعار';
         document.getElementById('pu-inv-qty').value = '';
         const lastBatch = it.batches.length > 0 ? it.batches[it.batches.length-1] : null;
-        document.getElementById('pu-inv-buy').value = lastBatch ? lastBatch.buyPrice : '';
-        document.getElementById('pu-inv-sell').value = it.sellPrice || (lastBatch ? lastBatch.sellPrice : '') || '';
+        document.getElementById('pu-inv-buy').value = lastBatch ? parseFloat(lastBatch.buyPrice).toFixed(2) : '';
+        document.getElementById('pu-inv-sell').value = (it.sellPrice || (lastBatch ? lastBatch.sellPrice : '') || '') ? parseFloat(it.sellPrice || lastBatch.sellPrice).toFixed(2) : '';
         document.getElementById('pu-inv-low').value = it.batches.length > 0 ? (it.lowStockThreshold || '') : '';
         document.getElementById('pu-inv-search-modal').classList.remove('active');
         document.getElementById('pu-inv-qty-modal').classList.add('active');
@@ -5622,7 +5619,11 @@
 
         document.getElementById('batch-title').innerText = it.name;
         document.getElementById('batch-subtitle').innerText = 'أدخل الكمية المطلوبة';
-        document.getElementById('batch-available').innerText = `${totalQty} قطعة`;
+        document.getElementById('batch-list').innerHTML = `
+            <div style="height:41px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#f8fafc;border:1.5px solid var(--border);border-radius:12px;">
+                <span style="font-size:0.88rem;font-weight:700;color:var(--text-muted);">المتوفر</span>
+                <span style="font-size:0.88rem;font-weight:700;color:var(--text-dark);">${totalQty} قطعة</span>
+            </div>`;
 
         document.getElementById('batch-qty').value = '';
         openModal('batch-modal');
