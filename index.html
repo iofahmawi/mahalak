@@ -1037,7 +1037,7 @@
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top" style="align-items:flex-start;">
             <div class="modal-ico blue"><i class="fa-solid fa-basket-shopping"></i></div>
-            <div style="flex:1;"><p class="modal-title">السلة</p><p class="modal-subtitle" id="cart-modal-sub"></p></div>
+            <div style="flex:1;"><p class="modal-title">فاتورة مبيعات</p><p class="modal-subtitle" id="cart-modal-sub"></p></div>
             <button id="cart-print-btn" onclick="const _s = sales.find(x=>x.id===editingSaleId); if(_s){ const _copy = {..._s, payType: sellPayType}; printInvoice(_copy); }" style="display:none;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.95rem;padding:4px;margin-top:-2px;"><i class="fa-solid fa-print"></i></button>
         </div>
         <div id="sell-customer-wrap" style="display:block;">
@@ -1817,7 +1817,7 @@
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-top" style="align-items:flex-start;">
             <div class="modal-ico blue"><i class="fa-solid fa-file-invoice"></i></div>
-            <div style="flex:1;"><p class="modal-title" id="pu-inv-title">فاتورة شراء جديدة</p><p class="modal-subtitle" id="pu-inv-sub">أضف الأصناف للفاتورة</p></div>
+            <div style="flex:1;"><p class="modal-title" id="pu-inv-title">فاتورة مشتريات</p><p class="modal-subtitle" id="pu-inv-sub">أضف الأصناف للفاتورة</p></div>
             <button onclick="printPurchaseInvoiceGroup()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.95rem;padding:4px;margin-top:-2px;"><i class="fa-solid fa-print"></i></button>
         </div>
 
@@ -3105,7 +3105,7 @@
         document.getElementById('pu-inv-buy').value = '';
 
         // تغيير عنوان وزر الحفظ
-        document.getElementById('pu-inv-title').textContent = 'تعديل فاتورة الشراء';
+        document.getElementById('pu-inv-title').textContent = 'فاتورة مشتريات';
         document.getElementById('pu-inv-save-btn').textContent = 'حفظ التعديلات';
 
         renderPuInvItems();
@@ -3137,7 +3137,7 @@
         if(discInp) { discInp.value = ''; discInp.style.display = 'none'; }
         const discDisp = document.getElementById('pu-inv-disc-display');
         if(discDisp) { discDisp.textContent = 'JD 0'; discDisp.style.display = 'inline'; }
-        document.getElementById('pu-inv-title').textContent = 'فاتورة شراء جديدة';
+        document.getElementById('pu-inv-title').textContent = 'فاتورة مشتريات';
         document.getElementById('pu-inv-save-btn').textContent = 'حفظ الفاتورة';
         renderPuInvItems();
         openPuInvSearchModal();
