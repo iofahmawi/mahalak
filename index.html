@@ -1818,7 +1818,7 @@
         <div class="modal-top" style="align-items:flex-start;">
             <div class="modal-ico blue"><i class="fa-solid fa-file-invoice"></i></div>
             <div style="flex:1;"><p class="modal-title" id="pu-inv-title">فاتورة مشتريات</p><p class="modal-subtitle" id="pu-inv-sub">أضف الأصناف للفاتورة</p></div>
-            <button onclick="printPurchaseInvoiceGroup()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.95rem;padding:4px;margin-top:-2px;"><i class="fa-solid fa-print"></i></button>
+            <button id="pu-inv-print-btn" onclick="printPurchaseInvoiceGroup()" style="display:none;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.95rem;padding:4px;margin-top:-2px;"><i class="fa-solid fa-print"></i></button>
         </div>
 
         <div>
@@ -2217,7 +2217,7 @@
         saveUsers();
         closeModals();
         setTimeout(() => { openModal('users-modal'); renderUsersList(); }, 50);
-        showToast('تم تحديث الصلاحيات ✓');
+        showToast('تم الحفظ ✓');
     }
 
     function renderPermsUI(containerId, permsObj) {
@@ -2315,7 +2315,7 @@
         saveUsers();
         closeModals();
         setTimeout(() => { openModal('users-modal'); renderUsersList(); }, 50);
-        showToast('تم تغيير كلمة المرور ✓');
+        showToast('تم الحفظ ✓');
     }
 
     // ── إضافة اسم المستخدم لكل عملية ──
@@ -3111,6 +3111,8 @@
         renderPuInvItems();
         closeModals();
         setTimeout(() => openModal('new-purchase-modal'), 150);
+        const _puPrintBtn = document.getElementById('pu-inv-print-btn');
+        if(_puPrintBtn) _puPrintBtn.style.display = 'block';
     }
 
     function openNewPurchaseModalWithItem(itemName) {
@@ -3139,6 +3141,8 @@
         if(discDisp) { discDisp.textContent = 'JD 0'; discDisp.style.display = 'inline'; }
         document.getElementById('pu-inv-title').textContent = 'فاتورة مشتريات';
         document.getElementById('pu-inv-save-btn').textContent = 'حفظ الفاتورة';
+        const _puPrintBtnNew = document.getElementById('pu-inv-print-btn');
+        if(_puPrintBtnNew) _puPrintBtnNew.style.display = 'none';
         renderPuInvItems();
         openPuInvSearchModal();
     }
@@ -3443,9 +3447,10 @@
             saveData();
             render();
             closeModals();
-            showToast('تم تعديل الفاتورة بنجاح');
-            if(_purchaseEditSource === 'modal') setTimeout(() => openPurchasesModal(), 50);
+            showToast('تم الحفظ ✓');
+            const _src = _purchaseEditSource;
             _purchaseEditSource = null;
+            if(_src === 'modal') setTimeout(() => openPurchasesModal(), 50);
             return;
         }
 
@@ -3478,7 +3483,7 @@
         saveData();
         render();
         closeModals();
-        showToast('تم حفظ الفاتورة - ' + puInvItems.length + ' صنف - JD ' + invoiceTotal.toFixed(2));
+        showToast('تم الحفظ ✓');
         puInvItems = [];
     }
 
@@ -3555,7 +3560,7 @@
         saveData();
         render();
         renderDelPurchasesList();
-        showToast('تم حذف فاتورة الشراء');
+        showToast('تم الحذف ✓');
     }
 
     let delPuMode = 'day';
@@ -3796,7 +3801,7 @@
         _forceDelItemId = null;
         saveData();
         closeModals();
-        showToast('تم حذف الصنف مع جميع فواتيره');
+        showToast('تم الحذف ✓');
     }
 
     function openDelModal(id) {
@@ -4591,10 +4596,6 @@
         const _label = affectedInvNums.length ? 'سداد فاتورة مبيعات #' + affectedInvNums.map(i=>i.num).join('، #') : 'سداد ذمة مبيعات';
         closeModals();
         setTimeout(() => openCustDebtModal(), 200);
-        setTimeout(() => {
-            const html = buildReceiptHtml(custName, amount, 'customer', _date, _time, _rcptNum, _label);
-            openPrintWindow(html);
-        }, 300);
     }
 
     // ─── Payment Type ───
@@ -4949,10 +4950,6 @@
         const _label2 = affectedInvNums.length ? 'سداد فاتورة مشتريات #' + affectedInvNums.map(i=>i.num).join('، #') : 'سداد ذمة مشتريات';
         closeModals();
         setTimeout(() => openDebtModal(), 200);
-        setTimeout(() => {
-            const html = buildReceiptHtml(supplierName, amount, 'supplier', _date2, _time2, _rcptNum2, _label2);
-            openPrintWindow(html);
-        }, 300);
     }
 
     let puFilter = 'all'; // 'all' | 'cash' | 'credit'
@@ -5026,7 +5023,7 @@
                 });
                 purchases = purchases.filter(x => !group.some(p => p.id === x.id));
                 saveData(); render(); renderPurchasesHistory();
-                showToast('تم حذف الفاتورة');
+                showToast('تم الحذف ✓');
             });
         } else {
             const p = purchases.find(x => x.id === idOrGid);
@@ -5603,7 +5600,7 @@
             navigator.share({ text });
         } else {
             navigator.clipboard.writeText(text).then(() => {
-                showToast('تم نسخ الفاتورة ✓');
+                showToast('تم النسخ ✓');
             });
         }
     }
@@ -6023,12 +6020,10 @@
         saveData();
 
         if(wasEditing) {
+            showToast('تم الحفظ ✓');
             setTimeout(() => openSalesHistoryModal(), 50);
         } else {
-            const lastSale = sales[sales.length - 1];
-            document.getElementById('post-sale-info').innerText =
-                `فاتورة #${lastSale.invoiceNumber} - JD ${lastSale.total.toFixed(2)} - ${lastSale.payType === 'cash' ? 'نقدي' : lastSale.payType === 'card' ? 'بطاقة' : 'آجل'}`;
-            openModal('post-sale-modal');
+            showToast('تم الحفظ ✓');
         }
     }
 
@@ -6151,7 +6146,7 @@
   .field span { font-size:0.82rem; font-weight:800; }
   .items-table { width:100%; border-collapse:collapse; }
   .items-table th { padding:8px 20px; font-size:0.7rem; font-weight:700; border-bottom:1px solid #1e293b; text-align:right; }
-  .items-table td { padding:8px 20px; font-size:0.68rem; font-weight:700; border-bottom:1px dashed #e2e8f0; }
+  .items-table td { padding:8px 20px; font-size:0.68rem; font-weight:700; }
   .items-table tr:last-child td { border-bottom:none; }
   .totals { border:1.5px solid #1e293b; border-radius:8px; padding:7px 20px; margin-top:16px; }
   .tot-final { display:flex; justify-content:space-between; align-items:center; font-size:1rem; font-weight:900; }
@@ -7285,7 +7280,7 @@
                 saveData();
                 updateStoreName();
                 render();
-                showToast('تم الاستيراد بنجاح ✓');
+                showToast('تم الاستيراد ✓');
                 e.target.value = '';
             } catch(err) { showAlert('خطأ في ملف الاستيراد', 'error'); }
         };
@@ -7491,7 +7486,7 @@
         document.getElementById('emp-salary-input').value = '';
         saveData();
         renderEmployeesList();
-        showToast('تم إضافة الموظف');
+        showToast('تم الحفظ ✓');
     }
 
     function deleteEmployee(id) {
@@ -7499,7 +7494,7 @@
             employees = employees.filter(e => e.id !== id);
             saveData();
             renderEmployeesList();
-            showToast('تم حذف الموظف');
+            showToast('تم الحذف ✓');
         });
     }
 
@@ -7646,7 +7641,7 @@
         saveData();
         closeModals();
         renderEmployeesList();
-        showToast('تم تسجيل السلفة');
+        showToast('تم الحفظ ✓');
     }
 
     // ─── الحضور ───
@@ -7745,7 +7740,7 @@
         if(!saved) { showAlert('لم تسجّل أي حضور', 'error'); return; }
         saveData();
         closeModals();
-        showToast(`تم حفظ حضور ${saved} موظف`);
+        showToast('تم الحفظ ✓');
     }
 
     function toggleSalCard(header) {
@@ -7982,7 +7977,7 @@
         e.lateOverrides[pendingSalaryInfo.monthKey] = val;
         saveData();
         document.getElementById('late-override-modal').classList.remove('active');
-        showToast('تم تعديل الخصم');
+        showToast('تم الحفظ ✓');
         renderSalariesList();
     }
 
@@ -8106,7 +8101,7 @@
             e.salaryLogs.splice(logIdx, 1);
             saveData();
             renderSalariesList();
-            showToast('تم إلغاء الصرف - يمكنك التعديل الآن');
+            showToast('تم الإلغاء ✓');
         }, 'تأكيد الإلغاء', 'إلغاء الصرف', 'var(--danger)');
     }
 
@@ -8128,7 +8123,7 @@
         const payIso = new Date().toLocaleDateString('en-CA'); e.salaryLogs.push({ monthKey, net: netSalary, date: new Date().toLocaleDateString(), isoDate: payIso });
         saveData();
         closeModals();
-        showToast('تم صرف الراتب بنجاح');
+        showToast('تم الحفظ ✓');
         // أعد فتح نافذة الرواتب لتحديث العرض
         setTimeout(() => openSalariesModal(), 300);
     }
